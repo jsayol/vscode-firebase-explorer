@@ -27,7 +27,7 @@ export class ProjectManager {
   ) {
     this.id = account.user.email + '--' + project.id;
     this.accountManager = AccountManager.for(account);
-    this.initialized = this.getConfig().then(config => {
+    this.initialized = this.retrieveConfig().then(config => {
       this.firebaseApp = firebaseAdmin.initializeApp(
         {
           ...config,
@@ -42,11 +42,16 @@ export class ProjectManager {
     return this.accountManager.getAccessToken();
   }
 
-  getConfig(): Promise<firebaseAdmin.AppOptions> {
+  private retrieveConfig(): Promise<firebaseAdmin.AppOptions> {
     return firebaseTools.setup.web({
       project: this.project.id,
       token: this.accountManager.getRefreshToken()
     });
+  }
+
+  async getConfig(): Promise<firebaseAdmin.AppOptions> {
+    await this.initialized;
+    return this.firebaseApp!.options;
   }
 
   async listApps(): Promise<ProjectApps> {

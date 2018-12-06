@@ -64,7 +64,7 @@ export class IosAppItem extends vscode.TreeItem {
     public project: FirebaseProject
   ) {
     super(
-      metadata.displayName || metadata.appId,
+      metadata.displayName || metadata.bundleId,
       vscode.TreeItemCollapsibleState.None
     );
   }
@@ -93,7 +93,7 @@ export class AndroidAppItem extends vscode.TreeItem {
     public project: FirebaseProject
   ) {
     super(
-      metadata.displayName || metadata.appId,
+      metadata.displayName || metadata.packageName,
       vscode.TreeItemCollapsibleState.None
     );
   }

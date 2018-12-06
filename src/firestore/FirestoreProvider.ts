@@ -1,8 +1,8 @@
 import * as path from 'path';
 import * as vscode from 'vscode';
-import { getFirestoreAPI } from './api';
 import { AccountInfo } from '../accounts/interfaces';
 import { FirebaseProject } from '../projects/ProjectManager';
+import { FirestoreAPI } from './api';
 
 export class FirestoreProvider
   implements vscode.TreeDataProvider<FirestoreProviderItem> {
@@ -36,7 +36,7 @@ export class FirestoreProvider
       return [];
     }
 
-    const api = getFirestoreAPI(account, project);
+    const api = FirestoreAPI.for(account, project);
 
     if (!element) {
       const collections = await api.listCollections('');
@@ -54,6 +54,7 @@ export class FirestoreProvider
 
       if (!Array.isArray(documents.documents)) {
         element.collapsibleState = vscode.TreeItemCollapsibleState.None;
+        this._onDidChangeTreeData.fire(element);
         return [];
       }
 
@@ -66,6 +67,7 @@ export class FirestoreProvider
 
       if (!Array.isArray(collections.collectionIds)) {
         element.collapsibleState = vscode.TreeItemCollapsibleState.None;
+        this._onDidChangeTreeData.fire(element);
         return [];
       }
 

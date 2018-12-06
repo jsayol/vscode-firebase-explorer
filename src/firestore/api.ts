@@ -4,26 +4,23 @@ import { AccountInfo } from '../accounts/interfaces';
 import { FirebaseProject, ProjectManager } from '../projects/ProjectManager';
 
 const URL_BASE = 'https://firestore.googleapis.com/v1beta1';
-const singletons: { [k: string]: FirestoreAPI } = {};
+const instances: { [k: string]: FirestoreAPI } = {};
 
-export function getFirestoreAPI(
-  account: AccountInfo,
-  project: FirebaseProject
-): FirestoreAPI {
-  const id = account.user.email + '--' + project.id;
+export class FirestoreAPI {
+  static for(account: AccountInfo, project: FirebaseProject): FirestoreAPI {
+    const id = account.user.email + '--' + project.id;
 
-  if (!contains(singletons, id)) {
-    singletons[id] = new FirestoreAPI(account, project);
+    if (!contains(instances, id)) {
+      instances[id] = new FirestoreAPI(account, project);
+    }
+
+    return instances[id];
   }
 
-  return singletons[id];
-}
-
-class FirestoreAPI {
   projectId: string;
   projectManager: ProjectManager;
 
-  constructor(account: AccountInfo, project: FirebaseProject) {
+  private constructor(account: AccountInfo, project: FirebaseProject) {
     this.projectId = project.id;
     this.projectManager = ProjectManager.for(account, project);
   }

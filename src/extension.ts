@@ -1,15 +1,14 @@
-// Icons: https://materialdesignicons.com/
-
 import * as vscode from 'vscode';
 import { login } from './accounts/login';
 import { ProjectsProvider } from './projects/ProjectsProvider';
 import { AccountInfo } from './accounts/interfaces';
 import { getCliAccount } from './accounts/cli';
 import { FirestoreProvider } from './firestore/FirestoreProvider';
-import { getFirestoreAPI } from './firestore/api';
 import { FirebaseProject } from './projects/ProjectManager';
 import { AppsProvider } from './apps/AppsProvider';
 import { ProviderStore } from './ProviderStore';
+import { FirestoreAPI } from './firestore/api';
+import { DatabaseProvider } from './database/DatabaseProvider';
 
 // this method is called when your extension is activated
 // your extension is activated the very first time the command is executed
@@ -47,6 +46,17 @@ function registerCommands(context: vscode.ExtensionContext) {
   let projectSelection = vscode.commands.registerCommand(
     'firebaseExplorer.projectSelection',
     async (account: AccountInfo, project: FirebaseProject) => {
+      const currentAccount = context.globalState.get<AccountInfo>(
+        'selectedAccount'
+      );
+      const currentProject = context.globalState.get<FirebaseProject>(
+        'selectedProject'
+      );
+
+      if (account === currentAccount && project === currentProject) {
+        return;
+      }
+
       context.globalState.update('selectedAccount', account);
       context.globalState.update('selectedProject', project);
 
@@ -57,6 +67,9 @@ function registerCommands(context: vscode.ExtensionContext) {
         'firestore'
       );
       firestoreProvider.refresh();
+
+      const databaseProvider = ProviderStore.get<DatabaseProvider>('database');
+      databaseProvider.refresh();
 
       // const databaseProvider = getProvider<DatabaseProvider>('database');
       // databaseProvider.refresh();
@@ -113,7 +126,7 @@ function registerCommands(context: vscode.ExtensionContext) {
     'firebaseExplorer.documentSelection',
     async (account: AccountInfo, project: FirebaseProject, docPath: string) => {
       console.log('Getting document', docPath);
-      const api = getFirestoreAPI(account, project);
+      const api = FirestoreAPI.for(account, project);
       const doc = await api.getDocument(docPath);
       console.log(doc);
     }
@@ -174,26 +187,16 @@ function registerCommands(context: vscode.ExtensionContext) {
 }
 
 function registerProviders(context: vscode.ExtensionContext) {
-  registerProvider(
-    'firebase-projects',
-    'projects',
-    new ProjectsProvider(context)
-  );
-
-  registerProvider('firebase-apps', 'apps', new AppsProvider(context));
-
-  registerProvider(
-    'firebase-firestore',
-    'firestore',
-    new FirestoreProvider(context)
-  );
+  registerProvider('projects', new ProjectsProvider(context));
+  registerProvider('apps', new AppsProvider(context));
+  registerProvider('firestore', new FirestoreProvider(context));
+  registerProvider('database', new DatabaseProvider(context));
 }
 
 function registerProvider<T>(
-  viewName: string,
-  providerName: string,
+  name: string,
   provider: vscode.TreeDataProvider<T>
 ) {
-  ProviderStore.add(providerName, provider);
-  vscode.window.registerTreeDataProvider(viewName, provider);
+  ProviderStore.add(name, provider);
+  vscode.window.registerTreeDataProvider(`firebase-${name}`, provider);
 }
