@@ -1,0 +1,119 @@
+{
+  "name": "vscode-firebase-explorer",
+  "displayName": "firebaseExplorer",
+  "description": "Firebase Explorer",
+  "version": "0.0.1",
+  "publisher": "jsayol",
+  "engines": {
+    "vscode": "^1.28.0"
+  },
+  "license": "MIT",
+  "categories": [
+    "Other"
+  ],
+  "activationEvents": [
+    "onView:firebase-projects",
+    "onView:firebase-apps",
+    "onView:firebase-firestore",
+    "onView:firebase-database"
+  ],
+  "main": "./dist/extension",
+  "contributes": {
+    "commands": [
+      {
+        "command": "firebaseExplorer.sayHello",
+        "title": "Hello World"
+      },
+      {
+        "command": "firebaseExplorer.options",
+        "title": "Options",
+        "icon": {
+          "light": "assets/refresh-light.svg",
+          "dark": "assets/refresh-dark.svg"
+        }
+      },
+      {
+        "command": "firebaseExplorer.refreshProjectsView",
+        "title": "Refresh accounts view"
+      },
+      {
+        "command": "firebaseExplorer.projectSelection",
+        "title": "Project selection"
+      },
+      {
+        "command": "firebaseExplorer.documentSelection",
+        "title": "Document selection"
+      }
+    ],
+    "viewsContainers": {
+      "activitybar": [
+        {
+          "id": "firebase-explorer",
+          "title": "Firebase Explorer",
+          "icon": "assets/firebase.ico"
+        }
+      ]
+    },
+    "views": {
+      "firebase-explorer": [
+        {
+          "id": "firebase-projects",
+          "name": "Projects"
+        },
+        {
+          "id": "firebase-apps",
+          "name": "Apps"
+        },
+        {
+          "id": "firebase-firestore",
+          "name": "Firestore"
+        },
+        {
+          "id": "firebase-database",
+          "name": "Realtime Database"
+        }
+      ]
+    },
+    "menus": {
+      "view/title": [
+        {
+          "command": "firebaseExplorer.options",
+          "when": "view == firebase-projects",
+          "group": "navigation"
+        }
+      ]
+    }
+  },
+  "scripts": {
+    "vscode:prepublish": "yarn run compile",
+    "compile": "tsc -p ./",
+    "watch": "tsc -watch -p ./",
+    "postinstall": "node ./node_modules/vscode/bin/install",
+    "test": "yarn run compile && node ./node_modules/vscode/bin/test"
+  },
+  "devDependencies": {
+    "@types/jsonwebtoken": "^8.3.0",
+    "@types/mocha": "^5.2.5",
+    "@types/node": "^10.12.12",
+    "@types/request-promise-native": "^1.0.15",
+    "prettier": "^1.15.3",
+    "tslint": "^5.11.0",
+    "tslint-config-prettier": "^1.17.0",
+    "tslint-config-standard": "^8.0.1",
+    "typescript": "^3.2.1"
+  },
+  "dependencies": {
+    "firebase-admin": "^6.1.0",
+    "firebase-tools": "^6.1.2",
+    "jsonwebtoken": "^8.4.0",
+    "portfinder": "^1.0.20",
+    "request": "^2.88.0",
+    "request-promise-native": "^1.0.5",
+    "vscode": "^1.1.24"
+  },
+  "prettier": {
+    "semi": true,
+    "singleQuote": true,
+    "printWidth": 80
+  }
+}
