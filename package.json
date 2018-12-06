@@ -1,7 +1,7 @@
 {
   "name": "vscode-firebase-explorer",
-  "displayName": "firebaseExplorer",
-  "description": "Firebase Explorer",
+  "displayName": "Firebase Explorer",
+  "description": "Visual Studio Code extension to explore and manage your Firebase projects",
   "version": "0.0.1",
   "publisher": "jsayol",
   "engines": {
