@@ -2,12 +2,12 @@
 
 import * as vscode from 'vscode';
 import { login } from './accounts/login';
-import { ProjectsProvider } from './ProjectsProvider';
+import { ProjectsProvider } from './projects/ProjectsProvider';
 import { AccountInfo } from './accounts/interfaces';
 import { getCliAccount } from './accounts/cli';
 import { FirestoreProvider } from './firestore/FirestoreProvider';
 import { getFirestoreAPI } from './firestore/api';
-import { FirebaseProject } from './ProjectManager';
+import { FirebaseProject } from './projects/ProjectManager';
 import { AppsProvider } from './apps/AppsProvider';
 import { ProviderStore } from './ProviderStore';
 

@@ -2,7 +2,7 @@ import * as path from 'path';
 import * as vscode from 'vscode';
 import { getFirestoreAPI } from './api';
 import { AccountInfo } from '../accounts/interfaces';
-import { FirebaseProject } from '../ProjectManager';
+import { FirebaseProject } from '../projects/ProjectManager';
 
 export class FirestoreProvider
   implements vscode.TreeDataProvider<FirestoreProviderItem> {

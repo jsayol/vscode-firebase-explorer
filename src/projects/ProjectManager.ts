@@ -1,7 +1,7 @@
 import * as firebaseAdmin from 'firebase-admin';
-import { AccountInfo } from './accounts/interfaces';
-import { contains } from './utils';
-import { AccountManager } from './accounts/AccountManager';
+import { AccountInfo } from '../accounts/interfaces';
+import { contains } from '../utils';
+import { AccountManager } from '../accounts/AccountManager';
 const firebaseTools = require('firebase-tools');
 
 const instances: { [k: string]: ProjectManager } = {};

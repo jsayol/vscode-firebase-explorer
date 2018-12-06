@@ -3,7 +3,7 @@ import { AccountInfo } from './interfaces';
 import { contains } from '../utils';
 import { APIforCLI } from './cli';
 import { API } from './login';
-import { FirebaseProject } from '../ProjectManager';
+import { FirebaseProject } from '../projects/ProjectManager';
 const firebaseTools = require('firebase-tools');
 
 const instances: { [k: string]: AccountManager } = {};
@@ -40,9 +40,9 @@ export class AccountManager {
   async listProjects(): Promise<FirebaseProject[]> {
     const token = this.account.tokens.refresh_token;
     const list: FirebaseProject[] = await firebaseTools.list({ token });
-    return list;
-    return list.filter(project => {
-      return (
+    // return list;
+    return list.filter(
+      project =>
         [
           'Firebase Demo Project',
           'Personal Project',
@@ -50,7 +50,6 @@ export class AccountManager {
           'fb-js-samples',
           'js-sdk-persistence'
         ].indexOf(project.name) !== -1
-      );
-    });
+    );
   }
 }

@@ -2,7 +2,7 @@ import * as path from 'path';
 import * as vscode from 'vscode';
 import * as firebaseAdmin from 'firebase-admin';
 import { AccountInfo } from '../accounts/interfaces';
-import { ProjectManager, FirebaseProject } from '../ProjectManager';
+import { ProjectManager, FirebaseProject } from '../projects/ProjectManager';
 
 export class AppsProvider implements vscode.TreeDataProvider<AppsProviderItem> {
   private _onDidChangeTreeData = new vscode.EventEmitter<
@@ -70,9 +70,9 @@ export class IosAppItem extends vscode.TreeItem {
   }
 
   get tooltip(): string {
-    return '' +
-      `• Bundle: ${this.metadata.bundleId}\n` +
-      `• ID: ${this.metadata.appId}`
+    return (
+      `• Bundle: ${this.metadata.bundleId}\n` + `• ID: ${this.metadata.appId}`
+    );
   }
 }
 
@@ -99,9 +99,10 @@ export class AndroidAppItem extends vscode.TreeItem {
   }
 
   get tooltip(): string {
-    return '' +
+    return (
       `• Package: ${this.metadata.packageName}\n` +
       `• ID: ${this.metadata.appId}`
+    );
   }
 }
 
