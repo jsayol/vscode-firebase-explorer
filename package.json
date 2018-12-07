@@ -43,6 +43,22 @@
       {
         "command": "firebaseExplorer.documentSelection",
         "title": "Document selection"
+      },
+      {
+        "command": "firebaseExplorer.databaseEntry.rename",
+        "title": "Rename this field"
+      },
+      {
+        "command": "firebaseExplorer.databaseEntry.editValue",
+        "title": "Edit this field's value"
+      },
+      {
+        "command": "firebaseExplorer.databaseEntry.addChild",
+        "title": "Add child to this field"
+      },
+      {
+        "command": "firebaseExplorer.databaseEntry.delete",
+        "title": "Delete this field and any children"
       }
     ],
     "viewsContainers": {
@@ -80,6 +96,32 @@
           "command": "firebaseExplorer.options",
           "when": "view == firebase-projects",
           "group": "navigation"
+        }
+      ],
+      "view/item/context": [
+        {
+          "command": "firebaseExplorer.databaseEntry.rename",
+          "when": "viewItem == databaseEntry"
+        },
+        {
+          "command": "firebaseExplorer.databaseEntry.addChild",
+          "when": "viewItem == databaseEntry"
+        },
+        {
+          "command": "firebaseExplorer.databaseEntry.delete",
+          "when": "viewItem == databaseEntry"
+        },
+        {
+          "command": "firebaseExplorer.databaseEntry.rename",
+          "when": "viewItem == databaseValueEntry"
+        },
+        {
+          "command": "firebaseExplorer.databaseEntry.editValue",
+          "when": "viewItem == databaseValueEntry"
+        },
+        {
+          "command": "firebaseExplorer.databaseEntry.delete",
+          "when": "viewItem == databaseValueEntry"
         }
       ]
     }

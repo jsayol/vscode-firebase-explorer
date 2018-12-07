@@ -89,6 +89,7 @@ export class DatabaseProviderItem extends vscode.TreeItem {
 
   set value(value: DatabaseShallowValue) {
     this._value = value;
+    this.contextValue = 'databaseValueEntry';
     this.label = `${this.name}: ${JSON.stringify(this._value)}`;
     this.collapsibleState = vscode.TreeItemCollapsibleState.None;
   }

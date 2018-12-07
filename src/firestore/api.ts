@@ -106,6 +106,67 @@ function processDates(doc: InternalFirestoreDocument): FirestoreDocument {
   return doc as FirestoreDocument;
 }
 
+export function processFieldValue(
+  field: DocumentFieldValue
+): { type: string; value: any } {
+  if (contains(field, 'nullValue')) {
+    return { type: 'null', value: (field as any).nullValue };
+  }
+
+  if (contains(field, 'booleanValue')) {
+    return { type: 'boolean', value: (field as any).booleanValue };
+  }
+
+  if (contains(field, 'integerValue')) {
+    return { type: 'integer', value: (field as any).integerValue };
+  }
+
+  if (contains(field, 'doubleValue')) {
+    return { type: 'double', value: (field as any).doubleValue };
+  }
+
+  if (contains(field, 'timestampValue')) {
+    return { type: 'timestamp', value: (field as any).timestampValue };
+  }
+
+  if (contains(field, 'stringValue')) {
+    return { type: 'string', value: (field as any).stringValue };
+  }
+
+  if (contains(field, 'bytesValue')) {
+    return { type: 'bytes', value: (field as any).bytesValue };
+  }
+
+  if (contains(field, 'referenceValue')) {
+    return { type: 'reference', value: (field as any).referenceValue };
+  }
+
+  if (contains(field, 'geoPointValue')) {
+    return { type: 'geopoint', value: (field as any).geoPointValue };
+  }
+
+  if (contains(field, 'arrayValue')) {
+    return { type: 'array', value: (field as any).arrayValue };
+  }
+
+  if (contains(field, 'mapValue')) {
+    return { type: 'map', value: (field as any).mapValue };
+  }
+
+  throw new Error('Unknow field type');
+}
+
+export function getFieldArrayValue(values: DocumentFieldValue[]): any[] {
+  return values.map(val => {
+    const itemVal = processFieldValue(val);
+    if (itemVal.type === 'array') {
+      return getFieldArrayValue(itemVal.value.values);
+    } else {
+      return itemVal.value;
+    }
+  });
+}
+
 export interface CollectionsList {
   collectionIds: string[];
   nextPageToken?: string;
@@ -144,7 +205,7 @@ export interface DocumentFieldBooleanValue {
 }
 
 export interface DocumentFieldIntegerValue {
-  integerValue: string;
+  integerValue: number;
 }
 
 export interface DocumentFieldDoubleValue {
@@ -175,7 +236,9 @@ export interface DocumentFieldGeoPointValue {
 }
 
 export interface DocumentFieldArrayValue {
-  arrayValue: DocumentFieldValue[];
+  arrayValue: {
+    values: DocumentFieldValue[];
+  };
 }
 
 export interface DocumentFieldMapValue {
