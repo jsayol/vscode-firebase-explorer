@@ -3,6 +3,7 @@ import * as vscode from 'vscode';
 import { AccountInfo } from '../accounts/interfaces';
 import { FirebaseProject } from './ProjectManager';
 import { AccountManager } from '../accounts/AccountManager';
+import { messageTreeItem } from '../utils';
 
 export class ProjectsProvider
   implements vscode.TreeDataProvider<AccountsProviderItem> {
@@ -37,8 +38,20 @@ export class ProjectsProvider
       const accountManager = AccountManager.for(element.account);
       const projects = await accountManager.listProjects();
 
-      return projects.map(project => new ProjectItem(element.account, project));
+      if (Array.isArray(projects) && projects.length > 0) {
+        return projects.map(
+          project => new ProjectItem(element.account, project)
+        );
+      } else {
+        return [
+          messageTreeItem(
+            'No Firebase projects found',
+            "Couldn't find any Firebase projects for this account. Create one to proceed."
+          )
+        ];
+      }
     } else if (element instanceof ProjectItem) {
+      // No children to show for a project
       return [];
     } else {
       // error?
@@ -76,7 +89,7 @@ export class ProjectItem extends vscode.TreeItem {
   iconPath = path.join(__filename, '..', '..', '..', 'assets', 'firebase.svg');
 
   readonly command: vscode.Command = {
-    command: 'firebaseExplorer.projectSelection',
+    command: 'firebaseExplorer.projects.selection',
     title: '',
     arguments: [this.account, this.project]
   };

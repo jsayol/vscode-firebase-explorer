@@ -1,6 +1,6 @@
 import * as firebaseAdmin from 'firebase-admin';
 import { AccountInfo } from '../accounts/interfaces';
-import { contains } from '../utils';
+import { contains, setContext, ContextValue } from '../utils';
 import { AccountManager } from '../accounts/AccountManager';
 const firebaseTools = require('firebase-tools');
 
@@ -54,8 +54,8 @@ export class ProjectManager {
     return this.firebaseApp!.options;
   }
 
-  async listApps(): Promise<ProjectApps> {
-    if (!this.apps) {
+  async listApps(forceRefresh = false): Promise<ProjectApps> {
+    if (!this.apps || forceRefresh) {
       await this.initialized;
 
       const management = firebaseAdmin.projectManagement(this.firebaseApp);
@@ -84,6 +84,8 @@ export class ProjectManager {
         android: projectApps[1]
       };
     }
+
+    setContext(ContextValue.AppsLoaded, true);
 
     return this.apps!;
   }

@@ -1,8 +1,13 @@
 import * as path from 'path';
 import * as vscode from 'vscode';
-import * as firebaseAdmin from 'firebase-admin';
 import { AccountInfo } from '../accounts/interfaces';
-import { ProjectManager, FirebaseProject } from '../projects/ProjectManager';
+import {
+  ProjectManager,
+  FirebaseProject,
+  AndroidApp,
+  IosApp
+} from '../projects/ProjectManager';
+import { messageTreeItem } from '../utils';
 
 export class AppsProvider implements vscode.TreeDataProvider<AppsProviderItem> {
   private _onDidChangeTreeData = new vscode.EventEmitter<
@@ -12,8 +17,8 @@ export class AppsProvider implements vscode.TreeDataProvider<AppsProviderItem> {
 
   constructor(private context: vscode.ExtensionContext) {}
 
-  refresh(): void {
-    this._onDidChangeTreeData.fire();
+  refresh(element?: AppsProviderItem): void {
+    this._onDidChangeTreeData.fire(element);
   }
 
   getTreeItem(element: AppsProviderItem): vscode.TreeItem {
@@ -33,21 +38,33 @@ export class AppsProvider implements vscode.TreeDataProvider<AppsProviderItem> {
       'selectedProject'
     );
 
+    if (project === null) {
+      return [messageTreeItem('Loading...')];
+    }
+
     if (!account || !project) {
       // No selected account or project
       return [];
     }
 
     const projectManager = ProjectManager.for(account, project);
-    const apps = await projectManager.listApps();
+    const apps = await projectManager.listApps(true);
     let items: AppsProviderItem[] = [];
 
-    apps.ios.forEach(app =>
-      items.push(new IosAppItem(app.metadata, account, project))
-    );
+    if (apps.ios.length === 0 && apps.android.length === 0) {
+      // No apps for project
+      return [
+        messageTreeItem(
+          'No apps for this project',
+          'There are no apps created for this project. Refresh to fetch any updates.'
+        )
+      ];
+    }
+
+    apps.ios.forEach(app => items.push(new IosAppItem(app, account, project)));
 
     apps.android.forEach(app =>
-      items.push(new AndroidAppItem(app.metadata, account, project))
+      items.push(new AndroidAppItem(app, account, project))
     );
 
     return items;
@@ -55,53 +72,54 @@ export class AppsProvider implements vscode.TreeDataProvider<AppsProviderItem> {
 }
 
 export class IosAppItem extends vscode.TreeItem {
-  contextValue = 'iosApp';
-  iconPath = path.join(__filename, '..', '..', '..', 'assets', 'app-ios.svg');
+  contextValue = 'apps.iosApp';
+  iconPath = path.join(__filename, '..', '..', '..', 'assets', 'apps/ios.svg');
 
   constructor(
-    public metadata: firebaseAdmin.projectManagement.IosAppMetadata,
+    public app: IosApp,
     public account: AccountInfo,
     public project: FirebaseProject
   ) {
     super(
-      metadata.displayName || metadata.bundleId,
+      app.metadata.displayName || app.metadata.bundleId,
       vscode.TreeItemCollapsibleState.None
     );
   }
 
   get tooltip(): string {
     return (
-      `• Bundle: ${this.metadata.bundleId}\n` + `• ID: ${this.metadata.appId}`
+      `• Bundle: ${this.app.metadata.bundleId}\n` +
+      `• ID: ${this.app.metadata.appId}`
     );
   }
 }
 
 export class AndroidAppItem extends vscode.TreeItem {
-  contextValue = 'androidApp';
+  contextValue = 'apps.androidApp';
   iconPath = path.join(
     __filename,
     '..',
     '..',
     '..',
     'assets',
-    'app-android.svg'
+    'apps/android-head.svg'
   );
 
   constructor(
-    public metadata: firebaseAdmin.projectManagement.AndroidAppMetadata,
+    public app: AndroidApp,
     public account: AccountInfo,
     public project: FirebaseProject
   ) {
     super(
-      metadata.displayName || metadata.packageName,
+      app.metadata.displayName || app.metadata.packageName,
       vscode.TreeItemCollapsibleState.None
     );
   }
 
   get tooltip(): string {
     return (
-      `• Package: ${this.metadata.packageName}\n` +
-      `• ID: ${this.metadata.appId}`
+      `• Package: ${this.app.metadata.packageName}\n` +
+      `• ID: ${this.app.metadata.appId}`
     );
   }
 }

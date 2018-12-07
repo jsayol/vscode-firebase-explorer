@@ -6,8 +6,10 @@ import {
   FirestoreAPI,
   DocumentFieldValue,
   processFieldValue,
-  getFieldArrayValue
+  getFieldValue,
+  FirestoreDocument
 } from './api';
+import { messageTreeItem, setContext, ContextValue, getFullPath } from '../utils';
 
 export class FirestoreProvider
   implements vscode.TreeDataProvider<FirestoreProviderItem> {
@@ -18,8 +20,8 @@ export class FirestoreProvider
 
   constructor(private context: vscode.ExtensionContext) {}
 
-  refresh(): void {
-    this._onDidChangeTreeData.fire();
+  refresh(element?: FirestoreProviderItem): void {
+    this._onDidChangeTreeData.fire(element);
   }
 
   getTreeItem(element: FirestoreProviderItem): vscode.TreeItem {
@@ -36,6 +38,10 @@ export class FirestoreProvider
       'selectedProject'
     );
 
+    if (project === null) {
+      return [messageTreeItem('Loading...')];
+    }
+
     if (!account || !project) {
       // No selected account or project
       return [];
@@ -44,15 +50,34 @@ export class FirestoreProvider
     const api = FirestoreAPI.for(account, project);
 
     if (!element) {
-      const collections = await api.listCollections('');
+      try {
+        const collections = await api.listCollections('');
+        setContext(ContextValue.FirestoreLoaded, true);
 
-      if (!Array.isArray(collections.collectionIds)) {
-        return [];
+        if (!Array.isArray(collections.collectionIds)) {
+          return [];
+        }
+
+        if (collections.collectionIds.length === 0) {
+          return [
+            messageTreeItem(
+              'Firestore is empty for this project',
+              'There is no data in Firestore. Refresh to fetch any updates.'
+            )
+          ];
+        }
+
+        return collections.collectionIds.map(
+          id => new CollectionItem(id, '', account, project)
+        );
+      } catch (err) {
+        return [
+          messageTreeItem(
+            'Firestore is not enabled for this project',
+            err.error.error.message
+          )
+        ];
       }
-
-      return collections.collectionIds.map(
-        id => new CollectionItem(id, '', account, project)
-      );
     } else if (element instanceof CollectionItem) {
       const colPath = getFullPath(element.parentPath, element.name);
       const documents = await api.listDocuments(colPath);
@@ -74,6 +99,10 @@ export class FirestoreProvider
         api.listCollections(docPath),
         api.getDocument(docPath)
       ]);
+
+      // Store the document data in the element for future reference
+      // (for example, if we want to copy its data to clipboard)
+      element.document = document;
 
       const hasCollections = Array.isArray(collections.collectionIds);
       const hasFields = !!document.fields;
@@ -102,10 +131,11 @@ export class FirestoreProvider
 
       return items;
     } else if (element instanceof DocumentFieldItem) {
-      // TODO: children of "map" field type
-      return Object.keys(element.value.fields).sort().map(
-        key => new DocumentFieldItem(key, element.value.fields[key], true)
-      );
+      return Object.keys(element.value.fields)
+        .sort()
+        .map(
+          key => new DocumentFieldItem(key, element.value.fields[key], true)
+        );
     } else {
       // error?
       console.error('Should not happen!', element);
@@ -122,7 +152,7 @@ export class CollectionItem extends vscode.TreeItem {
     '..',
     '..',
     'assets',
-    'forestore-collection.svg'
+    'firestore/collection.svg'
   );
 
   constructor(
@@ -148,8 +178,9 @@ export class DocumentItem extends vscode.TreeItem {
     '..',
     '..',
     'assets',
-    'forestore-document.svg'
+    'firestore/document.svg'
   );
+  document?: FirestoreDocument;
 
   // readonly command: vscode.Command;
 
@@ -185,6 +216,7 @@ export class DocumentFieldItem extends vscode.TreeItem {
   iconPath: string;
   type: string;
   value: any;
+  escapedValue?: string;
 
   constructor(
     public name: string,
@@ -204,7 +236,7 @@ export class DocumentFieldItem extends vscode.TreeItem {
       '..',
       '..',
       'assets',
-      `valuetype-${typeIcon}.svg`
+      `valuetype/${typeIcon}.svg`
     );
 
     if (type === 'map') {
@@ -215,38 +247,25 @@ export class DocumentFieldItem extends vscode.TreeItem {
       this.collapsibleState = vscode.TreeItemCollapsibleState.None;
     }
 
-    let labelValue: any;
-
-    if (type === 'array') {
-      labelValue = getFieldArrayValue(value.values);
-    } else if (type === 'map') {
-      // TODO
-      labelValue = void 0;
+    if (type !== 'map') {
+      this.escapedValue = JSON.stringify(getFieldValue(this.fieldValue))
+        .replace('<', '&lt;')
+        .replace('>', '&gt;');
+      this.label = `${name} : <code>${this.escapedValue}</code>`;
     } else {
-      labelValue = value;
-    }
-
-    if (labelValue === void 0) {
       this.label = name;
-    } else {
-      let escapedValue = labelValue;
-      if (type === 'string' || type === 'array') {
-        escapedValue = JSON.stringify(escapedValue);
-      }
-      if (typeof escapedValue === 'string') {
-        escapedValue = escapedValue.replace('<', '&lt;').replace('>', '&gt;');
-      }
-      this.label = `${name}: <code>${escapedValue}</code>`;
     }
   }
 
   get tooltip(): string {
-    return this.type;
-  }
-}
+    let tooltip = `• Type: ${this.type}`;
 
-function getFullPath(parentPath: string, name: string) {
-  return [parentPath, name].filter(Boolean).join('/');
+    if (typeof this.escapedValue !== 'undefined') {
+      tooltip += `\n• Value: ${this.escapedValue}`;
+    }
+
+    return tooltip;
+  }
 }
 
 export type FirestoreProviderItem =

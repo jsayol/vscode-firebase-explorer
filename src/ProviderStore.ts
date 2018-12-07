@@ -1,10 +1,10 @@
 import * as vscode from 'vscode';
 
-const providers: { [k: string]: vscode.TreeDataProvider<any> } = {};
+const providers: { [k: string]: any } = {};
 
 export const ProviderStore = {
   get<T>(name: string): T {
-    return (providers[name] as unknown) as T;
+    return providers[name] as T;
   },
 
   add<T>(name: string, provider: vscode.TreeDataProvider<T>): void {

@@ -28,37 +28,109 @@
         "command": "firebaseExplorer.options",
         "title": "Options",
         "icon": {
-          "light": "assets/refresh-light.svg",
-          "dark": "assets/refresh-dark.svg"
+          "light": "assets/light/refresh.svg",
+          "dark": "assets/dark/refresh.svg"
         }
       },
       {
-        "command": "firebaseExplorer.refreshProjectsView",
-        "title": "Refresh accounts view"
+        "command": "firebaseExplorer.projects.refresh",
+        "title": "Refresh Projects"
       },
       {
-        "command": "firebaseExplorer.projectSelection",
-        "title": "Project selection"
+        "command": "firebaseExplorer.projects.selection",
+        "title": "Project Selection"
       },
       {
-        "command": "firebaseExplorer.documentSelection",
-        "title": "Document selection"
+        "command": "firebaseExplorer.apps.add",
+        "title": "Create New App -- TODO",
+        "icon": {
+          "light": "assets/light/add.svg",
+          "dark": "assets/dark/add.svg"
+        }
       },
       {
-        "command": "firebaseExplorer.databaseEntry.rename",
-        "title": "Rename this field"
+        "command": "firebaseExplorer.apps.refresh",
+        "title": "Refresh Apps",
+        "icon": {
+          "light": "assets/light/refresh.svg",
+          "dark": "assets/dark/refresh.svg"
+        }
       },
       {
-        "command": "firebaseExplorer.databaseEntry.editValue",
-        "title": "Edit this field's value"
+        "command": "firebaseExplorer.apps.editAppName",
+        "title": "Edit App Name"
       },
       {
-        "command": "firebaseExplorer.databaseEntry.addChild",
-        "title": "Add child to this field"
+        "command": "firebaseExplorer.apps.showAppConfig",
+        "title": "Show App Configuration"
       },
       {
-        "command": "firebaseExplorer.databaseEntry.delete",
-        "title": "Delete this field and any children"
+        "command": "firebaseExplorer.firestore.addCollection",
+        "title": "Add New Collection -- TODO",
+        "icon": {
+          "light": "assets/light/add.svg",
+          "dark": "assets/dark/add.svg"
+        }
+      },
+      {
+        "command": "firebaseExplorer.firestore.refresh",
+        "title": "Refresh Data",
+        "icon": {
+          "light": "assets/light/refresh.svg",
+          "dark": "assets/dark/refresh.svg"
+        }
+      },
+      {
+        "command": "firebaseExplorer.firestore.refreshCollection",
+        "title": "Refresh Collection"
+      },
+      {
+        "command": "firebaseExplorer.firestore.copyItemName",
+        "title": "Copy Name"
+      },
+      {
+        "command": "firebaseExplorer.firestore.copyItemPath",
+        "title": "Copy Path"
+      },
+      {
+        "command": "firebaseExplorer.firestore.refreshDocument",
+        "title": "Refresh Document"
+      },
+      {
+        "command": "firebaseExplorer.firestore.copyDocumentContent",
+        "title": "Copy Content"
+      },
+      {
+        "command": "firebaseExplorer.firestore.copyDocumentFieldName",
+        "title": "Copy Name"
+      },
+      {
+        "command": "firebaseExplorer.firestore.copyDocumentFieldValue",
+        "title": "Copy Value"
+      },
+      {
+        "command": "firebaseExplorer.firestore.editDocumentFieldValue",
+        "title": "Edit Value -- TODO"
+      },
+      {
+        "command": "firebaseExplorer.database.copyName",
+        "title": "Copy Name"
+      },
+      {
+        "command": "firebaseExplorer.database.copyPath",
+        "title": "Copy Path"
+      },
+      {
+        "command": "firebaseExplorer.database.deleteEntry",
+        "title": "Remove Entry (And Children)"
+      },
+      {
+        "command": "firebaseExplorer.database.editEntryValue",
+        "title": "Edit Value"
+      },
+      {
+        "command": "firebaseExplorer.database.addChildToEntry",
+        "title": "Add Child -- TODO"
       }
     ],
     "viewsContainers": {
@@ -96,32 +168,157 @@
           "command": "firebaseExplorer.options",
           "when": "view == firebase-projects",
           "group": "navigation"
+        },
+        {
+          "command": "firebaseExplorer.apps.add",
+          "when": "view == firebase-apps && firebase:apps:loaded",
+          "group": "navigation@1"
+        },
+        {
+          "command": "firebaseExplorer.apps.refresh",
+          "when": "view == firebase-apps && firebase:apps:loaded",
+          "group": "navigation@2"
+        },
+        {
+          "command": "firebaseExplorer.firestore.addCollection",
+          "when": "view == firebase-firestore && firebase:firestore:loaded",
+          "group": "navigation@1"
+        },
+        {
+          "command": "firebaseExplorer.firestore.refresh",
+          "when": "view == firebase-firestore && firebase:firestore:loaded",
+          "group": "navigation@2"
         }
       ],
       "view/item/context": [
         {
-          "command": "firebaseExplorer.databaseEntry.rename",
-          "when": "viewItem == databaseEntry"
+          "command": "firebaseExplorer.projects.refresh",
+          "when": "viewItem == account"
         },
         {
-          "command": "firebaseExplorer.databaseEntry.addChild",
-          "when": "viewItem == databaseEntry"
+          "command": "firebaseExplorer.database.copyName",
+          "when": "viewItem == database.entry",
+          "group": "database.entry@1"
         },
         {
-          "command": "firebaseExplorer.databaseEntry.delete",
-          "when": "viewItem == databaseEntry"
+          "command": "firebaseExplorer.database.copyPath",
+          "when": "viewItem == database.entry",
+          "group": "database.entry@2"
         },
         {
-          "command": "firebaseExplorer.databaseEntry.rename",
-          "when": "viewItem == databaseValueEntry"
+          "command": "firebaseExplorer.database.deleteEntry",
+          "when": "viewItem == database.entry",
+          "group": "database.entry@3"
         },
         {
-          "command": "firebaseExplorer.databaseEntry.editValue",
-          "when": "viewItem == databaseValueEntry"
+          "command": "firebaseExplorer.database.copyName",
+          "when": "viewItem == database.parentEntry",
+          "group": "database.parentEntry@1"
         },
         {
-          "command": "firebaseExplorer.databaseEntry.delete",
-          "when": "viewItem == databaseValueEntry"
+          "command": "firebaseExplorer.database.copyPath",
+          "when": "viewItem == database.parentEntry",
+          "group": "database.parentEntry@2"
+        },
+        {
+          "command": "firebaseExplorer.database.addChildToEntry",
+          "when": "false && viewItem == database.parentEntry",
+          "group": "database.parentEntry@3"
+        },
+        {
+          "command": "firebaseExplorer.database.deleteEntry",
+          "when": "viewItem == database.parentEntry",
+          "group": "database.parentEntry@4"
+        },
+        {
+          "command": "firebaseExplorer.database.copyName",
+          "when": "viewItem == database.valueEntry",
+          "group": "database.valueEntry@1"
+        },
+        {
+          "command": "firebaseExplorer.database.copyPath",
+          "when": "viewItem == database.valueEntry",
+          "group": "database.valueEntry@2"
+        },
+        {
+          "command": "firebaseExplorer.database.editEntryValue",
+          "when": "viewItem == database.valueEntry",
+          "group": "database.valueEntry@3"
+        },
+        {
+          "command": "firebaseExplorer.database.deleteEntry",
+          "when": "viewItem == database.valueEntry",
+          "group": "database.valueEntry@4"
+        },
+        {
+          "command": "firebaseExplorer.firestore.copyItemName",
+          "when": "viewItem == firestore.collection",
+          "group": "firestore.collection@1"
+        },
+        {
+          "command": "firebaseExplorer.firestore.copyItemPath",
+          "when": "viewItem == firestore.collection",
+          "group": "firestore.collection@2"
+        },
+        {
+          "command": "firebaseExplorer.firestore.refreshCollection",
+          "when": "viewItem == firestore.collection",
+          "group": "firestore.collection@3"
+        },
+        {
+          "command": "firebaseExplorer.firestore.copyItemName",
+          "when": "viewItem == firestore.document",
+          "group": "firestore.document@1"
+        },
+        {
+          "command": "firebaseExplorer.firestore.copyItemPath",
+          "when": "viewItem == firestore.document",
+          "group": "firestore.document@2"
+        },
+        {
+          "command": "firebaseExplorer.firestore.copyDocumentContent",
+          "when": "viewItem == firestore.document",
+          "group": "firestore.document@3"
+        },
+        {
+          "command": "firebaseExplorer.firestore.refreshDocument",
+          "when": "viewItem == firestore.document",
+          "group": "firestore.document@4"
+        },
+        {
+          "command": "firebaseExplorer.firestore.copyDocumentFieldName",
+          "when": "viewItem == firestore.documentField",
+          "group": "firestore.documentField@1"
+        },
+        {
+          "command": "firebaseExplorer.firestore.copyDocumentFieldValue",
+          "when": "viewItem == firestore.documentField",
+          "group": "firestore.documentField@2"
+        },
+        {
+          "command": "firebaseExplorer.firestore.editDocumentFieldValue",
+          "when": "false && viewItem == firestore.documentField",
+          "group": "firestore.documentField@3"
+        },
+        {
+          "command": "firebaseExplorer.apps.editAppName",
+          "when": "viewItem == apps.iosApp",
+          "group": "apps@1"
+        },
+        {
+          "command": "firebaseExplorer.apps.showAppConfig",
+          "when": "viewItem == apps.iosApp",
+          "group": "apps@2"
+        },
+        {
+          "command": "firebaseExplorer.apps.editAppName",
+          "when": "viewItem == apps.androidApp",
+          "group": "apps@1"
+        },
+        {
+          "command": "firebaseExplorer.apps.showAppConfig",
+          "when": "viewItem == apps.androidApp",
+          "group": "apps@2"
         }
       ]
     }
@@ -134,6 +331,7 @@
     "test": "yarn run compile && node ./node_modules/vscode/bin/test"
   },
   "devDependencies": {
+    "@types/clipboardy": "^1.1.0",
     "@types/jsonwebtoken": "^8.3.0",
     "@types/mocha": "^5.2.5",
     "@types/node": "^10.12.12",
@@ -145,6 +343,7 @@
     "typescript": "^3.2.1"
   },
   "dependencies": {
+    "clipboardy": "^1.2.3",
     "firebase-admin": "^6.1.0",
     "firebase-tools": "^6.1.2",
     "jsonwebtoken": "^8.4.0",

@@ -167,6 +167,31 @@ export function getFieldArrayValue(values: DocumentFieldValue[]): any[] {
   });
 }
 
+export function getFieldValue(field: DocumentFieldValue): any {
+  const { type, value } = processFieldValue(field);
+
+  if (type === 'array') {
+    return getFieldArrayValue(value.values);
+  } else if (type === 'map') {
+    return Object.keys(value.fields)
+      .map(
+        (childKey): { key: string; val: any } => {
+          const childField: DocumentFieldValue = value.fields[childKey];
+          return { key: childKey, val: getFieldValue(childField) };
+        }
+      )
+      .reduce(
+        (result, item) => {
+          result[item.key] = item.val;
+          return result;
+        },
+        {} as { [k: string]: any }
+      );
+  } else {
+    return value;
+  }
+}
+
 export interface CollectionsList {
   collectionIds: string[];
   nextPageToken?: string;

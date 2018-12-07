@@ -1,7 +1,9 @@
+import * as path from 'path';
 import * as vscode from 'vscode';
 import { AccountInfo } from '../accounts/interfaces';
 import { FirebaseProject } from '../projects/ProjectManager';
 import { DatabaseAPI, DatabaseShallowValue } from './api';
+import { messageTreeItem, getFullPath } from '../utils';
 
 export class DatabaseProvider
   implements vscode.TreeDataProvider<DatabaseProviderItem> {
@@ -12,8 +14,8 @@ export class DatabaseProvider
 
   constructor(private context: vscode.ExtensionContext) {}
 
-  refresh(): void {
-    this._onDidChangeTreeData.fire();
+  refresh(element?: DatabaseProviderItem): void {
+    this._onDidChangeTreeData.fire(element);
   }
 
   getTreeItem(element: DatabaseProviderItem): vscode.TreeItem {
@@ -30,6 +32,10 @@ export class DatabaseProvider
       'selectedProject'
     );
 
+    if (project === null) {
+      return [messageTreeItem('Loading...')];
+    }
+
     if (!account || !project) {
       // No selected account or project
       return [];
@@ -38,6 +44,16 @@ export class DatabaseProvider
     const api = DatabaseAPI.for(account, project);
     const path = element ? getFullPath(element.parentPath, element.name) : '';
     const value = await api.getShallow(path);
+
+    if (!element && value === null) {
+      // Nothing in the database
+      return [
+        messageTreeItem(
+          'Database is empty for this project',
+          'There is no data in the database. Refresh to fetch any updates.'
+        )
+      ];
+    }
 
     if (
       typeof value === 'boolean' ||
@@ -62,20 +78,56 @@ export class DatabaseProvider
       return [];
     } else {
       // It's a nested object
-      return Object.keys(value).map(key => new DatabaseProviderItem(key, path));
+      if (element && !element.hasChildren) {
+        element.hasChildren = true;
+
+        // We need to fire this in order for the TreeView to update this
+        // element's contextValue, but it also causes to refetch the
+        // element's children unnecessarily.
+        // TODO: find a better way to do this.
+        this._onDidChangeTreeData.fire(element);
+      }
+      return Object.keys(value).map(
+        key => new DatabaseProviderItem(key, path, account, project)
+      );
     }
   }
 }
 
 export class DatabaseProviderItem extends vscode.TreeItem {
-  contextValue = 'databaseEntry';
+  contextValue = 'database.entry';
+  iconPath = path.join(
+    __filename,
+    '..',
+    '..',
+    '..',
+    'assets',
+    'database/unknown-entry.svg'
+  );
+  isRemoved = false;
+
   private _value: DatabaseShallowValue | undefined;
 
-  constructor(public name: string, public parentPath: string) {
+  constructor(
+    public name: string,
+    public parentPath: string,
+    public account: AccountInfo,
+    public project: FirebaseProject
+  ) {
     super(name, vscode.TreeItemCollapsibleState.Collapsed);
   }
 
+  markAsRemoved() {
+    this.isRemoved = true;
+    this.contextValue = 'database.removedEntry';
+    this.label = `<strike style="color:#A83434"><i>${this.name}</i></strike>`;
+  }
+
   get tooltip(): string {
+    if (this.isRemoved) {
+      return '';
+    }
+
     const valuePath = getFullPath(this.parentPath, this.name);
     let tooltip: string;
 
@@ -87,14 +139,64 @@ export class DatabaseProviderItem extends vscode.TreeItem {
     return tooltip;
   }
 
-  set value(value: DatabaseShallowValue) {
-    this._value = value;
-    this.contextValue = 'databaseValueEntry';
-    this.label = `${this.name}: ${JSON.stringify(this._value)}`;
-    this.collapsibleState = vscode.TreeItemCollapsibleState.None;
+  get hasChildren(): boolean {
+    return this.contextValue === 'database.parentEntry';
   }
-}
 
-function getFullPath(parentPath: string, name: string) {
-  return [parentPath, name].filter(Boolean).join('/');
+  set hasChildren(hasChildren: boolean) {
+    if (hasChildren) {
+      this.contextValue = 'database.parentEntry';
+      this.iconPath = path.join(
+        __filename,
+        '..',
+        '..',
+        '..',
+        'assets',
+        'valuetype/map.svg'
+      );
+    }
+  }
+
+  get value(): DatabaseShallowValue | undefined {
+    return this._value!;
+  }
+
+  set value(value: DatabaseShallowValue | undefined) {
+    this._value = value;
+
+    if (value === undefined) {
+      this.hasChildren = true;
+    } else {
+      this.contextValue = 'database.valueEntry';
+      this.label = `${this.name} : <code>${JSON.stringify(this._value)}</code>`;
+      this.collapsibleState = vscode.TreeItemCollapsibleState.None;
+
+      let type: string;
+      const typeofValue = typeof value;
+
+      if (
+        typeofValue === 'string' ||
+        typeofValue === 'number' ||
+        typeofValue === 'boolean'
+      ) {
+        type = typeofValue;
+      } else if (Array.isArray(typeofValue)) {
+        type = 'array';
+      } else if (value === null || value === undefined) {
+        type = 'null';
+      } else {
+        // Shouldn't happen, but just in case
+        type = 'map';
+      }
+
+      this.iconPath = path.join(
+        __filename,
+        '..',
+        '..',
+        '..',
+        'assets',
+        `valuetype/${type}.svg`
+      );
+    }
+  }
 }
