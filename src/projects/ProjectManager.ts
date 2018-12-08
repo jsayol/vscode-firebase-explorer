@@ -37,7 +37,7 @@ export class ProjectManager {
   async getConfig(): Promise<ProjectConfig> {
     if (!this.config) {
       this.config = await getProjectConfig(
-        this.accountManager,
+        // this.accountManager,
         this.project
       );
     }

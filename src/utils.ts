@@ -57,3 +57,35 @@ export function getCertTypeForFingerprint(
     return 'SHA_256';
   }
 }
+
+export function decimalToDMS(value: number, type: 'lat' | 'lon'): string {
+  const absValue = Math.abs(value);
+  const degrees = Math.floor(absValue);
+  const minutes = Math.floor((absValue - degrees) * 60);
+  const seconds =
+    Math.round((absValue - degrees - minutes / 60) * 3600 * 1000) / 1000;
+
+  const isPositive = value >= 0;
+  let direction: 'N' | 'S' | 'E' | 'W';
+
+  if (type === 'lat') {
+    direction = isPositive ? 'N' : 'S';
+  } else {
+    direction = isPositive ? 'E' : 'W';
+  }
+
+  let result: string[] = [direction];
+
+  if (seconds) {
+    result.push(`${seconds}"`);
+  }
+
+  if (minutes || seconds) {
+    result.push(`${minutes}'`);
+  }
+
+  result.push(`${degrees}°`);
+
+  // return `${degrees}° ${minutes}' ${seconds}" ${direction}`;
+  return result.reverse().join(' ');
+}

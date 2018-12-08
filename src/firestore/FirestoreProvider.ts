@@ -13,7 +13,8 @@ import {
   messageTreeItem,
   setContext,
   ContextValue,
-  getFullPath
+  getFullPath,
+  decimalToDMS
 } from '../utils';
 
 export class FirestoreProvider
@@ -93,7 +94,7 @@ export class FirestoreProvider
       }
 
       return documents.documents.map(
-        doc => new DocumentItem(doc.name, colPath, account, project)
+        doc => new DocumentItem(doc, colPath, account, project)
       );
     } else if (element instanceof DocumentItem) {
       const docPath = getFullPath(element.parentPath, element.name);
@@ -135,13 +136,18 @@ export class FirestoreProvider
 
       return items;
     } else if (element instanceof DocumentFieldItem) {
-      return Object.keys(element.value.fields)
-        .sort()
-        .map(
-          key => new DocumentFieldItem(key, element.value.fields[key], true)
-        );
+      if (element.type === 'map') {
+        return Object.keys(element.value.fields)
+          .sort()
+          .map(
+            key => new DocumentFieldItem(key, element.value.fields[key], true)
+          );
+      } else {
+        // Items that aren't of type "map" shouldn't have child items
+        console.error('Should not happen!', element);
+        return [];
+      }
     } else {
-      // error?
       console.error('Should not happen!', element);
       return [];
     }
@@ -184,30 +190,31 @@ export class DocumentItem extends vscode.TreeItem {
     'assets',
     'firestore/document.svg'
   );
-  document?: FirestoreDocument;
 
   // readonly command: vscode.Command;
 
   name: string;
+  fullName: string;
 
   constructor(
-    public fullName: string,
+    public document: FirestoreDocument,
     public parentPath: string,
     public account: AccountInfo,
     public project: FirebaseProject
   ) {
     super('', vscode.TreeItemCollapsibleState.Collapsed);
+    this.fullName = document.name;
     this.name = this.fullName.split('/').slice(-1)[0];
-    this.label = this.name;
-    // this.command = {
-    //   command: 'firebaseExplorer.documentSelection',
-    //   title: '',
-    //   arguments: [
-    //     this.account,
-    //     this.project,
-    //     getFullPath(this.parentPath, this.name)
-    //   ]
-    // };
+    console.log(document);
+  }
+
+  get label(): string {
+    return this.document.createTime ? this.name : `<i>${this.name}</i>`;
+  }
+
+  set label(label: string) {
+    // Dummy no-op
+    label = label;
   }
 
   get tooltip(): string {
@@ -251,13 +258,22 @@ export class DocumentFieldItem extends vscode.TreeItem {
       this.collapsibleState = vscode.TreeItemCollapsibleState.None;
     }
 
-    if (type !== 'map') {
-      this.escapedValue = JSON.stringify(getFieldValue(this.fieldValue))
-        .replace('<', '&lt;')
-        .replace('>', '&gt;');
-      this.label = `${name} : <code>${this.escapedValue}</code>`;
-    } else {
+    // decimalToDMS
+
+    if (type === 'map') {
       this.label = name;
+    } else {
+      if (type === 'geopoint') {
+        this.escapedValue =
+          decimalToDMS(value.latitude, 'lat') +
+          ', ' +
+          decimalToDMS(value.longitude, 'lon');
+      } else {
+        this.escapedValue = JSON.stringify(getFieldValue(this.fieldValue))
+          .replace('<', '&lt;')
+          .replace('>', '&gt;');
+      }
+      this.label = `${name} : <code>${this.escapedValue}</code>`;
     }
   }
 

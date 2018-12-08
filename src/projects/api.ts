@@ -274,7 +274,7 @@ export async function setDisplayName(
 }
 
 export async function getProjectConfig(
-  accountManager: AccountManager,
+  // accountManager: AccountManager,
   project: FirebaseProject
 ): Promise<ProjectConfig> {
   // FIXME: this should get the config from the REST API, but there seems to be a bug
