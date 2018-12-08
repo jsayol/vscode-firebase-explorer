@@ -12,7 +12,7 @@ export class ProjectsProvider
   >();
   readonly onDidChangeTreeData = this._onDidChangeTreeData.event;
 
-  constructor(private context: vscode.ExtensionContext) {}
+  constructor(/*private context: vscode.ExtensionContext*/) {}
 
   refresh(): void {
     this._onDidChangeTreeData.fire();

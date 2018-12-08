@@ -61,15 +61,17 @@ export class AccountManager {
     return this.account.tokens.refresh_token;
   }
 
-  getAccessToken(): Promise<firebaseAdmin.GoogleOAuthAccessToken> {
+  getAccessToken(): Promise<GoogleOAuthAccessToken> {
     return this.credential.getAccessToken();
+  }
+
+  getEmail(): string {
+    return this.account.user.email;
   }
 
   async listProjects(): Promise<FirebaseProject[]> {
     try {
-      const list: FirebaseProject[] = await projectsAPI.listProjects(
-        this.account
-      );
+      const list: FirebaseProject[] = await projectsAPI.listProjects(this);
       return list;
       // return list.filter(
       //   project =>
@@ -86,4 +88,9 @@ export class AccountManager {
       return [];
     }
   }
+}
+
+export interface GoogleOAuthAccessToken {
+  access_token: string;
+  expires_in: number;
 }

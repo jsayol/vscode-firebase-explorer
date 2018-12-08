@@ -1,13 +1,9 @@
 import * as path from 'path';
 import * as vscode from 'vscode';
 import { AccountInfo } from '../accounts/interfaces';
-import {
-  ProjectManager,
-  FirebaseProject,
-  AndroidApp,
-  IosApp
-} from '../projects/ProjectManager';
+import { ProjectManager, FirebaseProject } from '../projects/ProjectManager';
 import { messageTreeItem } from '../utils';
+import { IosApp, AndroidApp } from './apps';
 
 export class AppsProvider implements vscode.TreeDataProvider<AppsProviderItem> {
   private _onDidChangeTreeData = new vscode.EventEmitter<
@@ -81,16 +77,13 @@ export class IosAppItem extends vscode.TreeItem {
     public project: FirebaseProject
   ) {
     super(
-      app.metadata.displayName || app.metadata.bundleId,
+      app.displayName || app.bundleId,
       vscode.TreeItemCollapsibleState.None
     );
   }
 
   get tooltip(): string {
-    return (
-      `• Bundle: ${this.app.metadata.bundleId}\n` +
-      `• ID: ${this.app.metadata.appId}`
-    );
+    return `• Bundle: ${this.app.bundleId}\n` + `• ID: ${this.app.appId}`;
   }
 }
 
@@ -111,16 +104,13 @@ export class AndroidAppItem extends vscode.TreeItem {
     public project: FirebaseProject
   ) {
     super(
-      app.metadata.displayName || app.metadata.packageName,
+      app.displayName || app.packageName,
       vscode.TreeItemCollapsibleState.None
     );
   }
 
   get tooltip(): string {
-    return (
-      `• Package: ${this.app.metadata.packageName}\n` +
-      `• ID: ${this.app.metadata.appId}`
-    );
+    return `• Package: ${this.app.packageName}\n` + `• ID: ${this.app.appId}`;
   }
 }
 

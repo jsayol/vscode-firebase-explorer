@@ -11,7 +11,6 @@ import { registerFirestoreCommands } from './firestore/commands';
 import { registerDatabaseCommands } from './database/commands';
 import { getCliAccount } from './accounts/cli';
 import { setContextObj, EXTENSION_VERSION } from './utils';
-import { AccountManager } from './accounts/AccountManager';
 
 // this method is called when your extension is activated
 // your extension is activated the very first time the command is executed
@@ -29,7 +28,7 @@ export async function activate(context: vscode.ExtensionContext) {
   context.globalState.update('selectedProject', void 0);
 
   registerProvider('apps', new AppsProvider(context));
-  registerProvider('projects', new ProjectsProvider(context));
+  registerProvider('projects', new ProjectsProvider(/*context*/));
   registerProvider('firestore', new FirestoreProvider(context));
   registerProvider('database', new DatabaseProvider(context));
 

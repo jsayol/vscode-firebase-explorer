@@ -6,6 +6,7 @@ import { ProjectsProvider } from '../projects/ProjectsProvider';
 import { FirestoreProvider } from '../firestore/FirestoreProvider';
 import { DatabaseProvider } from '../database/DatabaseProvider';
 import { setContext, ContextValue } from '../utils';
+import { AppsProvider } from '../apps/AppsProvider';
 
 let context: vscode.ExtensionContext;
 
@@ -42,7 +43,7 @@ function projectSelection(
     return;
   }
 
-  const appsProvider = ProviderStore.get<FirestoreProvider>('apps');
+  const appsProvider = ProviderStore.get<AppsProvider>('apps');
   const firestoreProvider = ProviderStore.get<FirestoreProvider>('firestore');
   const databaseProvider = ProviderStore.get<DatabaseProvider>('database');
 

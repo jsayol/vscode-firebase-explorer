@@ -1,7 +1,7 @@
 import * as vscode from 'vscode';
 import { AppsProviderItem, AppsProvider } from './AppsProvider';
-import { IosApp, AndroidApp } from '../projects/ProjectManager';
 import { ProviderStore } from '../ProviderStore';
+import { IosApp, AndroidApp } from './apps';
 
 let context: vscode.ExtensionContext;
 
@@ -40,9 +40,9 @@ async function editAppName(element: AppsProviderItem): Promise<void> {
   let packageName: string;
 
   if (element.contextValue === 'apps.iosApp') {
-    packageName = (app as IosApp).metadata.bundleId;
+    packageName = (app as IosApp).bundleId;
   } else if (element.contextValue === 'apps.androidApp') {
-    packageName = (app as AndroidApp).metadata.packageName;
+    packageName = (app as AndroidApp).packageName;
   } else {
     console.error('Not a know app type!');
     return;
@@ -50,7 +50,7 @@ async function editAppName(element: AppsProviderItem): Promise<void> {
 
   const newName = await vscode.window.showInputBox({
     placeHolder: packageName,
-    value: app.metadata.displayName || '',
+    value: app.displayName || '',
     prompt: `Enter new name for app ${packageName}`
   });
 
@@ -62,9 +62,9 @@ async function editAppName(element: AppsProviderItem): Promise<void> {
       },
       async () => {
         try {
-          await app.app.setDisplayName(newName);
+          await app.setDisplayName(newName);
           element.label = newName;
-          element.app.metadata.displayName = newName;
+          element.app.displayName = newName;
 
           const appsProvider = ProviderStore.get<AppsProvider>('apps');
           appsProvider.refresh(element);
@@ -98,7 +98,7 @@ function showAppConfig(element: AppsProviderItem): void {
         return;
       }
 
-      const config = await element.app.app.getConfig();
+      const config = await element.app.getConfig();
 
       const textDocument = await vscode.workspace.openTextDocument({
         language,

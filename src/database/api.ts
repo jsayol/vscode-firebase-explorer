@@ -34,7 +34,7 @@ export class DatabaseAPI {
       return request(reqOptions);
     } catch (err) {
       // TODO: handle error
-      console.log({ err });
+      // console.log('database', { err });
       return null;
     }
   }
