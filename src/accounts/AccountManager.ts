@@ -1,10 +1,10 @@
 import * as firebaseAdmin from 'firebase-admin';
 import { AccountInfo } from './interfaces';
-import { contains } from '../utils';
+import { contains, getContextObj } from '../utils';
 import { APIforCLI } from './cli';
 import { API } from './login';
 import { FirebaseProject } from '../projects/ProjectManager';
-const firebaseTools = require('firebase-tools');
+import * as projectsAPI from '../projects/api';
 
 const instances: { [k: string]: AccountManager } = {};
 
@@ -15,6 +15,34 @@ export class AccountManager {
       instances[id] = new AccountManager(account);
     }
     return instances[id];
+  }
+
+  static getAccounts(): AccountInfo[] {
+    const context = getContextObj();
+    let accounts = context.globalState.get<AccountInfo[]>('accounts');
+
+    if (!Array.isArray(accounts)) {
+      accounts = [];
+    }
+
+    return accounts;
+  }
+
+  static setAccounts(accounts: AccountInfo[]): Thenable<void> {
+    const context = getContextObj();
+    return context.globalState.update('accounts', accounts);
+  }
+
+  /**
+   * Adds a new account information to the config.
+   * If an account already exists for that email, it gets replaced.
+   */
+  static addAccount(account: AccountInfo) {
+    const accounts = AccountManager.getAccounts().filter(
+      acc => acc.user.email !== account.user.email
+    );
+    accounts.push(account);
+    return AccountManager.setAccounts(accounts);
   }
 
   readonly credential: firebaseAdmin.credential.Credential;
@@ -38,18 +66,24 @@ export class AccountManager {
   }
 
   async listProjects(): Promise<FirebaseProject[]> {
-    const token = this.account.tokens.refresh_token;
-    const list: FirebaseProject[] = await firebaseTools.list({ token });
-    // return list;
-    return list.filter(
-      project =>
-        [
-          'Firebase Demo Project',
-          'Personal Project',
-          'firestore-sql-test',
-          'fb-js-samples',
-          'js-sdk-persistence'
-        ].indexOf(project.name) !== -1
-    );
+    try {
+      const list: FirebaseProject[] = await projectsAPI.listProjects(
+        this.account
+      );
+      return list;
+      // return list.filter(
+      //   project =>
+      //     [
+      //       'Firebase Demo Project',
+      //       'Personal Project',
+      //       'firestore-sql-test',
+      //       'fb-js-samples',
+      //       'js-sdk-persistence'
+      //     ].indexOf(project.displayName) !== -1
+      // );
+    } catch (err) {
+      console.error({ err });
+      return [];
+    }
   }
 }

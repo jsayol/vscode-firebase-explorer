@@ -8,7 +8,7 @@ const instances: { [k: string]: FirestoreAPI } = {};
 
 export class FirestoreAPI {
   static for(account: AccountInfo, project: FirebaseProject): FirestoreAPI {
-    const id = account.user.email + '--' + project.id;
+    const id = account.user.email + '--' + project.projectId;
 
     if (!contains(instances, id)) {
       instances[id] = new FirestoreAPI(account, project);
@@ -21,7 +21,7 @@ export class FirestoreAPI {
   projectManager: ProjectManager;
 
   private constructor(account: AccountInfo, project: FirebaseProject) {
-    this.projectId = project.id;
+    this.projectId = project.projectId;
     this.projectManager = ProjectManager.for(account, project);
   }
 

@@ -25,11 +25,11 @@
         "title": "Hello World"
       },
       {
-        "command": "firebaseExplorer.options",
-        "title": "Options",
+        "command": "firebaseExplorer.accounts.add",
+        "title": "Add account",
         "icon": {
-          "light": "assets/light/refresh.svg",
-          "dark": "assets/dark/refresh.svg"
+          "light": "assets/light/account-add.svg",
+          "dark": "assets/dark/account-add.svg"
         }
       },
       {
@@ -58,11 +58,11 @@
       },
       {
         "command": "firebaseExplorer.apps.editAppName",
-        "title": "Edit App Name"
+        "title": "Edit Name"
       },
       {
         "command": "firebaseExplorer.apps.showAppConfig",
-        "title": "Show App Configuration"
+        "title": "Show Configuration"
       },
       {
         "command": "firebaseExplorer.firestore.addCollection",
@@ -146,11 +146,11 @@
       "firebase-explorer": [
         {
           "id": "firebase-projects",
-          "name": "Projects"
+          "name": "Accounts & Projects"
         },
         {
           "id": "firebase-apps",
-          "name": "Apps"
+          "name": "Mobile Apps"
         },
         {
           "id": "firebase-firestore",
@@ -158,14 +158,14 @@
         },
         {
           "id": "firebase-database",
-          "name": "Realtime Database"
+          "name": "Database"
         }
       ]
     },
     "menus": {
       "view/title": [
         {
-          "command": "firebaseExplorer.options",
+          "command": "firebaseExplorer.accounts.add",
           "when": "view == firebase-projects",
           "group": "navigation"
         },

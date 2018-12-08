@@ -1,5 +1,9 @@
 import * as vscode from 'vscode';
 
+export const EXTENSION_VERSION = 1;
+
+let _context: vscode.ExtensionContext;
+
 export function contains(obj: object, key: string): boolean {
   return Object.prototype.hasOwnProperty.call(obj, key);
 }
@@ -27,4 +31,12 @@ export enum ContextValue {
   AppsLoaded = 'apps:loaded',
   FirestoreLoaded = 'firestore:loaded',
   DatabaseLoaded = 'database:loaded'
+}
+
+export function setContextObj(context: vscode.ExtensionContext) {
+  _context = context;
+}
+
+export function getContextObj(): vscode.ExtensionContext {
+  return _context;
 }

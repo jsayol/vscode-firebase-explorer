@@ -26,15 +26,11 @@ export class ProjectsProvider
     element?: AccountsProviderItem
   ): Promise<AccountsProviderItem[]> {
     if (!element) {
-      const accounts = this.context.globalState.get<AccountInfo[]>('accounts');
-
-      if (!Array.isArray(accounts)) {
-        // There's no logged-in accounts
-        return [];
-      }
-
+      // List the available accounts
+      const accounts = AccountManager.getAccounts();
       return accounts.map(acc => new AccountItem(acc));
     } else if (element instanceof AccountItem) {
+      // List the projects for this account
       const accountManager = AccountManager.for(element.account);
       const projects = await accountManager.listProjects();
 
@@ -95,11 +91,11 @@ export class ProjectItem extends vscode.TreeItem {
   };
 
   constructor(private account: AccountInfo, private project: FirebaseProject) {
-    super(project.name, vscode.TreeItemCollapsibleState.None);
+    super(project.displayName, vscode.TreeItemCollapsibleState.None);
   }
 
   get tooltip(): string {
-    return this.project.id;
+    return this.project.projectId;
   }
 }
 

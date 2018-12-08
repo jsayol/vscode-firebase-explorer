@@ -105,8 +105,7 @@ function showAppConfig(element: AppsProviderItem): void {
         content: config
       });
 
-      const textEditor = await vscode.window.showTextDocument(textDocument);
-      console.log(textEditor);
+      return vscode.window.showTextDocument(textDocument);
     }
   );
 }

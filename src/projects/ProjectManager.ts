@@ -2,17 +2,22 @@ import * as firebaseAdmin from 'firebase-admin';
 import { AccountInfo } from '../accounts/interfaces';
 import { contains, setContext, ContextValue } from '../utils';
 import { AccountManager } from '../accounts/AccountManager';
+import { listProjects } from './api';
 const firebaseTools = require('firebase-tools');
 
 const instances: { [k: string]: ProjectManager } = {};
 
 export class ProjectManager {
   static for(account: AccountInfo, project: FirebaseProject): ProjectManager {
-    const id = account.user.email + '--' + project.id;
+    const id = account.user.email + '--' + project.projectId;
     if (!contains(instances, id)) {
       instances[id] = new ProjectManager(account, project);
     }
     return instances[id];
+  }
+
+  static getProjectsFor(account: AccountInfo): Promise<FirebaseProject[]> {
+    return listProjects(account);
   }
 
   readonly accountManager: AccountManager;
@@ -25,7 +30,7 @@ export class ProjectManager {
     account: AccountInfo,
     public readonly project: FirebaseProject
   ) {
-    this.id = account.user.email + '--' + project.id;
+    this.id = account.user.email + '--' + project.projectId;
     this.accountManager = AccountManager.for(account);
     this.initialized = this.retrieveConfig().then(config => {
       this.firebaseApp = firebaseAdmin.initializeApp(
@@ -42,52 +47,61 @@ export class ProjectManager {
     return this.accountManager.getAccessToken();
   }
 
-  private retrieveConfig(): Promise<firebaseAdmin.AppOptions> {
-    return firebaseTools.setup.web({
-      project: this.project.id,
-      token: this.accountManager.getRefreshToken()
-    });
-  }
-
   async getConfig(): Promise<firebaseAdmin.AppOptions> {
     await this.initialized;
     return this.firebaseApp!.options;
   }
 
   async listApps(forceRefresh = false): Promise<ProjectApps> {
-    if (!this.apps || forceRefresh) {
-      await this.initialized;
+    try {
+      if (!this.apps || forceRefresh) {
+        await this.initialized;
 
-      const management = firebaseAdmin.projectManagement(this.firebaseApp);
-      const apps = await Promise.all([
-        management.listIosApps(),
-        management.listAndroidApps()
-      ]);
+        const management = firebaseAdmin.projectManagement(this.firebaseApp);
+        const apps = await Promise.all([
+          management.listIosApps(),
+          management.listAndroidApps()
+        ]);
 
-      const projectApps = await Promise.all([
-        Promise.all(
-          apps[0].map(async iosApp => {
-            const metadata = await iosApp.getMetadata();
-            return { app: iosApp, metadata };
-          })
-        ),
-        Promise.all(
-          apps[1].map(async androidApp => {
-            const metadata = await androidApp.getMetadata();
-            return { app: androidApp, metadata };
-          })
-        )
-      ]);
+        const projectApps = await Promise.all([
+          Promise.all(
+            apps[0].map(async iosApp => {
+              const metadata = await iosApp.getMetadata();
+              return { app: iosApp, metadata };
+            })
+          ),
+          Promise.all(
+            apps[1].map(async androidApp => {
+              const metadata = await androidApp.getMetadata();
+              return { app: androidApp, metadata };
+            })
+          )
+        ]);
 
-      this.apps = {
-        ios: projectApps[0],
-        android: projectApps[1]
+        this.apps = {
+          ios: projectApps[0],
+          android: projectApps[1]
+        };
+      }
+
+      setContext(ContextValue.AppsLoaded, true);
+
+      return this.apps!;
+    } catch (err) {
+      // TODO: handle error
+      console.error({ err });
+      return {
+        ios: [],
+        android: []
       };
     }
+  }
 
-    setContext(ContextValue.AppsLoaded, true);
-
-    return this.apps!;
+  private retrieveConfig(): Promise<firebaseAdmin.AppOptions> {
+    return firebaseTools.setup.web({
+      project: this.project.projectId,
+      token: this.accountManager.getRefreshToken()
+    });
   }
 }
 
@@ -112,8 +126,13 @@ export interface ProjectAppsMetadata {
 }
 
 export interface FirebaseProject {
-  name: string;
-  id: string;
-  permission: string;
-  instance: string;
+  displayName: string;
+  projectId: string;
+  projectNumber: string;
+  resources: {
+    hostingSite: string;
+    realtimeDatabaseInstance: string;
+    storageBucket: string;
+    locationId: string;
+  };
 }

@@ -7,7 +7,7 @@ const instances: { [k: string]: DatabaseAPI } = {};
 
 export class DatabaseAPI {
   static for(account: AccountInfo, project: FirebaseProject): DatabaseAPI {
-    const id = account.user.email + '--' + project.id;
+    const id = account.user.email + '--' + project.projectId;
     if (!contains(instances, id)) {
       instances[id] = new DatabaseAPI(account, project);
     }
@@ -18,19 +18,25 @@ export class DatabaseAPI {
   projectManager: ProjectManager;
 
   private constructor(account: AccountInfo, project: FirebaseProject) {
-    this.projectId = project.id;
+    this.projectId = project.projectId;
     this.projectManager = ProjectManager.for(account, project);
   }
 
   async getShallow(path: string): Promise<DatabaseShallowValue> {
-    const { access_token } = await this.projectManager.getAccessToken();
-    const reqOptions: request.OptionsWithUrl = {
-      method: 'GET',
-      url: await this.getURLForPath(path),
-      json: true,
-      qs: { shallow: true, access_token }
-    };
-    return request(reqOptions);
+    try {
+      const { access_token } = await this.projectManager.getAccessToken();
+      const reqOptions: request.OptionsWithUrl = {
+        method: 'GET',
+        url: await this.getURLForPath(path),
+        json: true,
+        qs: { shallow: true, access_token }
+      };
+      return request(reqOptions);
+    } catch (err) {
+      // TODO: handle error
+      console.log({ err });
+      return null;
+    }
   }
 
   async setValue(path: string, value: any): Promise<request.FullResponse> {
