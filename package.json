@@ -113,6 +113,10 @@
         "title": "Refresh Document"
       },
       {
+        "command": "firebaseExplorer.firestore.deleteDocument",
+        "title": "Delete Document"
+      },
+      {
         "command": "firebaseExplorer.firestore.copyDocumentContent",
         "title": "Copy Content"
       },
@@ -295,6 +299,11 @@
           "command": "firebaseExplorer.firestore.copyDocumentContent",
           "when": "viewItem == firestore.document",
           "group": "firestore.document@3"
+        },
+        {
+          "command": "firebaseExplorer.firestore.deleteDocument",
+          "when": "viewItem == firestore.document",
+          "group": "firestore.document@4"
         },
         {
           "command": "firebaseExplorer.firestore.refreshDocument",

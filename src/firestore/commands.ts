@@ -42,6 +42,13 @@ export function registerFirestoreCommands(context: vscode.ExtensionContext) {
 
   context.subscriptions.push(
     vscode.commands.registerCommand(
+      'firebaseExplorer.firestore.deleteDocument',
+      deleteDocument
+    )
+  );
+
+  context.subscriptions.push(
+    vscode.commands.registerCommand(
       'firebaseExplorer.firestore.refreshDocument',
       providerRefresh
     )
@@ -116,6 +123,37 @@ async function copyDocumentContent(element: DocumentItem): Promise<void> {
     );
 
     return clipboardy.write(JSON.stringify(value, null, 2));
+  }
+}
+
+async function deleteDocument(element: DocumentItem): Promise<void> {
+  const fullPath = getFullPath(element.parentPath, element.name);
+
+  const confirmation = await vscode.window.showWarningMessage(
+    `Delete document "${element.name}"?\n\n` +
+      'Subcollections will not be deleted.\n\n' +
+      `/${fullPath}`,
+    { modal: true },
+    'Delete'
+  );
+
+  if (confirmation === 'Delete') {
+    await vscode.window.withProgress(
+      {
+        title: 'Deleting document...',
+        location: vscode.ProgressLocation.Notification
+      },
+      async () => {
+        const api = FirestoreAPI.for(element.account, element.project);
+        const docPath = getFullPath(element.parentPath, element.name);
+        await api.deleteDocument(docPath);
+        const firestoreProvider = ProviderStore.get<FirestoreProvider>(
+          'firestore'
+        );
+        element.markAsRemoved();
+        firestoreProvider.refresh(element);
+      }
+    );
   }
 }
 

@@ -102,16 +102,12 @@ export class FirestoreProvider
 
       const [collections, document] = await Promise.all([
         api.listCollections(docPath),
-        api.getDocument(docPath)
+        element.document.createTime
+          ? api.getDocument(docPath)
+          : Promise.resolve(null)
       ]);
 
-      // Store the document data in the element for future reference
-      // (for example, if we want to copy its data to clipboard)
-      element.document = document;
-
       const hasCollections = Array.isArray(collections.collectionIds);
-      const hasFields = !!document.fields;
-
       if (hasCollections) {
         items.push(
           ...collections.collectionIds.map(
@@ -120,13 +116,20 @@ export class FirestoreProvider
         );
       }
 
+      const hasFields = document && !!document.fields;
       if (hasFields) {
-        const docFields = Object.keys(document.fields!).sort();
+        const docFields = Object.keys(document!.fields!).sort();
         items.push(
           ...docFields.map(
-            name => new DocumentFieldItem(name, document.fields![name])
+            name => new DocumentFieldItem(name, document!.fields![name])
           )
         );
+      }
+
+      if (document) {
+        // Store the document data in the element for future reference
+        // (for example, if we want to copy its data to clipboard)
+        element.document = document;
       }
 
       if (!hasCollections && !hasFields) {
@@ -195,6 +198,7 @@ export class DocumentItem extends vscode.TreeItem {
 
   name: string;
   fullName: string;
+  isRemoved = false;
 
   constructor(
     public document: FirestoreDocument,
@@ -205,11 +209,24 @@ export class DocumentItem extends vscode.TreeItem {
     super('', vscode.TreeItemCollapsibleState.Collapsed);
     this.fullName = document.name;
     this.name = this.fullName.split('/').slice(-1)[0];
-    console.log(document);
+  }
+
+  markAsRemoved() {
+    this.isRemoved = true;
+    this.contextValue = 'firestore.removedDocument';
+
+    if (this.collapsibleState !== vscode.TreeItemCollapsibleState.None) {
+      // TODO: check if it has subcollections, and set collapsibleState
+      // to None if it doesn't
+    }
   }
 
   get label(): string {
-    return this.document.createTime ? this.name : `<i>${this.name}</i>`;
+    if (this.isRemoved) {
+      return `<strike style="color:#A83434"><i>${this.name}</i></strike>`;
+    } else {
+      return this.document.createTime ? this.name : `<i>${this.name}</i>`;
+    }
   }
 
   set label(label: string) {
@@ -218,7 +235,14 @@ export class DocumentItem extends vscode.TreeItem {
   }
 
   get tooltip(): string {
-    return this.fullName;
+    let tooltip = this.fullName;
+
+    if (!this.document.createTime) {
+      tooltip +=
+        '\n\nThis document does not exist, it will not appear in queries or snapshots.';
+    }
+
+    return tooltip;
   }
 }
 

@@ -88,6 +88,20 @@ export class FirestoreAPI {
     return processDates(doc);
   }
 
+  async deleteDocument(path: string): Promise<void> {
+    const token = await this.projectManager.getAccessToken();
+    const reqOptions: request.OptionsWithUrl = {
+      method: 'DELETE',
+      url: this.getURLForPath(path),
+      json: true,
+      headers: {
+        Authorization: `Bearer ${token.access_token}`
+      }
+    };
+
+    await request(reqOptions);
+  }
+
   private getURLForPath(path: string): string {
     return `${URL_BASE}/projects/${
       this.projectId
