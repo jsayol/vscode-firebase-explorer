@@ -1,6 +1,12 @@
 import { FirebaseProject } from '../projects/ProjectManager';
-import * as projectsApi from '../projects/api';
 import { AccountManager } from '../accounts/AccountManager';
+import {
+  setDisplayName,
+  getAppConfig,
+  getShaCertificates,
+  addShaCertificate,
+  deleteShaCertificate
+} from '../projects/api';
 
 export interface AndroidAppProps {
   name: string;
@@ -35,19 +41,29 @@ class BaseApp {
     this.projectId = props.projectId;
   }
 
-  async setDisplayName(type: string, name: string): Promise<void> {
-    // TODO
-    type;
-    name;
+  protected async _setDisplayName(
+    type: string,
+    name: string
+  ): Promise<IosAppProps | AndroidAppProps | undefined> {
+    const newProps = await setDisplayName(
+      type,
+      this.accountManager,
+      this.appId,
+      name
+    );
+
+    if (newProps) {
+      this.name = newProps.name;
+      this.appId = newProps.appId;
+      this.displayName = newProps.displayName;
+      this.projectId = newProps.projectId;
+    }
+
+    return newProps;
   }
 
   getConfig(type: string): Promise<string | undefined> {
-    return projectsApi.getAppConfig(
-      type,
-      this.accountManager,
-      this.projectId,
-      this.appId
-    );
+    return getAppConfig(type, this.accountManager, this.appId);
   }
 }
 
@@ -63,8 +79,15 @@ export class IosApp extends BaseApp {
     this.bundleId = props.bundleId;
   }
 
+  get appName(): string {
+    return this.displayName || this.bundleId;
+  }
+
   async setDisplayName(name: string): Promise<void> {
-    return super.setDisplayName('ios', name);
+    const newProps = await super._setDisplayName('ios', name);
+    if (newProps) {
+      this.bundleId = (newProps as IosAppProps).bundleId;
+    }
   }
 
   async getConfig(): Promise<string | undefined> {
@@ -84,33 +107,36 @@ export class AndroidApp extends BaseApp {
     this.packageName = props.packageName;
   }
 
+  get appName(): string {
+    return this.displayName || this.packageName;
+  }
+
   async setDisplayName(name: string): Promise<void> {
-    return super.setDisplayName('android', name);
+    const newProps = await super._setDisplayName('android', name);
+    if (newProps) {
+      this.packageName = (newProps as AndroidAppProps).packageName;
+    }
   }
 
   async getConfig(): Promise<string | undefined> {
     return super.getConfig('android');
   }
 
-  async getShaCertificates(): Promise<ShaCertificate[]> {
-    // TODO
-    return [];
+  getShaCertificates(): Promise<ShaCertificate[]> {
+    return getShaCertificates(this.accountManager, this.appId);
   }
 
-  async addShaCertificate(certificateToAdd: ShaCertificate): Promise<void> {
-    // TODO
-    certificateToAdd;
+  async addShaCertificate(cert: ShaCertificate): Promise<void> {
+    addShaCertificate(this.accountManager, this.appId, cert);
   }
-  async deleteShaCertificate(
-    certificateToRemove: ShaCertificate
-  ): Promise<void> {
-    // TODO
-    certificateToRemove;
+
+  async deleteShaCertificate(cert: ShaCertificate): Promise<void> {
+    deleteShaCertificate(this.accountManager, this.appId, cert);
   }
 }
 
 export interface ShaCertificate {
-  certType: 'sha1' | 'sha256';
+  name?: string;
+  certType: 'SHA_1' | 'SHA_256';
   shaHash: string;
-  resourceName?: string;
 }

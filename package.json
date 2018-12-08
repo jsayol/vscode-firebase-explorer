@@ -65,6 +65,22 @@
         "title": "Show Configuration"
       },
       {
+        "command": "firebaseExplorer.apps.showAppCertificates",
+        "title": "Show SHA Certificates"
+      },
+      {
+        "command": "firebaseExplorer.apps.addAppCertificate",
+        "title": "Add new fingerprint"
+      },
+      {
+        "command": "firebaseExplorer.apps.copyAppCertificate",
+        "title": "Copy fingerprint"
+      },
+      {
+        "command": "firebaseExplorer.apps.deleteAppCertificate",
+        "title": "Delete fingerprint"
+      },
+      {
         "command": "firebaseExplorer.firestore.addCollection",
         "title": "Add New Collection -- TODO",
         "icon": {
@@ -319,6 +335,26 @@
           "command": "firebaseExplorer.apps.showAppConfig",
           "when": "viewItem == apps.androidApp",
           "group": "apps@2"
+        },
+        {
+          "command": "firebaseExplorer.apps.showAppCertificates",
+          "when": "viewItem == apps.androidApp",
+          "group": "apps@3"
+        },
+        {
+          "command": "firebaseExplorer.apps.addAppCertificate",
+          "when": "viewItem == apps.androidApp.fingerprintsFolder",
+          "group": "apps.fingerprintsFolder@1"
+        },
+        {
+          "command": "firebaseExplorer.apps.copyAppCertificate",
+          "when": "viewItem == apps.androidApp.fingerprint",
+          "group": "apps.fingerprint@1"
+        },
+        {
+          "command": "firebaseExplorer.apps.deleteAppCertificate",
+          "when": "viewItem == apps.androidApp.fingerprint",
+          "group": "apps.fingerprint@2"
         }
       ]
     }
@@ -345,7 +381,6 @@
   "dependencies": {
     "clipboardy": "^1.2.3",
     "firebase-admin": "^6.1.0",
-    "firebase-tools": "^6.1.2",
     "jsonwebtoken": "^8.4.0",
     "portfinder": "^1.0.20",
     "request": "^2.88.0",

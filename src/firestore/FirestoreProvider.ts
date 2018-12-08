@@ -9,7 +9,12 @@ import {
   getFieldValue,
   FirestoreDocument
 } from './api';
-import { messageTreeItem, setContext, ContextValue, getFullPath } from '../utils';
+import {
+  messageTreeItem,
+  setContext,
+  ContextValue,
+  getFullPath
+} from '../utils';
 
 export class FirestoreProvider
   implements vscode.TreeDataProvider<FirestoreProviderItem> {
@@ -54,11 +59,10 @@ export class FirestoreProvider
         const collections = await api.listCollections('');
         setContext(ContextValue.FirestoreLoaded, true);
 
-        if (!Array.isArray(collections.collectionIds)) {
-          return [];
-        }
-
-        if (collections.collectionIds.length === 0) {
+        if (
+          !Array.isArray(collections.collectionIds) ||
+          collections.collectionIds.length === 0
+        ) {
           return [
             messageTreeItem(
               'Firestore is empty for this project',

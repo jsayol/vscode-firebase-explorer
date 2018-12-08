@@ -94,14 +94,14 @@ async function editEntryValue(element: DatabaseProviderItem): Promise<void> {
 async function deleteEntry(element: DatabaseProviderItem): Promise<void> {
   const fullPath = getFullPath(element.parentPath, element.name);
 
-  const result = await vscode.window.showWarningMessage(
+  const confirmation = await vscode.window.showWarningMessage(
     'All data at this location, including nested data, will be permanently deleted!\n\n' +
       `/${fullPath}`,
     { modal: true },
-    'DELETE'
+    'Delete'
   );
 
-  if (result === 'DELETE') {
+  if (confirmation === 'Delete') {
     vscode.window.withProgress(
       {
         title: 'Removing database entry...',
