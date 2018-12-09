@@ -14,11 +14,9 @@ export class DatabaseAPI {
     return instances[id];
   }
 
-  projectId: string;
   projectManager: ProjectManager;
 
-  private constructor(account: AccountInfo, project: FirebaseProject) {
-    this.projectId = project.projectId;
+  private constructor(account: AccountInfo, public project: FirebaseProject) {
     this.projectManager = ProjectManager.for(account, project);
   }
 
@@ -34,7 +32,7 @@ export class DatabaseAPI {
       return request(reqOptions);
     } catch (err) {
       // TODO: handle error
-      // console.log('database', { err });
+      console.log('getShallow', { err });
       return null;
     }
   }
@@ -54,15 +52,6 @@ export class DatabaseAPI {
 
   remove(path: string): Promise<request.FullResponse> {
     return this.setValue(path, null);
-    // const { access_token } = await this.projectManager.getAccessToken();
-    // const reqOptions: request.OptionsWithUrl = {
-    //   method: 'DELETE',
-    //   url: await this.getURLForPath(path),
-    //   json: true,
-    //   qs: { access_token },
-    //   resolveWithFullResponse: true
-    // };
-    // return request(reqOptions);
   }
 
   private async getURLForPath(path: string): Promise<string> {

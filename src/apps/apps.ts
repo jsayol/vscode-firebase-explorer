@@ -1,12 +1,6 @@
 import { FirebaseProject } from '../projects/ProjectManager';
-import { AccountManager } from '../accounts/AccountManager';
-import {
-  setDisplayName,
-  getAppConfig,
-  getShaCertificates,
-  addShaCertificate,
-  deleteShaCertificate
-} from '../projects/api';
+import { AppsAPI } from './api';
+import { AccountInfo } from '../accounts/interfaces';
 
 export interface AndroidAppProps {
   name: string;
@@ -31,7 +25,7 @@ class BaseApp {
   projectId: string;
 
   constructor(
-    protected accountManager: AccountManager,
+    protected account: AccountInfo,
     protected project: FirebaseProject,
     props: { [k: string]: any }
   ) {
@@ -45,12 +39,8 @@ class BaseApp {
     type: string,
     name: string
   ): Promise<IosAppProps | AndroidAppProps | undefined> {
-    const newProps = await setDisplayName(
-      type,
-      this.accountManager,
-      this.appId,
-      name
-    );
+    const api = AppsAPI.for(this.account, this.project);
+    const newProps = await api.setDisplayName(type, this.appId, name);
 
     if (newProps) {
       this.name = newProps.name;
@@ -63,7 +53,8 @@ class BaseApp {
   }
 
   getConfig(type: string): Promise<string | undefined> {
-    return getAppConfig(type, this.accountManager, this.appId);
+    const api = AppsAPI.for(this.account, this.project);
+    return api.getAppConfig(type, this.appId);
   }
 }
 
@@ -71,11 +62,11 @@ export class IosApp extends BaseApp {
   bundleId: string;
 
   constructor(
-    accountManager: AccountManager,
+    account: AccountInfo,
     project: FirebaseProject,
     props: IosAppProps
   ) {
-    super(accountManager, project, props);
+    super(account, project, props);
     this.bundleId = props.bundleId;
   }
 
@@ -99,11 +90,11 @@ export class AndroidApp extends BaseApp {
   packageName: string;
 
   constructor(
-    accountManager: AccountManager,
+    account: AccountInfo,
     project: FirebaseProject,
     props: AndroidAppProps
   ) {
-    super(accountManager, project, props);
+    super(account, project, props);
     this.packageName = props.packageName;
   }
 
@@ -123,15 +114,18 @@ export class AndroidApp extends BaseApp {
   }
 
   getShaCertificates(): Promise<ShaCertificate[]> {
-    return getShaCertificates(this.accountManager, this.appId);
+    const api = AppsAPI.for(this.account, this.project);
+    return api.getShaCertificates(this.appId);
   }
 
   async addShaCertificate(cert: ShaCertificate): Promise<void> {
-    addShaCertificate(this.accountManager, this.appId, cert);
+    const api = AppsAPI.for(this.account, this.project);
+    api.addShaCertificate(this.appId, cert);
   }
 
   async deleteShaCertificate(cert: ShaCertificate): Promise<void> {
-    deleteShaCertificate(this.accountManager, this.appId, cert);
+    const api = AppsAPI.for(this.account, this.project);
+    api.deleteShaCertificate(this.appId, cert);
   }
 }
 

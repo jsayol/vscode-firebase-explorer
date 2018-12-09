@@ -1,6 +1,8 @@
 import * as vscode from 'vscode';
+import { getCliAccount } from './accounts/cli';
 import { ProviderStore } from './ProviderStore';
 import { AppsProvider } from './apps/AppsProvider';
+import { AccountManager } from './accounts/AccountManager';
 import { ProjectsProvider } from './projects/ProjectsProvider';
 import { DatabaseProvider } from './database/DatabaseProvider';
 import { FirestoreProvider } from './firestore/FirestoreProvider';
@@ -9,7 +11,6 @@ import { registerAccountsCommands } from './accounts/commands';
 import { registerProjectsCommands } from './projects/commands';
 import { registerFirestoreCommands } from './firestore/commands';
 import { registerDatabaseCommands } from './database/commands';
-import { getCliAccount } from './accounts/cli';
 import { setContextObj, EXTENSION_VERSION } from './utils';
 
 // this method is called when your extension is activated
@@ -67,10 +68,10 @@ async function firstRunCheck(context: vscode.ExtensionContext): Promise<void> {
     const cliAccount = getCliAccount();
     if (cliAccount !== null) {
       // Found it! Let's add it to the extension accounts
-      // AccountManager.addAccount(cliAccount);
-      // vscode.window.showInformationMessage(
-      //   `Detected new account: ${cliAccount.user.email}`
-      // );
+      AccountManager.addAccount(cliAccount);
+      vscode.window.showInformationMessage(
+        `Detected new account: ${cliAccount.user.email}`
+      );
     }
   }
 }

@@ -41,8 +41,8 @@
         "title": "Project Selection"
       },
       {
-        "command": "firebaseExplorer.apps.add",
-        "title": "Create New App -- TODO",
+        "command": "firebaseExplorer.apps.create",
+        "title": "Add New App",
         "icon": {
           "light": "assets/light/add.svg",
           "dark": "assets/dark/add.svg"
@@ -190,7 +190,7 @@
           "group": "navigation"
         },
         {
-          "command": "firebaseExplorer.apps.add",
+          "command": "firebaseExplorer.apps.create",
           "when": "view == firebase-apps && firebase:apps:loaded",
           "group": "navigation@1"
         },

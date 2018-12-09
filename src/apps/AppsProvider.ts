@@ -124,7 +124,7 @@ export class FingerprintFolderItem extends vscode.TreeItem {
   }
 
   get tooltip(): string {
-    return `• Package: ${this.app.packageName}\n` + `• ID: ${this.app.appId}`;
+    return 'The SHA certificate fingerprints for this app';
   }
 }
 
@@ -147,7 +147,7 @@ export class FingerprintItem extends vscode.TreeItem {
   }
 
   get tooltip(): string {
-    return `(${this.cert.certType.replace('_', '-')}) ${this.label}`;
+    return `[${this.cert.certType.replace('_', '-')}] ${this.label}`;
   }
 }
 

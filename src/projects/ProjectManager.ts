@@ -5,8 +5,9 @@ import {
   AccountManager,
   GoogleOAuthAccessToken
 } from '../accounts/AccountManager';
-import { listIosApps, listAndroidApps, getProjectConfig } from './api';
 import { IosApp, AndroidApp } from '../apps/apps';
+import { ProjectsAPI } from './api';
+import { AppsAPI } from '../apps/api';
 
 const instances: { [k: string]: ProjectManager } = {};
 
@@ -36,10 +37,8 @@ export class ProjectManager {
 
   async getConfig(): Promise<ProjectConfig> {
     if (!this.config) {
-      this.config = await getProjectConfig(
-        // this.accountManager,
-        this.project
-      );
+      const api = ProjectsAPI.for(this.accountManager.account);
+      this.config = await api.getProjectConfig(this.project);
     }
     return this.config;
   }
@@ -117,19 +116,18 @@ export class ProjectManager {
   // }
 
   private async listIosApps(): Promise<IosApp[]> {
-    const apps = await listIosApps(this.accountManager, this.project.projectId);
+    const api = AppsAPI.for(this.accountManager.account, this.project);
+    const apps = await api.listIosApps(this.project.projectId);
     return apps.map(
-      props => new IosApp(this.accountManager, this.project, props)
+      props => new IosApp(this.accountManager.account, this.project, props)
     );
   }
 
   private async listAndroidApps(): Promise<AndroidApp[]> {
-    const apps = await listAndroidApps(
-      this.accountManager,
-      this.project.projectId
-    );
+    const api = AppsAPI.for(this.accountManager.account, this.project);
+    const apps = await api.listAndroidApps(this.project.projectId);
     return apps.map(
-      props => new AndroidApp(this.accountManager, this.project, props)
+      props => new AndroidApp(this.accountManager.account, this.project, props)
     );
   }
 }

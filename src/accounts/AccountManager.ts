@@ -4,7 +4,7 @@ import { contains, getContextObj } from '../utils';
 import { APIforCLI } from './cli';
 import { API } from './login';
 import { FirebaseProject } from '../projects/ProjectManager';
-import * as projectsAPI from '../projects/api';
+import { ProjectsAPI } from '../projects/api';
 
 const instances: { [k: string]: AccountManager } = {};
 
@@ -47,7 +47,7 @@ export class AccountManager {
 
   readonly credential: firebaseAdmin.credential.Credential;
 
-  private constructor(private readonly account: AccountInfo) {
+  private constructor(readonly account: AccountInfo) {
     this.credential = firebaseAdmin.credential.refreshToken({
       type: 'authorized_user',
       refresh_token: account.tokens.refresh_token,
@@ -62,7 +62,7 @@ export class AccountManager {
   }
 
   getAccessToken(): Promise<GoogleOAuthAccessToken> {
-    return this.credential.getAccessToken();
+    return this.credential.getAccessToken() as any;
   }
 
   getEmail(): string {
@@ -71,7 +71,8 @@ export class AccountManager {
 
   async listProjects(): Promise<FirebaseProject[]> {
     try {
-      const list: FirebaseProject[] = await projectsAPI.listProjects(this);
+      const projectsAPI = ProjectsAPI.for(this.account);
+      const list: FirebaseProject[] = await projectsAPI.listProjects();
       return list;
       // return list.filter(
       //   project =>
@@ -93,4 +94,7 @@ export class AccountManager {
 export interface GoogleOAuthAccessToken {
   access_token: string;
   expires_in: number;
+  scope: string;
+  token_type: string;
+  id_token: string;
 }

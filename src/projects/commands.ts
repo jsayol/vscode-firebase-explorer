@@ -43,9 +43,19 @@ function projectSelection(
     return;
   }
 
+  // if (account) {
+  //   const m = AccountManager.for(account);
+  //   m.getAccessToken().then(token => console.log(token));
+  // }
+
   const appsProvider = ProviderStore.get<AppsProvider>('apps');
   const firestoreProvider = ProviderStore.get<FirestoreProvider>('firestore');
   const databaseProvider = ProviderStore.get<DatabaseProvider>('database');
+
+  setContext(ContextValue.ProjectSelected, false);
+  setContext(ContextValue.AppsLoaded, false);
+  setContext(ContextValue.FirestoreLoaded, false);
+  setContext(ContextValue.DatabaseLoaded, false);
 
   // Empty selection and refresh to show "Loading..."
   context.globalState.update('selectedAccount', null);
@@ -53,10 +63,6 @@ function projectSelection(
   appsProvider.refresh();
   firestoreProvider.refresh();
   databaseProvider.refresh();
-  setContext(ContextValue.ProjectSelected, false);
-  setContext(ContextValue.AppsLoaded, false);
-  setContext(ContextValue.FirestoreLoaded, false);
-  setContext(ContextValue.DatabaseLoaded, false);
 
   setTimeout(() => {
     // Re-populate the treeviews for the selected project

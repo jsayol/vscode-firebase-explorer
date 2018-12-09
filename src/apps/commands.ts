@@ -9,6 +9,9 @@ import {
 import { ProviderStore } from '../ProviderStore';
 import { IosApp, AndroidApp, ShaCertificate } from './apps';
 import { getCertTypeForFingerprint } from '../utils';
+import { AccountInfo } from '../accounts/interfaces';
+import { FirebaseProject } from '../projects/ProjectManager';
+import { AppsAPI } from './api';
 
 let context: vscode.ExtensionContext;
 
@@ -54,6 +57,13 @@ export function registerAppsCommands(_context: vscode.ExtensionContext) {
     vscode.commands.registerCommand(
       'firebaseExplorer.apps.deleteAppCertificate',
       deleteAppCertificate
+    )
+  );
+
+  context.subscriptions.push(
+    vscode.commands.registerCommand(
+      'firebaseExplorer.apps.create',
+      createNewApp
     )
   );
 }
@@ -216,5 +226,117 @@ async function deleteAppCertificate(element: FingerprintItem): Promise<void> {
         }
       }
     );
+  }
+}
+
+async function createNewApp(): Promise<void> {
+  const appOptions: (vscode.QuickPickItem & {
+    options: { type: string; field: string; prompt: string };
+  })[] = [
+    {
+      label: 'Android app',
+      // description: 'Add an Android app',
+      detail: 'Choose this option to add an Android app to the project',
+      options: {
+        type: 'android',
+        field: 'packageName',
+        prompt: 'Enter Android package name'
+      }
+    },
+    {
+      label: 'iOS app',
+      // description: 'Add an iOS app',
+      detail: 'Choose this option to add an iOS app to the project',
+      options: {
+        type: 'ios',
+        field: 'bundleId',
+        prompt: 'Enter iOS bundle ID'
+      }
+    }
+  ];
+
+  const pick = await vscode.window.showQuickPick(appOptions, {
+    ignoreFocusOut: true
+  });
+
+  if (!pick) {
+    return;
+  }
+
+  const name = await promptAppName(pick.options);
+
+  if (name === undefined) {
+    return;
+  }
+
+  await vscode.window.withProgress(
+    {
+      title: 'Adding new app...',
+      location: vscode.ProgressLocation.Notification
+    },
+    async () => {
+      const account = context.globalState.get<AccountInfo>('selectedAccount')!;
+      const project = context.globalState.get<FirebaseProject>(
+        'selectedProject'
+      )!;
+
+      try {
+        const api = AppsAPI.for(account, project);
+        await api.createApp(pick.options.type, project, {
+          [pick.options.field]: name
+        });
+
+        const appsProvider = ProviderStore.get<AppsProvider>('apps');
+        appsProvider.refresh();
+      } catch (err) {
+        vscode.window.showErrorMessage(
+          `Failed to add new app for project ${project.projectId}`
+        );
+      }
+    }
+  );
+}
+
+/**
+ *
+ * @param options Helper function to prompt for a new app's bundle ID or package name
+ */
+async function promptAppName(options: {
+  type: string;
+  prompt: string;
+}): Promise<string | undefined> {
+  const name = await vscode.window.showInputBox({
+    placeHolder: 'com.company.appName',
+    value: '',
+    prompt: options.prompt,
+    ignoreFocusOut: true
+  });
+
+  if (name === undefined) {
+    return;
+  }
+
+  let isValid: boolean;
+  let errorMsg: string;
+
+  if (options.type === 'android') {
+    const parts = name.split('.');
+    isValid =
+      parts.length >= 2 &&
+      parts.every(part => /^[A-Za-z]([A-Za-z0-9_]*)$/.test(part));
+    errorMsg =
+      'The package name must: consist of letters, numbers or underscores; have at least two sections separated by periods; and each section must start with a letter.';
+  } else if (options.type === 'ios') {
+    isValid = /^[A-Za-z0-9\.\-]+$/.test(name);
+    errorMsg =
+      'The bundle ID must consist of letters, numbers, periods or hyphens.';
+  } else {
+    throw new Error('Unknow app type.');
+  }
+
+  if (isValid) {
+    return name;
+  } else {
+    return promptAppName({ ...options, prompt: 'Error: ' + errorMsg });
   }
 }
