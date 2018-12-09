@@ -44,6 +44,13 @@ export class AccountManager {
     return AccountManager.setAccounts(accounts);
   }
 
+  static removeAccount(account: AccountInfo) {
+    const accounts = AccountManager.getAccounts().filter(
+      acc => acc.user.email !== account.user.email
+    );
+    return AccountManager.setAccounts(accounts);
+  }
+
   private cachedAccessToken: {
     token: GoogleOAuthAccessToken;
     expirationTime: number;

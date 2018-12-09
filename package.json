@@ -55,6 +55,10 @@
         }
       },
       {
+        "command": "firebaseExplorer.accounts.remove",
+        "title": "Remove this account"
+      },
+      {
         "command": "firebaseExplorer.projects.refresh",
         "title": "Refresh Projects",
         "icon": {
@@ -244,7 +248,13 @@
       "view/item/context": [
         {
           "command": "firebaseExplorer.projects.refresh",
-          "when": "viewItem == account"
+          "when": "viewItem == account",
+          "group": "account@1"
+        },
+        {
+          "command": "firebaseExplorer.accounts.remove",
+          "when": "viewItem == account",
+          "group": "account@2"
         },
         {
           "command": "firebaseExplorer.database.copyName",
