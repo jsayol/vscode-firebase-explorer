@@ -1,6 +1,8 @@
 import { homedir } from 'os';
+import { readFile as fsReadFile } from 'fs';
+import { promisify } from 'util';
 import { resolve as resolvePath } from 'path';
-import { AccountInfo } from './interfaces';
+import { AccountInfo } from './AccountManager';
 
 export const APIforCLI = {
   clientId:
@@ -8,15 +10,16 @@ export const APIforCLI = {
   clientSecret: 'j9iVZfS8kkCEFUPaAeJV0sAi'
 };
 
-export function getCliAccount(): AccountInfo | null {
+export async function getCliAccount(): Promise<AccountInfo | null> {
   let cachedConfig: any;
 
   try {
-    const config = require(resolvePath(
+    const configPath = resolvePath(
       homedir(),
       '.config/configstore/firebase-tools.json'
-    ));
-    // cachedToken = config.tokens.refresh_token;
+    );
+    const readFile = promisify(fsReadFile);
+    const config = JSON.parse(await readFile(configPath, 'utf8'));
     cachedConfig = config;
   } catch (err) {
     /* no problem */

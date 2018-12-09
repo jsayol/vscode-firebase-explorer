@@ -1,6 +1,5 @@
 import * as path from 'path';
 import * as vscode from 'vscode';
-import { AccountInfo } from '../accounts/interfaces';
 import { FirebaseProject } from '../projects/ProjectManager';
 import {
   FirestoreAPI,
@@ -19,6 +18,9 @@ import {
   getFullPath,
   decimalToDMS
 } from '../utils';
+import { AccountInfo } from '../accounts/AccountManager';
+
+const ASSETS_PATH = './assets';
 
 export class FirestoreProvider
   implements vscode.TreeDataProvider<FirestoreProviderItem> {
@@ -212,14 +214,7 @@ export class FirestoreProvider
 
 export class CollectionItem extends vscode.TreeItem {
   contextValue = 'firestore.collection';
-  iconPath = path.join(
-    __filename,
-    '..',
-    '..',
-    '..',
-    'assets',
-    'firestore/collection.svg'
-  );
+  iconPath = path.resolve(ASSETS_PATH, 'firestore/collection.svg');
 
   constructor(
     public name: string,
@@ -238,14 +233,7 @@ export class CollectionItem extends vscode.TreeItem {
 
 export class DocumentItem extends vscode.TreeItem {
   contextValue = 'firestore.document';
-  iconPath = path.join(
-    __filename,
-    '..',
-    '..',
-    '..',
-    'assets',
-    'firestore/document.svg'
-  );
+  iconPath = path.resolve(ASSETS_PATH, 'firestore/document.svg');
 
   name: string;
   fullName: string;
@@ -322,14 +310,7 @@ export class DocumentFieldItem<
       processed.type === 'integer' || processed.type === 'double'
         ? 'number'
         : processed.type;
-    this.iconPath = path.join(
-      __filename,
-      '..',
-      '..',
-      '..',
-      'assets',
-      `valuetype/${typeIcon}.svg`
-    );
+    this.iconPath = path.resolve(ASSETS_PATH, `valuetype/${typeIcon}.svg`);
 
     if (processed.type === 'map' || processed.type === 'array') {
       this.collapsibleState = expand

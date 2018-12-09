@@ -1,7 +1,7 @@
 import * as request from 'request-promise-native';
 import { contains } from '../utils';
-import { AccountInfo } from '../accounts/interfaces';
 import { FirebaseProject, ProjectManager } from '../projects/ProjectManager';
+import { AccountInfo } from '../accounts/AccountManager';
 
 const instances: { [k: string]: DatabaseAPI } = {};
 

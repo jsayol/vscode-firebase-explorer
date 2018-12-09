@@ -1,11 +1,11 @@
 import * as path from 'path';
 import * as vscode from 'vscode';
-import { AccountInfo } from '../accounts/interfaces';
 import { ProjectManager, FirebaseProject } from '../projects/ProjectManager';
 import { messageTreeItem } from '../utils';
 import { IosApp, AndroidApp, ShaCertificate } from './apps';
+import { AccountInfo } from '../accounts/AccountManager';
 
-const ASSETS_PATH = path.join(__filename, '..', '..', '..', 'assets');
+const ASSETS_PATH = './assets';
 
 export class AppsProvider implements vscode.TreeDataProvider<AppsProviderItem> {
   private _onDidChangeTreeData = new vscode.EventEmitter<
@@ -80,7 +80,7 @@ export class AppsProvider implements vscode.TreeDataProvider<AppsProviderItem> {
 
 export class IosAppItem extends vscode.TreeItem {
   contextValue = 'apps.iosApp';
-  iconPath = path.join(ASSETS_PATH, 'apps/ios.svg');
+  iconPath = path.resolve(ASSETS_PATH, 'apps/ios.svg');
 
   constructor(
     public app: IosApp,
@@ -97,7 +97,7 @@ export class IosAppItem extends vscode.TreeItem {
 
 export class AndroidAppItem extends vscode.TreeItem {
   contextValue = 'apps.androidApp';
-  iconPath = path.join(ASSETS_PATH, 'apps/android-head.svg');
+  iconPath = path.resolve(ASSETS_PATH, 'apps/android-head.svg');
 
   constructor(
     public app: AndroidApp,
@@ -115,8 +115,8 @@ export class AndroidAppItem extends vscode.TreeItem {
 export class FingerprintFolderItem extends vscode.TreeItem {
   contextValue = 'apps.androidApp.fingerprintsFolder';
   iconPath = {
-    light: path.join(ASSETS_PATH, 'apps/light/fingerprint.svg'),
-    dark: path.join(ASSETS_PATH, 'apps/dark/fingerprint.svg')
+    light: path.resolve(ASSETS_PATH, 'apps/light/fingerprint.svg'),
+    dark: path.resolve(ASSETS_PATH, 'apps/dark/fingerprint.svg')
   };
 
   constructor(public app: AndroidApp, public appItem: AndroidAppItem) {
@@ -131,8 +131,8 @@ export class FingerprintFolderItem extends vscode.TreeItem {
 export class FingerprintItem extends vscode.TreeItem {
   contextValue = 'apps.androidApp.fingerprint';
   iconPath = {
-    light: path.join(ASSETS_PATH, 'apps/light/certificate.svg'),
-    dark: path.join(ASSETS_PATH, 'apps/dark/certificate.svg')
+    light: path.resolve(ASSETS_PATH, 'apps/light/certificate.svg'),
+    dark: path.resolve(ASSETS_PATH, 'apps/dark/certificate.svg')
   };
 
   constructor(

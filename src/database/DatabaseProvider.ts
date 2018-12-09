@@ -1,9 +1,11 @@
 import * as path from 'path';
 import * as vscode from 'vscode';
-import { AccountInfo } from '../accounts/interfaces';
 import { FirebaseProject } from '../projects/ProjectManager';
 import { DatabaseAPI, DatabaseShallowValue } from './api';
 import { messageTreeItem, getFullPath } from '../utils';
+import { AccountInfo } from '../accounts/AccountManager';
+
+const ASSETS_PATH = './assets';
 
 export class DatabaseProvider
   implements vscode.TreeDataProvider<DatabaseProviderItem> {
@@ -96,14 +98,7 @@ export class DatabaseProvider
 
 export class DatabaseProviderItem extends vscode.TreeItem {
   contextValue = 'database.entry';
-  iconPath = path.join(
-    __filename,
-    '..',
-    '..',
-    '..',
-    'assets',
-    'database/unknown-entry.svg'
-  );
+  iconPath = path.resolve(ASSETS_PATH, 'database/unknown-entry.svg');
   isRemoved = false;
 
   private _value: DatabaseShallowValue | undefined;
@@ -146,14 +141,7 @@ export class DatabaseProviderItem extends vscode.TreeItem {
   set hasChildren(hasChildren: boolean) {
     if (hasChildren) {
       this.contextValue = 'database.parentEntry';
-      this.iconPath = path.join(
-        __filename,
-        '..',
-        '..',
-        '..',
-        'assets',
-        'valuetype/map.svg'
-      );
+      this.iconPath = path.resolve(ASSETS_PATH, 'valuetype/map.svg');
     }
   }
 
@@ -189,14 +177,7 @@ export class DatabaseProviderItem extends vscode.TreeItem {
         type = 'map';
       }
 
-      this.iconPath = path.join(
-        __filename,
-        '..',
-        '..',
-        '..',
-        'assets',
-        `valuetype/${type}.svg`
-      );
+      this.iconPath = path.resolve(ASSETS_PATH, `valuetype/${type}.svg`);
     }
   }
 }

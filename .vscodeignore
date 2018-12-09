@@ -3,7 +3,14 @@
 out/test/**
 out/**/*.map
 src/**
-.gitignore
+assets/**/*.xcf
 tsconfig.json
-vsc-extension-quickstart.md
 tslint.json
+.github/**
+node_modules/**
+src/**
+**/*.map
+.git*
+CHANGELOG.md
+webpack.config.js
+yarn.lock

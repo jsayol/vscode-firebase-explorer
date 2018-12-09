@@ -1,5 +1,4 @@
 import * as vscode from 'vscode';
-import { AccountInfo } from '../accounts/interfaces';
 import { ProviderStore } from '../ProviderStore';
 import { FirebaseProject } from '../projects/ProjectManager';
 import { ProjectsProvider, AccountItem } from '../projects/ProjectsProvider';
@@ -7,6 +6,7 @@ import { FirestoreProvider } from '../firestore/FirestoreProvider';
 import { DatabaseProvider } from '../database/DatabaseProvider';
 import { setContext, ContextValue } from '../utils';
 import { AppsProvider } from '../apps/AppsProvider';
+import { AccountInfo } from '../accounts/AccountManager';
 
 let context: vscode.ExtensionContext;
 

@@ -1,9 +1,10 @@
 import * as path from 'path';
 import * as vscode from 'vscode';
-import { AccountInfo } from '../accounts/interfaces';
 import { FirebaseProject } from './ProjectManager';
-import { AccountManager } from '../accounts/AccountManager';
+import { AccountManager, AccountInfo } from '../accounts/AccountManager';
 import { messageTreeItem } from '../utils';
+
+const ASSETS_PATH = './assets';
 
 export class ProjectsProvider
   implements vscode.TreeDataProvider<AccountsProviderItem> {
@@ -12,7 +13,7 @@ export class ProjectsProvider
   >();
   readonly onDidChangeTreeData = this._onDidChangeTreeData.event;
 
-  constructor(/*private context: vscode.ExtensionContext*/) {}
+  // constructor(/*private context: vscode.ExtensionContext*/) {}
 
   refresh(element?: AccountItem): void {
     this._onDidChangeTreeData.fire(element);
@@ -59,14 +60,7 @@ export class ProjectsProvider
 
 export class AccountItem extends vscode.TreeItem {
   contextValue = 'account';
-  iconPath = path.join(
-    __filename,
-    '..',
-    '..',
-    '..',
-    'assets',
-    'account-google.svg'
-  );
+  iconPath = path.resolve(ASSETS_PATH, 'account-google.svg');
 
   constructor(
     public account: AccountInfo,
@@ -82,7 +76,7 @@ export class AccountItem extends vscode.TreeItem {
 
 export class ProjectItem extends vscode.TreeItem {
   contextValue = 'project';
-  iconPath = path.join(__filename, '..', '..', '..', 'assets', 'firebase.svg');
+  iconPath = path.resolve(ASSETS_PATH, 'firebase.svg');
 
   readonly command: vscode.Command = {
     command: 'firebaseExplorer.projects.selection',

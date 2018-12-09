@@ -13,12 +13,7 @@ import { registerFirestoreCommands } from './firestore/commands';
 import { registerDatabaseCommands } from './database/commands';
 import { setContextObj, EXTENSION_VERSION } from './utils';
 
-// this method is called when your extension is activated
-// your extension is activated the very first time the command is executed
 export async function activate(context: vscode.ExtensionContext) {
-  // Use the console to output diagnostic information (console.log) and errors (console.error)
-  // This line of code will only be executed once when your extension is activated
-  console.log('Extension "firebaseExplorer" is now active!');
   setContextObj(context);
 
   // Wait for initialization if it's the first run
@@ -40,7 +35,6 @@ export async function activate(context: vscode.ExtensionContext) {
   registerDatabaseCommands(context);
 }
 
-// this method is called when your extension is deactivated
 export function deactivate() {
   // ...
 }
@@ -65,7 +59,7 @@ async function firstRunCheck(context: vscode.ExtensionContext): Promise<void> {
     context.globalState.update('accounts', undefined);
 
     // Let's try loading the account stored by the Firebase CLI
-    const cliAccount = getCliAccount();
+    const cliAccount = await getCliAccount();
     if (cliAccount !== null) {
       // Found it! Let's add it to the extension accounts
       AccountManager.addAccount(cliAccount);

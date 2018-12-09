@@ -8,7 +8,7 @@ import * as portfinder from 'portfinder';
 import { parse as parseUrl } from 'url';
 import * as vscode from 'vscode';
 import { contains } from '../utils';
-import { AccountInfo, AccountUser, AccountTokens } from './interfaces';
+import { AccountInfo, AccountTokens, AccountUser } from './AccountManager';
 
 const readFile = util.promisify(fs.readFile);
 
@@ -60,7 +60,7 @@ export async function login(): Promise<AccountInfo> {
             req,
             res,
             200,
-            '../../templates/loginSuccess.html'
+            '../ui/login/success.html'
           );
           server.close();
           resolve({
@@ -82,7 +82,7 @@ export async function login(): Promise<AccountInfo> {
           req,
           res,
           400,
-          '../../templates/loginFailure.html'
+          '../ui/login/failure.html'
         );
         reject();
       }

@@ -1,5 +1,6 @@
 out/
 dist/
+fallbacks/
 node_modules/
 .vscode-test/
 *.vsix

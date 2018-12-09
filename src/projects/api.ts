@@ -1,9 +1,8 @@
 import * as vscode from 'vscode';
 import * as request from 'request-promise-native';
 import { FirebaseProject, ProjectConfig } from './ProjectManager';
-import { AccountManager } from '../accounts/AccountManager';
+import { AccountManager, AccountInfo } from '../accounts/AccountManager';
 import { EXTENSION_VERSION, contains } from '../utils';
-import { AccountInfo } from '../accounts/interfaces';
 
 const API = {
   origin: 'https://firebase.googleapis.com',

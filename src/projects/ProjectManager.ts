@@ -1,8 +1,8 @@
-import { AccountInfo } from '../accounts/interfaces';
 import { contains, setContext, ContextValue } from '../utils';
 import {
   AccountManager,
-  GoogleOAuthAccessToken
+  GoogleOAuthAccessToken,
+  AccountInfo
 } from '../accounts/AccountManager';
 import { IosApp, AndroidApp } from '../apps/apps';
 import { ProjectsAPI } from './api';

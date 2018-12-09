@@ -9,9 +9,9 @@ import {
 import { ProviderStore } from '../ProviderStore';
 import { IosApp, AndroidApp, ShaCertificate } from './apps';
 import { getCertTypeForFingerprint } from '../utils';
-import { AccountInfo } from '../accounts/interfaces';
 import { FirebaseProject } from '../projects/ProjectManager';
 import { AppsAPI } from './api';
+import { AccountInfo } from '../accounts/AccountManager';
 
 let context: vscode.ExtensionContext;
 
