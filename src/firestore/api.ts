@@ -105,7 +105,7 @@ export class FirestoreAPI {
   private getURLForPath(path: string): string {
     return `${URL_BASE}/projects/${
       this.projectId
-    }/databases/(default)/documents/${path}`;
+    }/databases/(default)/documents/${path.replace(/^\//, '')}`;
   }
 }
 
@@ -122,59 +122,65 @@ function processDates(doc: InternalFirestoreDocument): FirestoreDocument {
 
 export function processFieldValue(
   field: DocumentFieldValue
-): { type: string; value: any } {
+): ProcessedFieldValue {
   if (contains(field, 'nullValue')) {
-    return { type: 'null', value: (field as any).nullValue };
+    return { type: 'null', value: field.nullValue };
   }
 
   if (contains(field, 'booleanValue')) {
-    return { type: 'boolean', value: (field as any).booleanValue };
+    return { type: 'boolean', value: field.booleanValue };
   }
 
   if (contains(field, 'integerValue')) {
-    return { type: 'integer', value: (field as any).integerValue };
+    return { type: 'integer', value: field.integerValue };
   }
 
   if (contains(field, 'doubleValue')) {
-    return { type: 'double', value: (field as any).doubleValue };
+    return { type: 'double', value: field.doubleValue };
   }
 
   if (contains(field, 'timestampValue')) {
-    return { type: 'timestamp', value: (field as any).timestampValue };
+    return { type: 'timestamp', value: field.timestampValue };
   }
 
   if (contains(field, 'stringValue')) {
-    return { type: 'string', value: (field as any).stringValue };
+    return { type: 'string', value: field.stringValue };
   }
 
   if (contains(field, 'bytesValue')) {
-    return { type: 'bytes', value: (field as any).bytesValue };
+    return { type: 'bytes', value: field.bytesValue };
   }
 
   if (contains(field, 'referenceValue')) {
-    return { type: 'reference', value: (field as any).referenceValue };
+    return { type: 'reference', value: field.referenceValue };
   }
 
   if (contains(field, 'geoPointValue')) {
-    return { type: 'geopoint', value: (field as any).geoPointValue };
+    return { type: 'geopoint', value: field.geoPointValue };
   }
 
   if (contains(field, 'arrayValue')) {
-    return { type: 'array', value: (field as any).arrayValue };
+    return { type: 'array', value: field.arrayValue.values };
   }
 
   if (contains(field, 'mapValue')) {
-    return { type: 'map', value: (field as any).mapValue };
+    return { type: 'map', value: field.mapValue.fields };
   }
 
   throw new Error('Unknow field type');
 }
 
-export function getFieldArrayValue(values: DocumentFieldValue[]): any[] {
+export function getFieldArrayValue(
+  values: DocumentFieldValue[] | undefined
+): any[] | undefined {
+  if (!values) {
+    return values;
+  }
+
   return values.map(val => {
     const itemVal = processFieldValue(val);
     if (itemVal.type === 'array') {
-      return getFieldArrayValue(itemVal.value.values);
+      return getFieldArrayValue(itemVal.value);
     } else {
       return itemVal.value;
     }
@@ -182,15 +188,15 @@ export function getFieldArrayValue(values: DocumentFieldValue[]): any[] {
 }
 
 export function getFieldValue(field: DocumentFieldValue): any {
-  const { type, value } = processFieldValue(field);
+  const processed = processFieldValue(field);
 
-  if (type === 'array') {
-    return getFieldArrayValue(value.values);
-  } else if (type === 'map') {
-    return Object.keys(value.fields)
+  if (processed.type === 'array') {
+    return getFieldArrayValue(processed.value);
+  } else if (processed.type === 'map') {
+    return Object.keys(processed.value)
       .map(
         (childKey): { key: string; val: any } => {
-          const childField: DocumentFieldValue = value.fields[childKey];
+          const childField: DocumentFieldValue = processed.value[childKey];
           return { key: childKey, val: getFieldValue(childField) };
         }
       )
@@ -201,8 +207,21 @@ export function getFieldValue(field: DocumentFieldValue): any {
         },
         {} as { [k: string]: any }
       );
+  } else if (processed.type === 'reference') {
+    const match = (processed.value as string).match(
+      /projects\/([^\/]+)\/databases\/([^\/]+)\/documents(\/.*)/
+    );
+    if (!match) {
+      return '<ERROR>';
+    }
+    return match[3];
+  } else if (processed.type === 'integer') {
+    // For some reason integers are returned as strings, but doubles aren't
+    return processed.value !== undefined
+      ? Number(processed.value)
+      : processed.value;
   } else {
-    return value;
+    return processed.value;
   }
 }
 
@@ -235,66 +254,175 @@ interface InternalFirestoreDocument {
   updateTime?: string;
 }
 
+// *************************
+
+export type NullValue = null;
+
+export type BooleanValue = boolean;
+
+export type IntegerValue = number;
+
+export type DoubleValue = number;
+
+export type TimestampValue = string;
+
+export type StringValue = string;
+
+export type BytesValue = string;
+
+export type ReferenceValue = string;
+
+export type GeoPointValue = {
+  latitude: number;
+  longitude: number;
+};
+
+export type ArrayValue = {
+  values: DocumentFieldValue[];
+};
+
+export type MapValue = {
+  fields: { [name: string]: DocumentFieldValue };
+};
+
+export type FieldValue =
+  | NullValue
+  | BooleanValue
+  | IntegerValue
+  | DoubleValue
+  | TimestampValue
+  | StringValue
+  | BytesValue
+  | ReferenceValue
+  | GeoPointValue
+  | ArrayValue['values']
+  | MapValue['fields'];
+
+// ***********************
+
 export interface DocumentFieldNullValue {
-  nullValue: null;
+  nullValue: NullValue;
 }
 
 export interface DocumentFieldBooleanValue {
-  booleanValue: boolean;
+  booleanValue: BooleanValue;
 }
 
 export interface DocumentFieldIntegerValue {
-  integerValue: number;
+  integerValue: IntegerValue;
 }
 
 export interface DocumentFieldDoubleValue {
-  doubleValue: number;
+  doubleValue: DoubleValue;
 }
 
 export interface DocumentFieldTimestampValue {
-  timestampValue: string;
+  timestampValue: TimestampValue;
 }
 
 export interface DocumentFieldStringValue {
-  stringValue: string;
+  stringValue: StringValue;
 }
 
 export interface DocumentFieldBytesValue {
-  bytesValue: string;
+  bytesValue: BytesValue;
 }
 
 export interface DocumentFieldReferenceValue {
-  referenceValue: string;
+  referenceValue: ReferenceValue;
 }
 
 export interface DocumentFieldGeoPointValue {
-  geoPointValue: {
-    latitude: number;
-    longitude: number;
-  };
+  geoPointValue: GeoPointValue;
 }
 
 export interface DocumentFieldArrayValue {
-  arrayValue: {
-    values: DocumentFieldValue[];
-  };
+  arrayValue: ArrayValue;
 }
 
 export interface DocumentFieldMapValue {
-  mapValue: {
-    fields: { [name: string]: DocumentFieldValue };
-  };
+  mapValue: MapValue;
 }
 
-export type DocumentFieldValue =
-  | DocumentFieldNullValue
-  | DocumentFieldBooleanValue
-  | DocumentFieldIntegerValue
-  | DocumentFieldDoubleValue
-  | DocumentFieldTimestampValue
-  | DocumentFieldStringValue
-  | DocumentFieldBytesValue
-  | DocumentFieldReferenceValue
-  | DocumentFieldGeoPointValue
-  | DocumentFieldArrayValue
-  | DocumentFieldMapValue;
+export type DocumentFieldValue = DocumentFieldNullValue &
+  DocumentFieldBooleanValue &
+  DocumentFieldIntegerValue &
+  DocumentFieldDoubleValue &
+  DocumentFieldTimestampValue &
+  DocumentFieldStringValue &
+  DocumentFieldBytesValue &
+  DocumentFieldReferenceValue &
+  DocumentFieldGeoPointValue &
+  DocumentFieldArrayValue &
+  DocumentFieldMapValue;
+
+export type DocumentValueType =
+  | 'null'
+  | 'boolean'
+  | 'integer'
+  | 'double'
+  | 'timestamp'
+  | 'string'
+  | 'bytes'
+  | 'reference'
+  | 'geopoint'
+  | 'array'
+  | 'map';
+
+export interface ProcessedFieldValueNull {
+  type: 'null';
+  value: NullValue;
+}
+export interface ProcessedFieldValueBoolean {
+  type: 'boolean';
+  value: BooleanValue;
+}
+export interface ProcessedFieldValueInteger {
+  type: 'integer';
+  value: IntegerValue;
+}
+export interface ProcessedFieldValueDouble {
+  type: 'double';
+  value: DoubleValue;
+}
+export interface ProcessedFieldValueTimestamp {
+  type: 'timestamp';
+  value: TimestampValue;
+}
+export interface ProcessedFieldValueString {
+  type: 'string';
+  value: StringValue;
+}
+export interface ProcessedFieldValueBytes {
+  type: 'bytes';
+  value: BytesValue;
+}
+export interface ProcessedFieldValueReference {
+  type: 'reference';
+  value: ReferenceValue;
+}
+export interface ProcessedFieldValueGeoPoint {
+  type: 'geopoint';
+  value: GeoPointValue;
+}
+export interface ProcessedFieldValueArray {
+  type: 'array';
+  value: ArrayValue['values'] | undefined;
+}
+export interface ProcessedFieldValueMap {
+  type: 'map';
+  value: MapValue['fields'];
+}
+
+export type ProcessedFieldValue =
+  | ProcessedFieldValueNull
+  | ProcessedFieldValueBoolean
+  | ProcessedFieldValueInteger
+  | ProcessedFieldValueDouble
+  | ProcessedFieldValueTimestamp
+  | ProcessedFieldValueString
+  | ProcessedFieldValueBytes
+  | ProcessedFieldValueReference
+  | ProcessedFieldValueGeoPoint
+  | ProcessedFieldValueArray
+  | ProcessedFieldValueMap;

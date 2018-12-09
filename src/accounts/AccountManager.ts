@@ -47,7 +47,7 @@ export class AccountManager {
 
   private cachedAccessToken: {
     token: GoogleOAuthAccessToken;
-    time: number;
+    expirationTime: number;
   } | null = null;
 
   private constructor(readonly account: AccountInfo) {}
@@ -61,10 +61,7 @@ export class AccountManager {
       return false;
     }
 
-    return (
-      Date.now() - 1000 * this.cachedAccessToken.time <
-      this.cachedAccessToken.token.expires_in
-    );
+    return Date.now() < this.cachedAccessToken.expirationTime;
   }
 
   async getAccessToken(): Promise<GoogleOAuthAccessToken> {
@@ -109,7 +106,7 @@ export class AccountManager {
     } else {
       this.cachedAccessToken = {
         token,
-        time: Date.now()
+        expirationTime: Date.now() + 1000 * token.expires_in
       };
       return token;
     }

@@ -97,10 +97,11 @@ function copyItemPath(element: CollectionItem | DocumentItem): void {
 }
 
 async function copyDocumentContent(element: DocumentItem): Promise<void> {
-  if (!element.document) {
+  // Documents that have been deleted don't have a "createTime" property
+  if (element.document.createTime && !element.document.fields) {
     element.document = await vscode.window.withProgress(
       {
-        title: 'Fetching document data...',
+        title: 'Fetching document contents...',
         location: vscode.ProgressLocation.Notification
       },
       async () => {
@@ -163,7 +164,7 @@ function copyDocumentFieldName(element: DocumentFieldItem): void {
 
 function copyDocumentFieldValue(element: DocumentFieldItem): void {
   try {
-    const value = JSON.stringify(getFieldValue(element.fieldValue), null, 2);
+    let value = JSON.stringify(getFieldValue(element.fieldValue));
     clipboardy.write(value);
   } catch (err) {
     console.error(err);

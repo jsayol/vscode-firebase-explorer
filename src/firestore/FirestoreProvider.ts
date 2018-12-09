@@ -7,7 +7,10 @@ import {
   DocumentFieldValue,
   processFieldValue,
   getFieldValue,
-  FirestoreDocument
+  FirestoreDocument,
+  DocumentValueType,
+  FieldValue,
+  CollectionsList
 } from './api';
 import {
   messageTreeItem,
@@ -76,6 +79,7 @@ export class FirestoreProvider
           id => new CollectionItem(id, '', account, project)
         );
       } catch (err) {
+        console.log('Firestore is not enabled...', { err });
         return [
           messageTreeItem(
             'Firestore is not enabled for this project',
@@ -100,28 +104,29 @@ export class FirestoreProvider
       const docPath = getFullPath(element.parentPath, element.name);
       let items: FirestoreProviderItem[] = [];
 
-      const [collections, document] = await Promise.all([
-        api.listCollections(docPath),
-        element.document.createTime
-          ? api.getDocument(docPath)
-          : Promise.resolve(null)
-      ]);
+      const { document, collections } = await getDocumentAndCollectionsAtPath(
+        docPath,
+        api,
+        element.document
+      );
 
-      const hasCollections = Array.isArray(collections.collectionIds);
-      if (hasCollections) {
-        items.push(
-          ...collections.collectionIds.map(
-            id => new CollectionItem(id, docPath, account, project)
-          )
-        );
-      }
+      items.push(
+        ...collections.map(
+          id => new CollectionItem(id, docPath, account, project)
+        )
+      );
 
       const hasFields = document && !!document.fields;
       if (hasFields) {
         const docFields = Object.keys(document!.fields!).sort();
         items.push(
           ...docFields.map(
-            name => new DocumentFieldItem(name, document!.fields![name])
+            name =>
+              new DocumentFieldItem(
+                element.project,
+                name,
+                document!.fields![name]
+              )
           )
         );
       }
@@ -132,21 +137,69 @@ export class FirestoreProvider
         element.document = document;
       }
 
-      if (!hasCollections && !hasFields) {
+      if (collections.length === 0 && !hasFields) {
         element.collapsibleState = vscode.TreeItemCollapsibleState.None;
         this._onDidChangeTreeData.fire(element);
       }
 
       return items;
     } else if (element instanceof DocumentFieldItem) {
-      if (element.type === 'map') {
-        return Object.keys(element.value.fields)
+      if (element.type === 'reference') {
+        const databaseMatch = element.fieldValue.referenceValue.match(
+          /projects\/([^\/]+)\/databases\/\(default\)\/documents\//
+        );
+        if (!databaseMatch || databaseMatch[1] !== element.project.projectId) {
+          return [messageTreeItem('Reference to another database')];
+        }
+
+        let items: FirestoreProviderItem[] = [];
+        const docPath = element.escapedValue!;
+
+        const { document, collections } = await getDocumentAndCollectionsAtPath(
+          docPath,
+          api
+        );
+
+        items.push(
+          ...collections.map(
+            id => new CollectionItem(id, docPath, account, project)
+          )
+        );
+
+        if (document && document.fields) {
+          const docFields = Object.keys(document.fields).sort();
+          items.push(
+            ...docFields.map(
+              name =>
+                new DocumentFieldItem(
+                  element.project,
+                  name,
+                  document!.fields![name]
+                )
+            )
+          );
+        }
+
+        return items;
+      } else if (element.type === 'map') {
+        return Object.keys(element.value)
           .sort()
           .map(
-            key => new DocumentFieldItem(key, element.value.fields[key], true)
+            key =>
+              new DocumentFieldItem(
+                element.project,
+                key,
+                element.value[key],
+                true
+              )
           );
+      } else if (element.type === 'array') {
+        return ((element.value || []) as DocumentFieldValue[]).map(
+          (value, pos) =>
+            new DocumentFieldItem(element.project, String(pos), value, true)
+        );
       } else {
-        // Items that aren't of type "map" shouldn't have child items
+        // Any other DocumentFieldItem shouldn't be expandable
         console.error('Should not happen!', element);
         return [];
       }
@@ -194,8 +247,6 @@ export class DocumentItem extends vscode.TreeItem {
     'firestore/document.svg'
   );
 
-  // readonly command: vscode.Command;
-
   name: string;
   fullName: string;
   isRemoved = false;
@@ -235,7 +286,7 @@ export class DocumentItem extends vscode.TreeItem {
   }
 
   get tooltip(): string {
-    let tooltip = this.fullName;
+    let tooltip = getFullPath(this.parentPath, this.name);
 
     if (!this.document.createTime) {
       tooltip +=
@@ -246,25 +297,31 @@ export class DocumentItem extends vscode.TreeItem {
   }
 }
 
-export class DocumentFieldItem extends vscode.TreeItem {
+export class DocumentFieldItem<
+  T extends FieldValue = any
+> extends vscode.TreeItem {
   contextValue = 'firestore.documentField';
   iconPath: string;
-  type: string;
-  value: any;
+  type: DocumentValueType;
+  value: T;
   escapedValue?: string;
 
   constructor(
+    public project: FirebaseProject,
     public name: string,
     public fieldValue: DocumentFieldValue,
-    expand = false
+    expand = true
   ) {
     super('');
 
-    const { type, value } = processFieldValue(fieldValue);
-    this.type = type;
-    this.value = value;
+    const processed = processFieldValue(fieldValue);
+    this.type = processed.type;
+    this.value = processed.value as T;
 
-    const typeIcon = type === 'integer' || type === 'double' ? 'number' : type;
+    const typeIcon =
+      processed.type === 'integer' || processed.type === 'double'
+        ? 'number'
+        : processed.type;
     this.iconPath = path.join(
       __filename,
       '..',
@@ -274,27 +331,46 @@ export class DocumentFieldItem extends vscode.TreeItem {
       `valuetype/${typeIcon}.svg`
     );
 
-    if (type === 'map') {
+    if (processed.type === 'map' || processed.type === 'array') {
       this.collapsibleState = expand
         ? vscode.TreeItemCollapsibleState.Expanded
         : vscode.TreeItemCollapsibleState.Collapsed;
+    } else if (processed.type === 'reference') {
+      this.collapsibleState = vscode.TreeItemCollapsibleState.Collapsed;
     } else {
       this.collapsibleState = vscode.TreeItemCollapsibleState.None;
     }
 
-    if (type === 'map') {
+    if (
+      processed.type === 'map' ||
+      (processed.type === 'array' && processed.value !== undefined)
+    ) {
       this.label = name;
     } else {
-      if (type === 'geopoint') {
+      if (processed.type === 'geopoint') {
         this.escapedValue =
-          decimalToDMS(value.latitude, 'lat') +
+          decimalToDMS(processed.value.latitude, 'lat') +
           ', ' +
-          decimalToDMS(value.longitude, 'lon');
+          decimalToDMS(processed.value.longitude, 'lon');
       } else {
-        this.escapedValue = JSON.stringify(getFieldValue(this.fieldValue))
-          .replace('<', '&lt;')
-          .replace('>', '&gt;');
+        this.escapedValue = getFieldValue(this.fieldValue);
+
+        if (processed.type === 'timestamp') {
+          this.escapedValue = new Date(this.escapedValue!).toUTCString();
+        } else if (processed.type !== 'reference') {
+          // If it's a reference we don't want to show it quoted
+          this.escapedValue = JSON.stringify(this.escapedValue);
+        }
+
+        if (this.escapedValue === undefined) {
+          this.escapedValue = '<i>undefined</i>';
+        } else {
+          this.escapedValue = this.escapedValue
+            .replace('<', '&lt;')
+            .replace('>', '&gt;');
+        }
       }
+
       this.label = `${name} : <code>${this.escapedValue}</code>`;
     }
   }
@@ -314,3 +390,26 @@ export type FirestoreProviderItem =
   | CollectionItem
   | DocumentItem
   | DocumentFieldItem;
+
+async function getDocumentAndCollectionsAtPath(
+  docPath: string,
+  api: FirestoreAPI,
+  currentDoc?: FirestoreDocument
+): Promise<{
+  document: FirestoreDocument | null;
+  collections: CollectionsList['collectionIds'];
+}> {
+  const [collections, document] = await Promise.all([
+    api.listCollections(docPath),
+    !currentDoc || currentDoc.createTime
+      ? api.getDocument(docPath).catch(() => null)
+      : Promise.resolve(null)
+  ]);
+
+  return {
+    document,
+    collections: Array.isArray(collections.collectionIds)
+      ? collections.collectionIds
+      : []
+  };
+}
