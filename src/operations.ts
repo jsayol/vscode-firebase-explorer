@@ -34,7 +34,7 @@ async function apiRequest(
     const token = await accountManager.getAccessToken();
 
     reqOptions.headers = {
-      Authorization: `Bearer ${token.access_token}`,
+      Authorization: `Bearer ${token}`,
       'User-Agent': 'VSCodeFirebaseExtension/' + EXTENSION_VERSION,
       'X-Client-Version': 'VSCodeFirebaseExtension/' + EXTENSION_VERSION,
       ...reqOptions.headers

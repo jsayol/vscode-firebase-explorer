@@ -41,7 +41,7 @@ export class ProjectsAPI {
     };
 
     reqOptions.headers = {
-      Authorization: `Bearer ${token.access_token}`,
+      Authorization: `Bearer ${token}`,
       'User-Agent': 'VSCodeFirebaseExtension/' + EXTENSION_VERSION,
       'X-Client-Version': 'VSCodeFirebaseExtension/' + EXTENSION_VERSION,
       ...options.headers

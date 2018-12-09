@@ -48,7 +48,9 @@ function registerProvider<T>(
 }
 
 async function firstRunCheck(context: vscode.ExtensionContext): Promise<void> {
-  // context.globalState.update('config', undefined);
+  if (!PRODUCTION) {
+    context.globalState.update('config', undefined);
+  }
 
   let extensionConfig = context.globalState.get<ExtensionConfig>('config');
 
@@ -60,13 +62,27 @@ async function firstRunCheck(context: vscode.ExtensionContext): Promise<void> {
 
     // Let's try loading the account stored by the Firebase CLI
     const cliAccount = await getCliAccount();
-    if (cliAccount !== null) {
+    if (PRODUCTION && cliAccount !== null) {
       // Found it! Let's add it to the extension accounts
       AccountManager.addAccount(cliAccount);
       vscode.window.showInformationMessage(
         `Detected new account: ${cliAccount.user.email}`
       );
+    } else {
+      showSignInPrompt();
     }
+  }
+}
+
+async function showSignInPrompt() {
+  const buttonText = 'Sign In';
+  const action = await vscode.window.showInformationMessage(
+    'Hello! Please sign in with your Google account to start using Firebase Explorer.',
+    buttonText
+  );
+
+  if (action === buttonText) {
+    vscode.commands.executeCommand('firebaseExplorer.accounts.add');
   }
 }
 

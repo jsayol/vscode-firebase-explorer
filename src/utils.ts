@@ -87,3 +87,7 @@ export function decimalToDMS(value: number, type: 'lat' | 'lon'): string {
   // return `${degrees}° ${minutes}' ${seconds}" ${direction}`;
   return result.reverse().join(' ');
 }
+
+export function generateNonce(): string {
+  return Math.round(Math.random() * (2 << 29) + 1).toString();
+}

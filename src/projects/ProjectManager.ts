@@ -1,9 +1,5 @@
 import { contains, setContext, ContextValue } from '../utils';
-import {
-  AccountManager,
-  GoogleOAuthAccessToken,
-  AccountInfo
-} from '../accounts/AccountManager';
+import { AccountManager, AccountInfo } from '../accounts/AccountManager';
 import { IosApp, AndroidApp } from '../apps/apps';
 import { ProjectsAPI } from './api';
 import { AppsAPI } from '../apps/api';
@@ -30,7 +26,7 @@ export class ProjectManager {
     this.accountManager = AccountManager.for(account);
   }
 
-  getAccessToken(): Promise<GoogleOAuthAccessToken> {
+  getAccessToken(): Promise<string> {
     return this.accountManager.getAccessToken();
   }
 

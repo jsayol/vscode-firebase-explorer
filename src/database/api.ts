@@ -22,12 +22,12 @@ export class DatabaseAPI {
 
   async getShallow(path: string): Promise<DatabaseShallowValue> {
     try {
-      const { access_token } = await this.projectManager.getAccessToken();
+      const token = await this.projectManager.getAccessToken();
       const reqOptions: request.OptionsWithUrl = {
         method: 'GET',
         url: await this.getURLForPath(path),
         json: true,
-        qs: { shallow: true, access_token }
+        qs: { shallow: true, access_token: token }
       };
       return request(reqOptions);
     } catch (err) {
@@ -38,12 +38,12 @@ export class DatabaseAPI {
   }
 
   async setValue(path: string, value: any): Promise<request.FullResponse> {
-    const { access_token } = await this.projectManager.getAccessToken();
+    const token = await this.projectManager.getAccessToken();
     const reqOptions: request.OptionsWithUrl = {
       method: 'PUT',
       url: await this.getURLForPath(path),
       json: true,
-      qs: { access_token },
+      qs: { access_token: token },
       body: value,
       resolveWithFullResponse: true
     };

@@ -36,7 +36,7 @@ export class FirestoreAPI {
       url: this.getURLForPath(path) + ':listCollectionIds',
       json: true,
       headers: {
-        Authorization: `Bearer ${token.access_token}`
+        Authorization: `Bearer ${token}`
       },
       body: { pageSize, pageToken }
     };
@@ -55,7 +55,7 @@ export class FirestoreAPI {
       url: this.getURLForPath(path),
       json: true,
       headers: {
-        Authorization: `Bearer ${token.access_token}`
+        Authorization: `Bearer ${token}`
       },
       qs: {
         pageSize,
@@ -80,7 +80,7 @@ export class FirestoreAPI {
       url: this.getURLForPath(path),
       json: true,
       headers: {
-        Authorization: `Bearer ${token.access_token}`
+        Authorization: `Bearer ${token}`
       }
     };
 
@@ -95,7 +95,7 @@ export class FirestoreAPI {
       url: this.getURLForPath(path),
       json: true,
       headers: {
-        Authorization: `Bearer ${token.access_token}`
+        Authorization: `Bearer ${token}`
       }
     };
 

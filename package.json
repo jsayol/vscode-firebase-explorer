@@ -37,7 +37,11 @@
     "watch": "webpack --watch --env.development --info-verbosity verbose",
     "postinstall": "node ./node_modules/vscode/bin/install",
     "test": "yarn run compile && node ./node_modules/vscode/bin/test",
-    "vscode:prepublish": "yarn run bundle"
+    "vscode:prepublish": "yarn run bundle",
+    "publish": "yarn publish:patch",
+    "publish:patch": "vsce publish patch --yarn",
+    "publish:minor": "vsce publish minor --yarn",
+    "publish:major": "vsce publish major --yarn"
   },
   "activationEvents": [
     "onView:firebase-projects",

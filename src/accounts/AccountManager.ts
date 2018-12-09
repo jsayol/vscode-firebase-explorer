@@ -1,9 +1,7 @@
-import * as request from 'request-promise-native';
 import { contains, getContextObj } from '../utils';
-import { APIforCLI } from './cli';
-import { API } from './login';
 import { FirebaseProject } from '../projects/ProjectManager';
 import { ProjectsAPI } from '../projects/api';
+import { AccountsAPI } from './api';
 
 const instances: { [k: string]: AccountManager } = {};
 
@@ -51,11 +49,6 @@ export class AccountManager {
     return AccountManager.setAccounts(accounts);
   }
 
-  private cachedAccessToken: {
-    token: GoogleOAuthAccessToken;
-    expirationTime: number;
-  } | null = null;
-
   private constructor(readonly account: AccountInfo) {}
 
   getRefreshToken(): string {
@@ -63,59 +56,27 @@ export class AccountManager {
   }
 
   private isCachedTokenValid(): boolean {
-    if (!this.cachedAccessToken) {
+    if (!this.account.tokens.access_token) {
       return false;
     }
 
-    return Date.now() < this.cachedAccessToken.expirationTime;
+    return Date.now() < this.account.tokens.expires_at;
   }
 
-  async getAccessToken(): Promise<GoogleOAuthAccessToken> {
+  async getAccessToken(): Promise<string> {
     if (this.isCachedTokenValid()) {
-      return this.cachedAccessToken!.token;
+      return this.account.tokens.access_token;
     }
 
-    const reqOptions: request.OptionsWithUrl = {
-      method: 'POST',
-      url: `https://${API.refreshTokenHost}${API.refreshTokenPath}`,
-      formData: {
-        grant_type: 'refresh_token',
-        refresh_token: this.account.tokens.refresh_token,
-        client_id:
-          this.account.origin === 'cli' ? APIforCLI.clientId : API.clientId,
-        client_secret:
-          this.account.origin === 'cli'
-            ? APIforCLI.clientSecret
-            : API.clientSecret
-      },
-      resolveWithFullResponse: true
+    const tokens = await AccountsAPI.for(this.account).getAccessToken();
+
+    this.account.tokens = {
+      ...this.account.tokens,
+      ...tokens,
+      expires_at: Date.now() + 1000 * tokens.expires_in
     };
 
-    let resp: request.FullResponse;
-
-    try {
-      resp = await request(reqOptions);
-    } catch (err) {
-      const error = JSON.parse(err.error);
-      let message = 'Error fetching access token: ' + error.error;
-      if (error.error_description) {
-        message += ' (' + error.error_description + ')';
-      }
-      throw new Error(message);
-    }
-
-    const token: GoogleOAuthAccessToken = JSON.parse(resp.body);
-    if (!token.access_token || !token.expires_in) {
-      throw new Error(
-        `Unexpected response while fetching access token: ${resp.body}`
-      );
-    } else {
-      this.cachedAccessToken = {
-        token,
-        expirationTime: Date.now() + 1000 * token.expires_in
-      };
-      return token;
-    }
+    return tokens.access_token;
   }
 
   getEmail(): string {
