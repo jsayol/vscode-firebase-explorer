@@ -1,4 +1,3 @@
-import * as firebaseAdmin from 'firebase-admin';
 import { AccountInfo } from '../accounts/interfaces';
 import { contains, setContext, ContextValue } from '../utils';
 import {
@@ -145,11 +144,6 @@ export class ProjectManager {
 export interface ProjectApps {
   ios: IosApp[];
   android: AndroidApp[];
-}
-
-export interface ProjectAppsMetadata {
-  ios: firebaseAdmin.projectManagement.IosAppMetadata[];
-  android: firebaseAdmin.projectManagement.AndroidAppMetadata[];
 }
 
 export interface FirebaseProject {

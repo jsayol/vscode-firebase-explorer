@@ -261,11 +261,11 @@ export class AppsAPI {
         return response.body;
       }
     } catch (err) {
-      console.log('getAppConfig ' + type, { err });
+      console.log('setDisplayName ' + type, { err });
     }
 
     vscode.window.showErrorMessage(
-      `Failed to retrieve the config for app ${appId}`
+      `Failed to set the display name for app ${appId}`
     );
 
     return;

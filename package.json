@@ -26,7 +26,7 @@
       },
       {
         "command": "firebaseExplorer.accounts.add",
-        "title": "Add account",
+        "title": "Add Account",
         "icon": {
           "light": "assets/light/account-add.svg",
           "dark": "assets/dark/account-add.svg"
@@ -34,7 +34,11 @@
       },
       {
         "command": "firebaseExplorer.projects.refresh",
-        "title": "Refresh Projects"
+        "title": "Refresh Projects",
+        "icon": {
+          "light": "assets/light/refresh.svg",
+          "dark": "assets/dark/refresh.svg"
+        }
       },
       {
         "command": "firebaseExplorer.projects.selection",
@@ -190,6 +194,11 @@
           "group": "navigation"
         },
         {
+          "command": "firebaseExplorer.projects.refresh",
+          "when": "view == firebase-projects",
+          "group": "navigation"
+        },
+        {
           "command": "firebaseExplorer.apps.create",
           "when": "view == firebase-apps && firebase:apps:loaded",
           "group": "navigation@1"
@@ -201,7 +210,7 @@
         },
         {
           "command": "firebaseExplorer.firestore.addCollection",
-          "when": "view == firebase-firestore && firebase:firestore:loaded",
+          "when": "view == firebase-firestore && firebase:firestore:loaded && -- TODO",
           "group": "navigation@1"
         },
         {
@@ -274,6 +283,11 @@
           "command": "firebaseExplorer.firestore.copyItemName",
           "when": "viewItem == firestore.collection",
           "group": "firestore.collection@1"
+        },
+        {
+          "command": "firebaseExplorer.firestore.addCollection",
+          "when": "view == firebase-firestore && firebase:firestore:loaded && !viewItem && -- TODO",
+          "group": "firestore@1"
         },
         {
           "command": "firebaseExplorer.firestore.copyItemPath",
@@ -389,7 +403,6 @@
   },
   "dependencies": {
     "clipboardy": "^1.2.3",
-    "firebase-admin": "^6.1.0",
     "jsonwebtoken": "^8.4.0",
     "portfinder": "^1.0.20",
     "request": "^2.88.0",

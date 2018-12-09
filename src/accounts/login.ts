@@ -16,7 +16,9 @@ export const API = {
   clientId:
     '877476249439-8vpbm9f7r5mvqge6ctu056prbb0did6a.apps.googleusercontent.com',
   clientSecret: 'TseOCjZ0MXoReF0EL65W-1WG',
-  authOrigin: 'https://accounts.google.com'
+  authOrigin: 'https://accounts.google.com',
+  refreshTokenHost: 'www.googleapis.com',
+  refreshTokenPath: '/oauth2/v4/token'
 };
 
 const SCOPES = [

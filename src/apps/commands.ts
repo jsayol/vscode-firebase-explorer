@@ -100,11 +100,12 @@ async function editAppName(element: AppsProviderItem): Promise<void> {
       },
       async () => {
         try {
-          await app.setDisplayName(newName);
-          element.label = newName;
-
-          const appsProvider = ProviderStore.get<AppsProvider>('apps');
-          appsProvider.refresh(element);
+          const success = await app.setDisplayName(newName);
+          if (success) {
+            element.label = newName;
+            const appsProvider = ProviderStore.get<AppsProvider>('apps');
+            appsProvider.refresh(element);
+          }
         } catch (err) {
           vscode.window.showErrorMessage(
             "Failed to update app's display name",

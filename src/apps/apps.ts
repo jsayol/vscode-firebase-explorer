@@ -74,11 +74,13 @@ export class IosApp extends BaseApp {
     return this.displayName || this.bundleId;
   }
 
-  async setDisplayName(name: string): Promise<void> {
+  async setDisplayName(name: string): Promise<boolean> {
     const newProps = await super._setDisplayName('ios', name);
     if (newProps) {
       this.bundleId = (newProps as IosAppProps).bundleId;
     }
+
+    return !!newProps;
   }
 
   async getConfig(): Promise<string | undefined> {
@@ -102,11 +104,13 @@ export class AndroidApp extends BaseApp {
     return this.displayName || this.packageName;
   }
 
-  async setDisplayName(name: string): Promise<void> {
+  async setDisplayName(name: string): Promise<boolean> {
     const newProps = await super._setDisplayName('android', name);
     if (newProps) {
       this.packageName = (newProps as AndroidAppProps).packageName;
     }
+
+    return !!newProps;
   }
 
   async getConfig(): Promise<string | undefined> {

@@ -282,8 +282,6 @@ export class DocumentFieldItem extends vscode.TreeItem {
       this.collapsibleState = vscode.TreeItemCollapsibleState.None;
     }
 
-    // decimalToDMS
-
     if (type === 'map') {
       this.label = name;
     } else {

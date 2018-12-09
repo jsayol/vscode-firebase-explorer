@@ -1,4 +1,4 @@
-import * as firebaseAdmin from 'firebase-admin';
+import * as request from 'request-promise-native';
 import { AccountInfo } from './interfaces';
 import { contains, getContextObj } from '../utils';
 import { APIforCLI } from './cli';
@@ -45,24 +45,74 @@ export class AccountManager {
     return AccountManager.setAccounts(accounts);
   }
 
-  readonly credential: firebaseAdmin.credential.Credential;
+  private cachedAccessToken: {
+    token: GoogleOAuthAccessToken;
+    time: number;
+  } | null = null;
 
-  private constructor(readonly account: AccountInfo) {
-    this.credential = firebaseAdmin.credential.refreshToken({
-      type: 'authorized_user',
-      refresh_token: account.tokens.refresh_token,
-      client_id: account.origin === 'cli' ? APIforCLI.clientId : API.clientId,
-      client_secret:
-        account.origin === 'cli' ? APIforCLI.clientSecret : API.clientSecret
-    });
-  }
+  private constructor(readonly account: AccountInfo) {}
 
   getRefreshToken(): string {
     return this.account.tokens.refresh_token;
   }
 
-  getAccessToken(): Promise<GoogleOAuthAccessToken> {
-    return this.credential.getAccessToken() as any;
+  private isCachedTokenValid(): boolean {
+    if (!this.cachedAccessToken) {
+      return false;
+    }
+
+    return (
+      Date.now() - 1000 * this.cachedAccessToken.time <
+      this.cachedAccessToken.token.expires_in
+    );
+  }
+
+  async getAccessToken(): Promise<GoogleOAuthAccessToken> {
+    if (this.isCachedTokenValid()) {
+      return this.cachedAccessToken!.token;
+    }
+
+    const reqOptions: request.OptionsWithUrl = {
+      method: 'POST',
+      url: `https://${API.refreshTokenHost}${API.refreshTokenPath}`,
+      formData: {
+        grant_type: 'refresh_token',
+        refresh_token: this.account.tokens.refresh_token,
+        client_id:
+          this.account.origin === 'cli' ? APIforCLI.clientId : API.clientId,
+        client_secret:
+          this.account.origin === 'cli'
+            ? APIforCLI.clientSecret
+            : API.clientSecret
+      },
+      resolveWithFullResponse: true
+    };
+
+    let resp: request.FullResponse;
+
+    try {
+      resp = await request(reqOptions);
+    } catch (err) {
+      const error = JSON.parse(err.error);
+      let message = 'Error fetching access token: ' + error.error;
+      if (error.error_description) {
+        message += ' (' + error.error_description + ')';
+      }
+      throw new Error(message);
+    }
+
+    const token: GoogleOAuthAccessToken = JSON.parse(resp.body);
+    if (!token.access_token || !token.expires_in) {
+      throw new Error(
+        `Unexpected response while fetching access token: ${resp.body}`
+      );
+    } else {
+      this.cachedAccessToken = {
+        token,
+        time: Date.now()
+      };
+      return token;
+    }
   }
 
   getEmail(): string {

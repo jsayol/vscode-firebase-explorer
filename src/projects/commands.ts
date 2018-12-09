@@ -2,7 +2,7 @@ import * as vscode from 'vscode';
 import { AccountInfo } from '../accounts/interfaces';
 import { ProviderStore } from '../ProviderStore';
 import { FirebaseProject } from '../projects/ProjectManager';
-import { ProjectsProvider } from '../projects/ProjectsProvider';
+import { ProjectsProvider, AccountItem } from '../projects/ProjectsProvider';
 import { FirestoreProvider } from '../firestore/FirestoreProvider';
 import { DatabaseProvider } from '../database/DatabaseProvider';
 import { setContext, ContextValue } from '../utils';
@@ -43,10 +43,9 @@ function projectSelection(
     return;
   }
 
-  // if (account) {
-  //   const m = AccountManager.for(account);
-  //   m.getAccessToken().then(token => console.log(token));
-  // }
+  if (account) {
+    // AccountManager.for(account).getAccessToken2();
+  }
 
   const appsProvider = ProviderStore.get<AppsProvider>('apps');
   const firestoreProvider = ProviderStore.get<FirestoreProvider>('firestore');
@@ -75,7 +74,7 @@ function projectSelection(
   }, 250);
 }
 
-function refreshProjects(): void {
+function refreshProjects(element?: AccountItem): void {
   const projectsProvider = ProviderStore.get<ProjectsProvider>('projects');
-  projectsProvider.refresh();
+  projectsProvider.refresh(element);
 }
