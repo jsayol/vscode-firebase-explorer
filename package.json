@@ -2,7 +2,7 @@
   "name": "firebase-explorer",
   "displayName": "Firebase Explorer",
   "description": "Visual Studio Code extension to explore and manage your Firebase projects",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "author": {
     "name": "Josep Sayol",
     "email": "josep.sayol@gmail.com"
