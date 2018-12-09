@@ -49,7 +49,7 @@ function registerProvider<T>(
 
 async function firstRunCheck(context: vscode.ExtensionContext): Promise<void> {
   if (!PRODUCTION) {
-    context.globalState.update('config', undefined);
+    // context.globalState.update('config', undefined);
   }
 
   let extensionConfig = context.globalState.get<ExtensionConfig>('config');
@@ -62,7 +62,7 @@ async function firstRunCheck(context: vscode.ExtensionContext): Promise<void> {
 
     // Let's try loading the account stored by the Firebase CLI
     const cliAccount = await getCliAccount();
-    if (PRODUCTION && cliAccount !== null) {
+    if (cliAccount !== null) {
       // Found it! Let's add it to the extension accounts
       AccountManager.addAccount(cliAccount);
       vscode.window.showInformationMessage(

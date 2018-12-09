@@ -81,7 +81,6 @@ export class FirestoreProvider
           id => new CollectionItem(id, '', account, project)
         );
       } catch (err) {
-        console.log('Firestore is not enabled...', { err });
         return [
           messageTreeItem(
             'Firestore is not enabled for this project',
