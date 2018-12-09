@@ -217,9 +217,7 @@ export function getFieldValue(field: DocumentFieldValue): any {
     return match[3];
   } else if (processed.type === 'integer') {
     // For some reason integers are returned as strings, but doubles aren't
-    return processed.value !== undefined
-      ? Number(processed.value)
-      : processed.value;
+    return processed.value !== undefined ? Number(processed.value) : undefined;
   } else {
     return processed.value;
   }
