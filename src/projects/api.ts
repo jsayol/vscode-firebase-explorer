@@ -2,7 +2,7 @@ import * as vscode from 'vscode';
 import * as request from 'request-promise-native';
 import { FirebaseProject, ProjectConfig } from './ProjectManager';
 import { AccountManager, AccountInfo } from '../accounts/AccountManager';
-import { EXTENSION_VERSION, contains } from '../utils';
+import { contains } from '../utils';
 
 const API = {
   origin: 'https://firebase.googleapis.com',

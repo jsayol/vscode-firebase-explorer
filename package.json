@@ -23,8 +23,13 @@
   "categories": [
     "Other"
   ],
+  "preview": true,
   "main": "./dist/extension",
   "icon": "assets/icon.png",
+  "galleryBanner": {
+    "color": "#039BE5",
+    "theme": "dark"
+  },
   "scripts": {
     "build": "webpack --env.development",
     "bundle": "webpack --env.production",

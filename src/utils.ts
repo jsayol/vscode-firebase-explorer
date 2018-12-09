@@ -1,8 +1,6 @@
 import * as vscode from 'vscode';
 import { ShaCertificate } from './apps/apps';
 
-export const EXTENSION_VERSION = 1;
-
 let _context: vscode.ExtensionContext;
 
 export function contains(obj: object, key: string): boolean {

@@ -1,7 +1,6 @@
 // import * as vscode from 'vscode';
 import * as request from 'request-promise-native';
 import { AccountManager } from './accounts/AccountManager';
-import { EXTENSION_VERSION } from './utils';
 
 const EXPONENTIAL_BACKOFF_WAIT = 500; // initial wait until retry, in ms
 const EXPONENTIAL_BACKOFF_FACTOR = 2;

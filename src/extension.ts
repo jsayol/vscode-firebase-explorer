@@ -11,7 +11,7 @@ import { registerAccountsCommands } from './accounts/commands';
 import { registerProjectsCommands } from './projects/commands';
 import { registerFirestoreCommands } from './firestore/commands';
 import { registerDatabaseCommands } from './database/commands';
-import { setContextObj, EXTENSION_VERSION } from './utils';
+import { setContextObj } from './utils';
 
 export async function activate(context: vscode.ExtensionContext) {
   setContextObj(context);
@@ -71,5 +71,5 @@ async function firstRunCheck(context: vscode.ExtensionContext): Promise<void> {
 }
 
 export interface ExtensionConfig {
-  version: number;
+  version: string;
 }

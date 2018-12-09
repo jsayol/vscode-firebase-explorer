@@ -1,6 +1,6 @@
 import * as vscode from 'vscode';
 import * as request from 'request-promise-native';
-import { contains, EXTENSION_VERSION } from '../utils';
+import { contains } from '../utils';
 import { FirebaseProject } from '../projects/ProjectManager';
 import { AccountManager, AccountInfo } from '../accounts/AccountManager';
 import { waitUntilDone } from '../operations';
