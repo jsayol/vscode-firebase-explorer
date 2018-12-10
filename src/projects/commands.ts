@@ -7,6 +7,7 @@ import { DatabaseProvider } from '../database/DatabaseProvider';
 import { setContext, ContextValue } from '../utils';
 import { AppsProvider } from '../apps/AppsProvider';
 import { AccountInfo } from '../accounts/AccountManager';
+import { FunctionsProvider } from '../functions/FunctionsProvider';
 
 let context: vscode.ExtensionContext;
 
@@ -43,15 +44,13 @@ function projectSelection(
     return;
   }
 
-  if (account) {
-    // AccountManager.for(account).getAccessToken2();
-  }
-
+  const functionsProvider = ProviderStore.get<FunctionsProvider>('functions');
   const appsProvider = ProviderStore.get<AppsProvider>('apps');
   const firestoreProvider = ProviderStore.get<FirestoreProvider>('firestore');
   const databaseProvider = ProviderStore.get<DatabaseProvider>('database');
 
   setContext(ContextValue.ProjectSelected, false);
+  setContext(ContextValue.FunctionsLoaded, false);
   setContext(ContextValue.AppsLoaded, false);
   setContext(ContextValue.FirestoreLoaded, false);
   setContext(ContextValue.DatabaseLoaded, false);
@@ -59,6 +58,7 @@ function projectSelection(
   // Empty selection and refresh to show "Loading..."
   context.globalState.update('selectedAccount', null);
   context.globalState.update('selectedProject', null);
+  functionsProvider.refresh();
   appsProvider.refresh();
   firestoreProvider.refresh();
   databaseProvider.refresh();
@@ -67,6 +67,7 @@ function projectSelection(
     // Re-populate the treeviews for the selected project
     context.globalState.update('selectedAccount', account);
     context.globalState.update('selectedProject', project);
+    functionsProvider.refresh();
     appsProvider.refresh();
     firestoreProvider.refresh();
     databaseProvider.refresh();

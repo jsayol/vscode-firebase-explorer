@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html lang="en">
+  <script>
+    // @ts-check
+  </script>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Function Log</title>
+    <style>
+      #header {
+        display: flex;
+        justify-content: space-between;
+      }
+      #buttons {
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        padding: 5px;
+      }
+
+      #logContainer {
+        border-top: 1px solid #757575;
+        position: absolute;
+        bottom: 0;
+        top: 35px;
+        left: 0;
+        right: 0;
+        padding-left: 10px;
+        overflow: auto;
+        font-family: Consolas, monospace;
+        font-size: 1em;
+      }
+
+      #functionName {
+        font-family: Consolas, monospace;
+      }
+
+      button {
+        border-radius: 4px;
+        /* padding: 2px 6px 0 6px; */
+        vertical-align: baseline;
+      }
+
+      .vscode-dark button {
+        color: #333333;
+        background-color: #aaaaaa;
+        border: 2px solid #777777;
+      }
+
+      .vscode-light button {
+        color: #333333;
+        background-color: #dddddd;
+        border: 2px solid #aaaaaa;
+      }
+
+      #buttons {
+        display: flex;
+        justify-content: flex-end;
+      }
+
+      #toggleLive {
+        padding: 0 4px 2px 4px;
+        font-size: 1.4em;
+        line-height: 1.1em;
+        width: 1.5em;
+      }
+
+      .dateHeader {
+        font-weight: bold;
+        font-size: 1.1em;
+      }
+
+      * + .dateHeader {
+        margin-top: 10px;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="header">
+      <span>Function: <code id="functionName"></code></span>
+      <div id="buttons">
+        <button id="toggleLive" onclick="toggleLive()">&#x25b6;</button>
+      </div>
+    </div>
+    <div id="logContainer">Loading...</div>
+  </body>
+  <script>
+    let liveState = true;
+    let disableTailOnScroll = true;
+    let lastEntry = null;
+
+    // @ts-ignore
+    const vscode = acquireVsCodeApi();
+    const logContainer = document.querySelector('#logContainer');
+    const toggleLiveButton = document.querySelector('#toggleLive');
+    const functionNameContainer = document.querySelector('#functionName');
+
+    window.addEventListener('message', event => {
+      switch (event.data.command) {
+        case 'initialize':
+          initialize(event.data);
+          break;
+
+        case 'addEntries':
+          addEntries(event.data.entries);
+          break;
+      }
+    });
+
+    function initialize(data) {
+      logContainer.innerHTML = '';
+      functionNameContainer.innerHTML = data.name;
+      liveState = data.liveState;
+    }
+
+    function addEntries(entries) {
+      entries.forEach(addEntry);
+
+      if (liveState) {
+        setTimeout(() => {
+          vscode.postMessage({
+            command: 'getEntries',
+            since: !lastEntry
+              ? undefined
+              : {
+                  timestamp: lastEntry.timestamp,
+                  insertId: lastEntry.insertId
+                }
+          });
+        }, 1000);
+      }
+
+      if (liveState) {
+        disableTailOnScroll = false;
+        scrollToBottom();
+      }
+    }
+
+    function addEntry(entry) {
+      if (entry.textPayload !== undefined) {
+        const date = new Date(entry.timestamp);
+        const entryDate = entry.timestamp.slice(0, 10);
+        const lastDate = !lastEntry
+          ? undefined
+          : lastEntry.timestamp.slice(0, 10);
+
+        if (entryDate !== lastDate) {
+          const dateDiv = document.createElement('div');
+          dateDiv.innerText = date.toLocaleDateString();
+          dateDiv.className = 'dateHeader';
+          logContainer.appendChild(dateDiv);
+        }
+
+        lastEntry = entry;
+
+        const newLog = document.createElement('div');
+        // @ts-ignore
+        newLog.innerHTML = `${date.toLocaleTimeString().padStart(11, ' ')} [${
+          entry.severity
+        }] ${entry.textPayload}`;
+        newLog.title = JSON.stringify(entry, null, 2);
+        logContainer.appendChild(newLog);
+      }
+    }
+
+    function toggleLive() {
+      liveState = !liveState;
+      onLiveStateChange();
+    }
+
+    function disableTail() {
+      liveState = false;
+      onLiveStateChange();
+    }
+
+    logContainer.addEventListener('scroll', () => {
+      if (disableTailOnScroll) {
+        if (liveState) {
+          disableTail();
+        }
+      } else {
+        disableTailOnScroll = true;
+      }
+    });
+
+    function scrollToBottom() {
+      logContainer.scrollTo(0, logContainer.scrollHeight);
+    }
+
+    function onLiveStateChange() {
+      toggleLiveButton.innerHTML = liveState ? '&#x23f8;' : '&#x25b6;';
+      vscode.postMessage({
+        command: 'liveState',
+        state: liveState
+      });
+
+      if (liveState) {
+        vscode.postMessage({
+          command: 'getEntries',
+          since: !lastEntry
+            ? undefined
+            : {
+                timestamp: lastEntry.timestamp,
+                insertId: lastEntry.insertId
+              }
+        });
+      }
+    }
+  </script>
+</html>

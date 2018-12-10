@@ -45,15 +45,73 @@
   },
   "activationEvents": [
     "onView:firebase-projects",
+    "onView:firebase-functions",
     "onView:firebase-apps",
     "onView:firebase-firestore",
     "onView:firebase-database"
   ],
   "contributes": {
+    "viewsContainers": {
+      "activitybar": [
+        {
+          "id": "firebase-explorer",
+          "title": "Firebase Explorer",
+          "icon": "assets/possibles/firebase.svg"
+        }
+      ]
+    },
+    "views": {
+      "firebase-explorer": [
+        {
+          "id": "firebase-projects",
+          "name": "Accounts & Projects"
+        },
+        {
+          "id": "firebase-functions",
+          "name": "Cloud Functions"
+        },
+        {
+          "id": "firebase-apps",
+          "name": "Mobile Apps"
+        },
+        {
+          "id": "firebase-firestore",
+          "name": "Firestore"
+        },
+        {
+          "id": "firebase-database",
+          "name": "Database"
+        }
+      ]
+    },
     "commands": [
       {
-        "command": "firebaseExplorer.sayHello",
-        "title": "Hello World"
+        "command": "firebaseExplorer.functions.refresh",
+        "title": "Refresh Functions"
+      },
+      {
+        "command": "firebaseExplorer.functions.selection",
+        "title": "Function Selection"
+      },
+      {
+        "command": "firebaseExplorer.functions.trigger.GET",
+        "title": "Trigger Function (GET)"
+      },
+      {
+        "command": "firebaseExplorer.functions.trigger.POST",
+        "title": "Trigger Function (POST)"
+      },
+      {
+        "command": "firebaseExplorer.functions.openInConsole.firebase",
+        "title": "Open in Firebase Console"
+      },
+      {
+        "command": "firebaseExplorer.functions.openInConsole.cloud",
+        "title": "Open in Cloud Console"
+      },
+      {
+        "command": "firebaseExplorer.functions.logTail",
+        "title": "View Logs"
       },
       {
         "command": "firebaseExplorer.accounts.add",
@@ -192,35 +250,6 @@
         "title": "Add Child -- TODO"
       }
     ],
-    "viewsContainers": {
-      "activitybar": [
-        {
-          "id": "firebase-explorer",
-          "title": "Firebase Explorer",
-          "icon": "assets/firebase.ico"
-        }
-      ]
-    },
-    "views": {
-      "firebase-explorer": [
-        {
-          "id": "firebase-projects",
-          "name": "Accounts & Projects"
-        },
-        {
-          "id": "firebase-apps",
-          "name": "Mobile Apps"
-        },
-        {
-          "id": "firebase-firestore",
-          "name": "Firestore"
-        },
-        {
-          "id": "firebase-database",
-          "name": "Database"
-        }
-      ]
-    },
     "menus": {
       "view/title": [
         {
@@ -264,6 +293,31 @@
           "command": "firebaseExplorer.accounts.remove",
           "when": "viewItem == account",
           "group": "account@2"
+        },
+        {
+          "command": "firebaseExplorer.functions.trigger.GET",
+          "when": "viewItem == functions.ofTriggerType.https",
+          "group": "functions.trigger@1"
+        },
+        {
+          "command": "firebaseExplorer.functions.trigger.POST",
+          "when": "viewItem == functions.ofTriggerType.https",
+          "group": "functions.trigger@2"
+        },
+        {
+          "command": "firebaseExplorer.functions.openInConsole.firebase",
+          "when": "viewItem =~ /functions.ofTriggerType/",
+          "group": "functions.openInConsole@1"
+        },
+        {
+          "command": "firebaseExplorer.functions.openInConsole.cloud",
+          "when": "viewItem =~ /functions.ofTriggerType/",
+          "group": "functions.openInConsole@2"
+        },
+        {
+          "command": "firebaseExplorer.functions.logTail",
+          "when": "viewItem =~ /functions.ofTriggerType/",
+          "group": "functions.logTail@1"
         },
         {
           "command": "firebaseExplorer.database.copyName",

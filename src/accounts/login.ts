@@ -1,17 +1,13 @@
 import * as http from 'http';
-import * as fs from 'fs';
 import * as path from 'path';
-import * as util from 'util';
 import * as request from 'request-promise-native';
 import * as jwt from 'jsonwebtoken';
 import * as portfinder from 'portfinder';
 import { parse as parseUrl } from 'url';
 import * as vscode from 'vscode';
-import { contains } from '../utils';
+import { contains, readFile } from '../utils';
 import { AccountInfo, AccountTokens, AccountUser } from './AccountManager';
 import { API_CONFIG } from './api';
-
-const readFile = util.promisify(fs.readFile);
 
 const SCOPES = [
   // OPENID

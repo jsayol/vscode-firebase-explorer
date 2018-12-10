@@ -12,6 +12,8 @@ import { registerProjectsCommands } from './projects/commands';
 import { registerFirestoreCommands } from './firestore/commands';
 import { registerDatabaseCommands } from './database/commands';
 import { setContextObj } from './utils';
+import { registerFunctionsCommands } from './functions/commands';
+import { FunctionsProvider } from './functions/FunctionsProvider';
 
 export async function activate(context: vscode.ExtensionContext) {
   setContextObj(context);
@@ -23,11 +25,13 @@ export async function activate(context: vscode.ExtensionContext) {
   context.globalState.update('selectedAccount', void 0);
   context.globalState.update('selectedProject', void 0);
 
+  registerProvider('functions', new FunctionsProvider(context));
   registerProvider('apps', new AppsProvider(context));
   registerProvider('projects', new ProjectsProvider(/*context*/));
   registerProvider('firestore', new FirestoreProvider(context));
   registerProvider('database', new DatabaseProvider(context));
 
+  registerFunctionsCommands(context);
   registerAppsCommands(context);
   registerAccountsCommands(context);
   registerProjectsCommands(context);

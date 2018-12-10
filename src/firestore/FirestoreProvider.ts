@@ -83,7 +83,7 @@ export class FirestoreProvider
       } catch (err) {
         return [
           messageTreeItem(
-            'Firestore is not enabled for this project',
+            'Not enabled for this project',
             err.error.error.message
           )
         ];

@@ -1,8 +1,7 @@
 import { homedir } from 'os';
-import { readFile as fsReadFile } from 'fs';
-import { promisify } from 'util';
 import { resolve as resolvePath } from 'path';
 import { AccountInfo } from './AccountManager';
+import { readFile } from '../utils';
 
 export const APIforCLI = {
   clientId:
@@ -18,7 +17,7 @@ export async function getCliAccount(): Promise<AccountInfo | null> {
       homedir(),
       '.config/configstore/firebase-tools.json'
     );
-    const readFile = promisify(fsReadFile);
+    
     const config = JSON.parse(await readFile(configPath, 'utf8'));
     cachedConfig = config;
   } catch (err) {

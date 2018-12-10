@@ -1,19 +1,35 @@
+import * as path from 'path';
+import * as fs from 'fs';
+import { promisify } from 'util';
 import * as vscode from 'vscode';
 import { ShaCertificate } from './apps/apps';
 
+const ASSETS_PATH = './assets';
 let _context: vscode.ExtensionContext;
 
 export function contains(obj: object, key: string): boolean {
   return Object.prototype.hasOwnProperty.call(obj, key);
 }
 
-export function messageTreeItem(msg: string, tooltip?: string): any {
+export function messageTreeItem(
+  msg: string,
+  tooltip?: string,
+  icon?: 'info' | 'alert'
+): any {
   const item = new vscode.TreeItem(
     `<i>${msg}</i>`,
     vscode.TreeItemCollapsibleState.None
   );
   item.tooltip = tooltip;
-  item.iconPath = undefined;
+
+  if (icon) {
+    item.iconPath = {
+      light: path.resolve(ASSETS_PATH, `light/${icon}.svg`),
+      dark: path.resolve(ASSETS_PATH, `dark/${icon}.svg`)
+    };
+  } else {
+    item.iconPath = undefined;
+  }
   return item;
 }
 
@@ -27,6 +43,7 @@ export function setContext(key: ContextValue, value: any): void {
 
 export enum ContextValue {
   ProjectSelected = 'projects:selected',
+  FunctionsLoaded = 'functions:loaded',
   AppsLoaded = 'apps:loaded',
   FirestoreLoaded = 'firestore:loaded',
   DatabaseLoaded = 'database:loaded'
@@ -90,4 +107,10 @@ export function decimalToDMS(value: number, type: 'lat' | 'lon'): string {
 
 export function generateNonce(): string {
   return Math.round(Math.random() * (2 << 29) + 1).toString();
+}
+
+export const readFile = promisify(fs.readFile);
+
+export function getFilePath(filename: string) {
+  return path.resolve('./', filename);
 }
