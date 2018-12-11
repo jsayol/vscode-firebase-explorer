@@ -1,6 +1,7 @@
 import * as vscode from 'vscode';
+import * as semver from 'semver';
 import { getCliAccount } from './accounts/cli';
-import { ProviderStore } from './ProviderStore';
+import { ProviderStore, TreeViewStore } from './stores';
 import { AppsProvider } from './apps/AppsProvider';
 import { AccountManager } from './accounts/AccountManager';
 import { ProjectsProvider } from './projects/ProjectsProvider';
@@ -18,8 +19,8 @@ import { FunctionsProvider } from './functions/FunctionsProvider';
 export async function activate(context: vscode.ExtensionContext) {
   setContextObj(context);
 
-  // Wait for initialization if it's the first run
-  await firstRunCheck(context);
+  // Wait for initialization
+  await initialize(context);
 
   // Clean-up any previous selections
   context.globalState.update('selectedAccount', void 0);
@@ -47,11 +48,15 @@ function registerProvider<T>(
   name: string,
   provider: vscode.TreeDataProvider<T>
 ) {
+  const treeView = vscode.window.createTreeView(`firebase-${name}`, {
+    treeDataProvider: provider
+  });
+  TreeViewStore.add(name, treeView);
   ProviderStore.add(name, provider);
-  vscode.window.registerTreeDataProvider(`firebase-${name}`, provider);
+  // vscode.window.registerTreeDataProvider(`firebase-${name}`, provider);
 }
 
-async function firstRunCheck(context: vscode.ExtensionContext): Promise<void> {
+async function initialize(context: vscode.ExtensionContext): Promise<void> {
   if (!PRODUCTION) {
     // context.globalState.update('config', undefined);
   }
@@ -76,12 +81,40 @@ async function firstRunCheck(context: vscode.ExtensionContext): Promise<void> {
       showSignInPrompt();
     }
   }
+
+  if (!semver.eq(extensionConfig.version, EXTENSION_VERSION)) {
+    // The extension has updated. Perform any necessary upgrades to the config.
+
+    if (semver.lte(extensionConfig.version, '0.0.2')) {
+      // After 0.0.2 we changed the way we log in (different clientId).
+      // Any accounts we logged in up to that version are no longer valid.
+      // Accounts imported from the CLI are not affected.
+      const allAccounts = AccountManager.getAccounts();
+      const goodAccounts = allAccounts.filter(
+        account => account.origin !== 'login'
+      );
+
+      if (allAccounts.length !== goodAccounts.length) {
+        AccountManager.setAccounts(goodAccounts);
+        showSignInPrompt(
+          'Hey there! We made some changes to the extension. You will need to sign in again to continue. Sorry about that!'
+        );
+      }
+    }
+
+    // Set the updated extension version
+    extensionConfig.version = EXTENSION_VERSION;
+
+    // Store the updated config
+    context.globalState.update('config', extensionConfig);
+  }
 }
 
-async function showSignInPrompt() {
+async function showSignInPrompt(msg?: string) {
   const buttonText = 'Sign In';
   const action = await vscode.window.showInformationMessage(
-    'Hello! Please sign in with your Google account to start using Firebase Explorer.',
+    msg ||
+      'Hello! Please sign in with your Google account to start using Firebase Explorer.',
     buttonText
   );
 

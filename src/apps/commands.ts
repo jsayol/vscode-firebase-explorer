@@ -6,7 +6,7 @@ import {
   FingerprintFolderItem,
   FingerprintItem
 } from './AppsProvider';
-import { ProviderStore } from '../ProviderStore';
+import { ProviderStore } from '../stores';
 import { IosApp, AndroidApp, ShaCertificate } from './apps';
 import { getCertTypeForFingerprint } from '../utils';
 import { FirebaseProject } from '../projects/ProjectManager';

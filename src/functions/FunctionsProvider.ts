@@ -1,5 +1,6 @@
 import * as path from 'path';
 import * as vscode from 'vscode';
+import * as directoryTree from 'directory-tree';
 import { FirebaseProject } from '../projects/ProjectManager';
 import { messageTreeItem } from '../utils';
 import { AccountInfo } from '../accounts/AccountManager';
@@ -24,6 +25,14 @@ export class FunctionsProvider
     return element;
   }
 
+  getParent(element: FunctionsProviderItem): FunctionsProviderItem | undefined {
+    if (element instanceof FunctionTriggerTypeItem) {
+      return undefined;
+    } else {
+      return element.parent;
+    }
+  }
+
   async getChildren(
     element?: FunctionsProviderItem
   ): Promise<FunctionsProviderItem[]> {
@@ -43,8 +52,9 @@ export class FunctionsProvider
       return [];
     }
 
+    const functionsApi = FunctionsAPI.for(account, project);
+
     if (!element) {
-      const functionsApi = FunctionsAPI.for(account, project);
       let functions: CloudFunction[] | null;
 
       try {
@@ -89,7 +99,7 @@ export class FunctionsProvider
           httpsFunctions.push(fn);
         } else {
           otherFunctions.push(fn);
-          console.log('Unknown Cloud Function type.', fn);
+          console.log('Unknown Cloud Function type!', fn);
         }
       });
 
@@ -131,11 +141,24 @@ export class FunctionsProvider
       return items;
     } else if (element instanceof FunctionTriggerTypeItem) {
       return element.functions.map(
-        fn => new CloudFunctionItem(account, project, element.type, fn)
+        fn => new CloudFunctionItem(account, project, element.type, fn, element)
       );
     } else if (element instanceof CloudFunctionItem) {
-      // TODO?
-      return [];
+      if (!element.sourceCodeDir) {
+        return [];
+      }
+
+      const dirTree = directoryTree(element.sourceCodeDir);
+      if (dirTree.type !== 'directory') {
+        throw new Error('Source code directory is not a directory!');
+      }
+      return dirTree.children!.map(
+        child => new CloudFunctionSourceItem(child, element)
+      );
+    } else if (element instanceof CloudFunctionSourceItem) {
+      return element.tree.children!.map(
+        child => new CloudFunctionSourceItem(child, element)
+      );
     } else {
       return [];
     }
@@ -151,10 +174,11 @@ export class FunctionTriggerTypeItem extends vscode.TreeItem {
   ) {
     super('', vscode.TreeItemCollapsibleState.Expanded);
     this.contextValue = `functions.triggerType.${type}`;
-    this.iconPath = {
-      light: path.resolve(ASSETS_PATH, `functions/light/${type}-trigger.svg`),
-      dark: path.resolve(ASSETS_PATH, `functions/dark/${type}-trigger.svg`)
-    };
+    // this.iconPath = {
+    //   light: path.resolve(ASSETS_PATH, `functions/light/${type}-trigger.svg`),
+    //   dark: path.resolve(ASSETS_PATH, `functions/dark/${type}-trigger.svg`)
+    // };
+    this.iconPath = path.resolve(ASSETS_PATH, `functions/${type}-trigger.svg`);
 
     switch (type) {
       case CloudFunctionTriggerType.Event:
@@ -179,26 +203,59 @@ export class FunctionTriggerTypeItem extends vscode.TreeItem {
 }
 
 export class CloudFunctionItem extends vscode.TreeItem {
-  readonly command: vscode.Command = {
-    command: 'firebaseExplorer.functions.selection',
-    title: '',
-    arguments: [this.account, this.project, this.cloudFunction]
-  };
+  sourceCodeDir?: string;
 
   constructor(
     public account: AccountInfo,
     public project: FirebaseProject,
     public type: CloudFunctionTriggerType,
-    public cloudFunction: CloudFunction
+    public cloudFunction: CloudFunction,
+    public parent: FunctionsProviderItem
   ) {
     super(cloudFunction.entryPoint, vscode.TreeItemCollapsibleState.None);
     this.contextValue = `functions.ofTriggerType.${type}`;
-    this.iconPath = path.resolve(ASSETS_PATH, `functions/${type}-trigger.svg`);
+    // this.iconPath = path.resolve(ASSETS_PATH, `functions/${type}-trigger.svg`);
+    this.iconPath = {
+      dark: path.resolve(ASSETS_PATH, `functions/dark/cloud-functions.svg`),
+      light: path.resolve(ASSETS_PATH, `functions/light/cloud-functions.svg`)
+    };
   }
 
   get tooltip(): string {
     return this.label!;
   }
+
+  setSourceDir(dirPath: string) {
+    this.sourceCodeDir = dirPath;
+    this.collapsibleState = vscode.TreeItemCollapsibleState.Expanded;
+  }
 }
 
-export type FunctionsProviderItem = FunctionTriggerTypeItem | CloudFunctionItem;
+export class CloudFunctionSourceItem extends vscode.TreeItem {
+  constructor(
+    public tree: ReturnType<typeof directoryTree>,
+    public parent: FunctionsProviderItem
+  ) {
+    super(tree.name);
+
+    this.resourceUri = vscode.Uri.file(tree.path);
+
+    if (tree.type === 'directory') {
+      this.iconPath = vscode.ThemeIcon.Folder;
+      this.collapsibleState = vscode.TreeItemCollapsibleState.Expanded;
+    } else {
+      this.iconPath = vscode.ThemeIcon.File;
+      this.collapsibleState = vscode.TreeItemCollapsibleState.None;
+      this.command = {
+        command: 'vscode.open',
+        title: '',
+        arguments: [this.resourceUri]
+      };
+    }
+  }
+}
+
+export type FunctionsProviderItem =
+  | FunctionTriggerTypeItem
+  | CloudFunctionItem
+  | CloudFunctionSourceItem;

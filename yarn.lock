@@ -24,6 +24,11 @@
   resolved "https://registry.yarnpkg.com/@types/clipboardy/-/clipboardy-1.1.0.tgz#316fe1a3ed71b1a51becb925e7e0497986c6a85c"
   integrity sha512-KOxf4ah9diZWmREM5jCupx2+pZaBPwKk5d5jeNK2+TY6IgEO35uhG55NnDT4cdXeRX8irDSHQPtdRrr0JOTQIw==
 
+"@types/events@*":
+  version "1.2.0"
+  resolved "https://registry.yarnpkg.com/@types/events/-/events-1.2.0.tgz#81a6731ce4df43619e5c8c945383b3e62a89ea86"
+  integrity sha512-KEIlhXnIutzKwRbQkGWb/I4HFqBuUykAdHgDED6xqwXJfONCjF5VoE0cXEiurh3XauygxzeDzgtXUqvLkxFzzA==
+
 "@types/form-data@*":
   version "2.2.1"
   resolved "https://registry.yarnpkg.com/@types/form-data/-/form-data-2.2.1.tgz#ee2b3b8eaa11c0938289953606b745b738c54b1e"
@@ -65,10 +70,20 @@
     "@types/node" "*"
     "@types/tough-cookie" "*"
 
+"@types/semver@^5.5.0":
+  version "5.5.0"
+  resolved "https://registry.yarnpkg.com/@types/semver/-/semver-5.5.0.tgz#146c2a29ee7d3bae4bf2fcb274636e264c813c45"
+  integrity sha512-41qEJgBH/TWgo5NFSvBCJ1qkoi3Q6ONSF2avrHq1LVEZfYpdHmj0y9SuTK+u9ZhG1sYQKBL1AWXKyLWP4RaUoQ==
+
 "@types/tapable@*":
   version "1.0.4"
   resolved "https://registry.yarnpkg.com/@types/tapable/-/tapable-1.0.4.tgz#b4ffc7dc97b498c969b360a41eee247f82616370"
   integrity sha512-78AdXtlhpCHT0K3EytMpn4JNxaf5tbqbLcbIRoQIHzpTIyjpxLQKRoxU55ujBXAtg3Nl2h/XWvfDa9dsMOd0pQ==
+
+"@types/tmp@^0.0.33":
+  version "0.0.33"
+  resolved "https://registry.yarnpkg.com/@types/tmp/-/tmp-0.0.33.tgz#1073c4bc824754ae3d10cfab88ab0237ba964e4d"
+  integrity sha1-EHPEvIJHVK49EM+riKsCN7qWTk0=
 
 "@types/tough-cookie@*":
   version "2.3.4"
@@ -92,6 +107,14 @@
     "@types/tapable" "*"
     "@types/uglify-js" "*"
     source-map "^0.6.0"
+
+"@types/yauzl@^2.9.0":
+  version "2.9.0"
+  resolved "https://registry.yarnpkg.com/@types/yauzl/-/yauzl-2.9.0.tgz#b8427df4659c77a9f5f1bf684a1f54a5159032f6"
+  integrity sha512-KVQbjKvieCq6d5LqZ8KIzzwygF88fWC+l7wvPbRPM3OI3f9ZAlhaKUlk3kjiyvOMqopSTM7enjduXXl5B+msXw==
+  dependencies:
+    "@types/events" "*"
+    "@types/node" "*"
 
 "@webassemblyjs/ast@1.7.11":
   version "1.7.11"
@@ -632,7 +655,7 @@ block-stream@*:
   dependencies:
     inherits "~2.0.0"
 
-bluebird@^3.5.1:
+bluebird@^3.5.0, bluebird@^3.5.1:
   version "3.5.3"
   resolved "https://registry.yarnpkg.com/bluebird/-/bluebird-3.5.3.tgz#7d01c6f9616c9a51ab0f8c549a79dfe6ec33efa7"
   integrity sha512-/qKPUQlaW1OyR51WeCPBvRnAlnZFUJkCSG5HzGnuIqhgyJtF+T94lFnn33eiazjRm2LAHVy2guNnaq48X9SJuw==
@@ -1364,6 +1387,11 @@ diffie-hellman@^5.0.0:
     bn.js "^4.1.0"
     miller-rabin "^4.0.0"
     randombytes "^2.0.0"
+
+directory-tree@^2.2.0:
+  version "2.2.0"
+  resolved "https://registry.yarnpkg.com/directory-tree/-/directory-tree-2.2.0.tgz#bfa239d47c26cf3edde52ddebd037911f51c6ee0"
+  integrity sha512-ZHQDIK7NHy0xokdR9sE0h+YfN2unwjLK6CwofJ6NpMuQVEcTZqjTeiTgmx60ieJkngZYkVFAVGiihE4hwpkJeQ==
 
 doctrine@0.7.2:
   version "0.7.2"
@@ -3260,7 +3288,7 @@ os-locale@^3.0.0:
     lcid "^2.0.0"
     mem "^4.0.0"
 
-os-tmpdir@^1.0.0:
+os-tmpdir@^1.0.0, os-tmpdir@~1.0.2:
   version "1.0.2"
   resolved "https://registry.yarnpkg.com/os-tmpdir/-/os-tmpdir-1.0.2.tgz#bbe67406c79aa85c5cfec766fe5734555dfa1274"
   integrity sha1-u+Z0BseaqFxc/sdm/lc0VV36EnQ=
@@ -3850,7 +3878,7 @@ schema-utils@^1.0.0:
     ajv-errors "^1.0.0"
     ajv-keywords "^3.1.0"
 
-semver@^5.0.1, semver@^5.3.0, semver@^5.4.1, semver@^5.5.0:
+semver@^5.0.1, semver@^5.3.0, semver@^5.4.1, semver@^5.5.0, semver@^5.6.0:
   version "5.6.0"
   resolved "https://registry.yarnpkg.com/semver/-/semver-5.6.0.tgz#7e74256fbaa49c75aa7c7a205cc22799cac80004"
   integrity sha512-RS9R6R35NYgQn++fkDWaOmqGoj4Ek9gGs+DPxNUZKuwE183xjJroKvyo1IzVFeXvUrvmALy6FWD5xrdJT25gMg==
@@ -4303,6 +4331,21 @@ timers-browserify@^2.0.4:
   integrity sha512-YvC1SV1XdOUaL6gx5CoGroT3Gu49pK9+TZ38ErPldOWW4j49GI1HKs9DV+KGq/w6y+LZ72W1c8cKz2vzY+qpzg==
   dependencies:
     setimmediate "^1.0.4"
+
+tmp-promise@^1.0.5:
+  version "1.0.5"
+  resolved "https://registry.yarnpkg.com/tmp-promise/-/tmp-promise-1.0.5.tgz#3208d7fa44758f86a2a4c4060f3c33fea30e8038"
+  integrity sha512-hOabTz9Tp49wCozFwuJe5ISrOqkECm6kzw66XTP23DuzNU7QS/KiZq5LC9Y7QSy8f1rPSLy4bKaViP0OwGI1cA==
+  dependencies:
+    bluebird "^3.5.0"
+    tmp "0.0.33"
+
+tmp@0.0.33:
+  version "0.0.33"
+  resolved "https://registry.yarnpkg.com/tmp/-/tmp-0.0.33.tgz#6d34335889768d21b2bcda0aa277ced3b1bfadf9"
+  integrity sha512-jRCJlojKnZ3addtTOjdIqoRuPEKBvNXcGYqzO6zWZX8KfKEpnGY5jfggJQ3EjKuu8D4bJRr0y+cYJFmYbImXGw==
+  dependencies:
+    os-tmpdir "~1.0.2"
 
 to-absolute-glob@^2.0.0:
   version "2.0.2"
@@ -4875,7 +4918,7 @@ yargs@^12.0.2:
     y18n "^3.2.1 || ^4.0.0"
     yargs-parser "^11.1.1"
 
-yauzl@^2.2.1:
+yauzl@^2.10.0, yauzl@^2.2.1:
   version "2.10.0"
   resolved "https://registry.yarnpkg.com/yauzl/-/yauzl-2.10.0.tgz#c7eb17c93e112cb1086fa6d8e51fb0667b79a5f9"
   integrity sha1-x+sXyT4RLLEIb6bY5R+wZnt5pfk=

@@ -3,7 +3,7 @@ import * as clipboardy from 'clipboardy';
 import { DatabaseProviderItem, DatabaseProvider } from './DatabaseProvider';
 import { getFullPath } from '../utils';
 import { DatabaseAPI } from './api';
-import { ProviderStore } from '../ProviderStore';
+import { ProviderStore } from '../stores';
 
 export function registerDatabaseCommands(context: vscode.ExtensionContext) {
   context.subscriptions.push(

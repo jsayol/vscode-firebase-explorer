@@ -1,9 +1,10 @@
-// @ts-check
+// // @ts-check
 
 'use strict';
 
 const fs = require('fs');
 const path = require('path');
+const semver = require('semver');
 const webpack = require('webpack');
 const CleanPlugin = require('clean-webpack-plugin');
 const TerserPlugin = require('terser-webpack-plugin');
@@ -34,12 +35,16 @@ function getExtensionConfig(env) {
     clean.push('fallbacks');
   }
 
+  const extVersion = env.production
+    ? pkg.version
+    : semver.inc(pkg.version, 'prerelease', 'dev');
+
   const plugins = [
     new CleanPlugin(clean, { verbose: false }),
     new webpack.IgnorePlugin(/^spawn-sync$/),
     new webpack.DefinePlugin({
       PRODUCTION: JSON.stringify(env.production),
-      EXTENSION_VERSION: JSON.stringify(pkg.version)
+      EXTENSION_VERSION: JSON.stringify(extVersion)
     })
   ];
 
@@ -99,7 +104,14 @@ function getExtensionConfig(env) {
         {
           test: /\.ts$/,
           enforce: 'pre',
-          use: 'tslint-loader',
+          use: [
+            {
+              loader: 'tslint-loader',
+              options: {
+                typeCheck: true
+              }
+            }
+          ],
           exclude: /node_modules/
         },
         {

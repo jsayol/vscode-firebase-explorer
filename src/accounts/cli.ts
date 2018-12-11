@@ -3,7 +3,7 @@ import { resolve as resolvePath } from 'path';
 import { AccountInfo } from './AccountManager';
 import { readFile } from '../utils';
 
-export const APIforCLI = {
+export const CLI_API_CONFIG = {
   clientId:
     '563584335869-fgrhgmd47bqnekij5i8b5pr03ho849e6.apps.googleusercontent.com',
   clientSecret: 'j9iVZfS8kkCEFUPaAeJV0sAi'

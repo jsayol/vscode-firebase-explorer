@@ -1,12 +1,9 @@
 import * as request from 'request-promise-native';
 import { contains } from '../utils';
-import { APIforCLI } from './cli';
+import { CLI_API_CONFIG } from './cli';
 import { AccountInfo, GoogleOAuthAccessToken } from './AccountManager';
 
 export const API_CONFIG = {
-  clientId:
-    '877476249439-8vpbm9f7r5mvqge6ctu056prbb0did6a.apps.googleusercontent.com',
-  clientSecret: 'TseOCjZ0MXoReF0EL65W-1WG',
   authOrigin: 'https://accounts.google.com',
   refreshTokenHost: 'www.googleapis.com',
   refreshTokenPath: '/oauth2/v4/token'
@@ -30,16 +27,20 @@ export class AccountsAPI {
   async getAccessToken(): Promise<GoogleOAuthAccessToken> {
     const reqOptions: request.OptionsWithUrl = {
       method: 'POST',
-      url: `https://${API_CONFIG.refreshTokenHost}${API_CONFIG.refreshTokenPath}`,
+      url: `https://${API_CONFIG.refreshTokenHost}${
+        API_CONFIG.refreshTokenPath
+      }`,
       formData: {
         grant_type: 'refresh_token',
         refresh_token: this.account.tokens.refresh_token,
         client_id:
-          this.account.origin === 'cli' ? APIforCLI.clientId : API_CONFIG.clientId,
+          this.account.origin === 'cli'
+            ? CLI_API_CONFIG.clientId
+            : /*API_CONFIG*/ CLI_API_CONFIG.clientId,
         client_secret:
           this.account.origin === 'cli'
-            ? APIforCLI.clientSecret
-            : API_CONFIG.clientSecret
+            ? CLI_API_CONFIG.clientSecret
+            : /*API_CONFIG*/ CLI_API_CONFIG.clientSecret
       },
       resolveWithFullResponse: true
     };

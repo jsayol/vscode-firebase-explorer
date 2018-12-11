@@ -45,7 +45,7 @@ export class FunctionsAPI {
     const token = await this.accountManager.getAccessToken();
     const reqOptions: request.OptionsWithUrl = {
       method,
-      url: `${CONFIG.origin}/${resource}`,
+      url: `${CONFIG.origin}/${CONFIG.version}/${resource}`,
       resolveWithFullResponse: true,
       json: true,
       ...options
@@ -62,12 +62,12 @@ export class FunctionsAPI {
   }
 
   async list(region = '-'): Promise<CloudFunction[] | null> {
-    const endpoint = `${CONFIG.version}/projects/${
+    const resource = `projects/${
       this.project.projectId
     }/locations/${region}/functions`;
 
     try {
-      const response = await this.authedRequest('GET', endpoint);
+      const response = await this.authedRequest('GET', resource);
       return response.body.functions || [];
     } catch (err) {
       if (err.statusCode === 403) {
@@ -166,6 +166,16 @@ export class FunctionsAPI {
     });
     return response.body.entries || [];
   }
+
+  async getDownloadUrl(fn: CloudFunction): Promise<string> {
+    const { name, versionId } = fn;
+    const response = await this.authedRequest(
+      'POST',
+      `${name}:generateDownloadUrl`,
+      { body: { versionId } }
+    );
+    return response.body.downloadUrl || '';
+  }
 }
 
 function parseBody(response: request.FullResponse) {
@@ -211,6 +221,19 @@ interface CloudFunctionBase {
   // End of list of possible types for union field source_code.
 }
 
+export interface CloudFunctionWithEventTrigger extends CloudFunctionBase {
+  eventTrigger: CloudFunctionEventTrigger;
+}
+
+export interface CloudFunctionWithHttpsTrigger extends CloudFunctionBase {
+  httpsTrigger: {
+    url: string;
+  };
+}
+
+export type CloudFunction = CloudFunctionWithEventTrigger &
+  CloudFunctionWithHttpsTrigger;
+
 export interface CloudFunctionEventTrigger {
   eventType: string;
   resource: string;
@@ -225,19 +248,6 @@ export interface CloudFunctionEventTrigger {
 export interface CloudFunctionEventTriggerFailurePolicy {
   // ...
 }
-
-export interface CloudFunctionWithEventTrigger extends CloudFunctionBase {
-  eventTrigger: CloudFunctionEventTrigger;
-}
-
-export interface CloudFunctionWithHttpsTrigger extends CloudFunctionBase {
-  httpsTrigger: {
-    url: string;
-  };
-}
-
-export type CloudFunction = CloudFunctionWithEventTrigger &
-  CloudFunctionWithHttpsTrigger;
 
 export enum CloudFunctionTriggerType {
   Event = 'event',
@@ -345,3 +355,26 @@ export enum CloudFunctionLogSeverity {
   ALERT = 'ALERT',
   EMERGENCY = 'EMERGENCY'
 }
+
+// fetch(
+//   'https://console.cloud.google.com/m/gcf/code?pid=josep-sayol&region=us-central1&functionName=testing&functionVersion=4&folder&organizationId',
+//   {
+//     credentials: 'include',
+//     headers: {
+//       accept: 'application/json, text/plain, */*',
+//       'accept-language': 'en-US,en;q=0.9,ca-ES;q=0.8,ca;q=0.7,es;q=0.6',
+//       'cache-control': 'no-cache',
+//       pragma: 'no-cache',
+//       'x-client-data': 'CIm2yQEIpbbJAQipncoBCLudygEIqKPKARj5pcoB',
+//       'x-goog-request-log-data':
+//         'clientVersion=qualified-tooling-201812031603-rc01,pagePath=/functions/details/:regionName/:resourceName,pageViewId=4002905441361051',
+//       'x-pan-versionid': 'qualified-tooling-201812031603-rc01'
+//     },
+//     referrer:
+//       'https://console.cloud.google.com/functions/details/us-central1/testing?project=josep-sayol&folder&organizationId',
+//     referrerPolicy: 'no-referrer-when-downgrade',
+//     body: null,
+//     method: 'GET',
+//     mode: 'cors'
+//   }
+// );

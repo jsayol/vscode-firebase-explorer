@@ -8,6 +8,7 @@ import * as vscode from 'vscode';
 import { contains, readFile } from '../utils';
 import { AccountInfo, AccountTokens, AccountUser } from './AccountManager';
 import { API_CONFIG } from './api';
+import { CLI_API_CONFIG } from './cli';
 
 const SCOPES = [
   // OPENID
@@ -67,7 +68,7 @@ export async function initiateLogin(nonce: string): Promise<AccountInfo> {
 
     servers[nonce].listen(port, () => {
       const loginParams: { [k: string]: string } = {
-        client_id: API_CONFIG.clientId,
+        client_id: /*API_CONFIG*/CLI_API_CONFIG.clientId,
         scope: SCOPES.join(' '),
         response_type: 'code',
         state: nonce,
@@ -108,8 +109,8 @@ async function getTokensFromAuthCode(
     json: true,
     form: {
       code: code,
-      client_id: API_CONFIG.clientId,
-      client_secret: API_CONFIG.clientSecret,
+      client_id: /*API_CONFIG*/CLI_API_CONFIG.clientId,
+      client_secret: /*API_CONFIG*/CLI_API_CONFIG.clientSecret,
       redirect_uri: callbackUrl,
       grant_type: 'authorization_code'
     }

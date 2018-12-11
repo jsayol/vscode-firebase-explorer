@@ -15,7 +15,7 @@
         "VSCODE_DEBUGGING_EXTENSION": "firebase-explorer"
       },
       "outFiles": ["${workspaceFolder}/dist/extension.js"],
-      "preLaunchTask": "npm: build"
+      "preLaunchTask": "npm: watch"
     },
     {
       "name": "Extension Tests",

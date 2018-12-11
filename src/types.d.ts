@@ -1,2 +1,2 @@
-declare const PRODUCTION: boolean;
-declare const EXTENSION_VERSION: string;
+declare var PRODUCTION: boolean;
+declare var EXTENSION_VERSION: string;

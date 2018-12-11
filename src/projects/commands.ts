@@ -1,5 +1,5 @@
 import * as vscode from 'vscode';
-import { ProviderStore } from '../ProviderStore';
+import { ProviderStore } from '../stores';
 import { FirebaseProject } from '../projects/ProjectManager';
 import { ProjectsProvider, AccountItem } from '../projects/ProjectsProvider';
 import { FirestoreProvider } from '../firestore/FirestoreProvider';

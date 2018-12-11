@@ -1,6 +1,6 @@
 import * as vscode from 'vscode';
 import * as clipboardy from 'clipboardy';
-import { ProviderStore } from '../ProviderStore';
+import { ProviderStore } from '../stores';
 import {
   FirestoreProviderItem,
   FirestoreProvider,

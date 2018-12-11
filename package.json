@@ -31,17 +31,19 @@
     "theme": "dark"
   },
   "scripts": {
+    "watch": "webpack --silent --env.development",
     "build": "webpack --env.development",
     "bundle": "webpack --env.production",
     "compile": "tsc -p ./",
-    "watch": "webpack --watch --env.development --info-verbosity verbose",
+    "build:watch": "webpack --watch --env.development --info-verbosity verbose",
     "postinstall": "node ./node_modules/vscode/bin/install",
-    "test": "yarn run compile && node ./node_modules/vscode/bin/test",
-    "vscode:prepublish": "yarn run bundle",
+    "test": "yarn compile && node ./node_modules/vscode/bin/test",
+    "vscode:prepublish": "yarn bundle",
     "publish": "yarn publish:patch",
     "publish:patch": "vsce publish patch --yarn",
     "publish:minor": "vsce publish minor --yarn",
-    "publish:major": "vsce publish major --yarn"
+    "publish:major": "vsce publish major --yarn",
+    "webpack": "webpack"
   },
   "activationEvents": [
     "onView:firebase-projects",
@@ -110,8 +112,12 @@
         "title": "Open in Cloud Console"
       },
       {
-        "command": "firebaseExplorer.functions.logTail",
+        "command": "firebaseExplorer.functions.viewLogs",
         "title": "View Logs"
+      },
+      {
+        "command": "firebaseExplorer.functions.viewSource",
+        "title": "View Source Code"
       },
       {
         "command": "firebaseExplorer.accounts.add",
@@ -315,9 +321,14 @@
           "group": "functions.openInConsole@2"
         },
         {
-          "command": "firebaseExplorer.functions.logTail",
+          "command": "firebaseExplorer.functions.viewLogs",
           "when": "viewItem =~ /functions.ofTriggerType/",
-          "group": "functions.logTail@1"
+          "group": "functions.details@1"
+        },
+        {
+          "command": "firebaseExplorer.functions.viewSource",
+          "when": "viewItem =~ /functions.ofTriggerType/",
+          "group": "functions.details@2"
         },
         {
           "command": "firebaseExplorer.database.copyName",
@@ -484,7 +495,10 @@
     "@types/mocha": "^5.2.5",
     "@types/node": "^10.12.12",
     "@types/request-promise-native": "^1.0.15",
+    "@types/semver": "^5.5.0",
+    "@types/tmp": "^0.0.33",
     "@types/webpack": "^4.4.20",
+    "@types/yauzl": "^2.9.0",
     "clean-webpack-plugin": "^1.0.0",
     "filemanager-webpack-plugin": "^2.0.5",
     "prettier": "^1.15.3",
@@ -501,12 +515,16 @@
   },
   "dependencies": {
     "clipboardy": "^1.2.3",
+    "directory-tree": "^2.2.0",
     "jsonwebtoken": "^8.4.0",
     "portfinder": "^1.0.20",
     "request": "^2.88.0",
     "request-promise-native": "^1.0.5",
+    "semver": "^5.6.0",
+    "tmp-promise": "^1.0.5",
     "tslib": "^1.9.3",
-    "vscode": "^1.1.24"
+    "vscode": "^1.1.24",
+    "yauzl": "^2.10.0"
   },
   "prettier": {
     "semi": true,

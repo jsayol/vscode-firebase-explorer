@@ -1,12 +1,17 @@
 import * as vscode from 'vscode';
 import * as request from 'request-promise-native';
 import { FunctionsProvider, CloudFunctionItem } from './FunctionsProvider';
-import { ProviderStore } from '../ProviderStore';
+import { ProviderStore, TreeViewStore } from '../stores';
 import { AccountInfo } from '../accounts/AccountManager';
 import { FirebaseProject } from '../projects/ProjectManager';
 import { CloudFunction, FunctionsAPI } from './api';
 import { getDetailsFromName } from './utils';
-import { readFile, getFilePath } from '../utils';
+import {
+  readFile,
+  getFilePath,
+  downloadToTmpFile,
+  unzipToTmpDir
+} from '../utils';
 
 let context: vscode.ExtensionContext;
 
@@ -57,10 +62,18 @@ export function registerFunctionsCommands(_context: vscode.ExtensionContext) {
 
   context.subscriptions.push(
     vscode.commands.registerCommand(
-      'firebaseExplorer.functions.logTail',
-      logTail
+      'firebaseExplorer.functions.viewLogs',
+      viewLogs
     )
   );
+
+  context.subscriptions.push(
+    vscode.commands.registerCommand(
+      'firebaseExplorer.functions.viewSource',
+      viewSource
+    )
+  );
+
 }
 
 function refreshFunctions(): void {
@@ -115,7 +128,7 @@ function openInFirebaseConsole(element: CloudFunctionItem): void {
   );
 }
 
-async function logTail(element: CloudFunctionItem): Promise<void> {
+async function viewLogs(element: CloudFunctionItem): Promise<void> {
   const fnName = element.cloudFunction.entryPoint;
 
   try {
@@ -191,6 +204,41 @@ async function logTail(element: CloudFunctionItem): Promise<void> {
           command: 'addEntries',
           entries: logEntries
         });
+      }
+    );
+  } catch (err) {
+    console.log({ err });
+  }
+}
+
+async function viewSource(element: CloudFunctionItem): Promise<void> {
+  const fnName = element.cloudFunction.entryPoint;
+
+  try {
+    await vscode.window.withProgress(
+      {
+        title: 'Getting source from Cloud Storage for ' + fnName,
+        location: vscode.ProgressLocation.Notification
+      },
+      async () => {
+        const api = FunctionsAPI.for(element.account, element.project);
+        const downloadUrl = await api.getDownloadUrl(element.cloudFunction);
+        const tmpZipFile = await downloadToTmpFile(downloadUrl);
+        try {
+          const tmpDir = await unzipToTmpDir(tmpZipFile.path);
+          tmpZipFile.cleanup();
+          element.setSourceDir(tmpDir.path);
+
+          const provider = ProviderStore.get<FunctionsProvider>('functions');
+          const treeView = TreeViewStore.get('functions');
+
+          provider.refresh(element);
+          treeView.reveal(element, { expand: true });
+        } catch (err) {
+          console.log('Catch1', err);
+          tmpZipFile.cleanup();
+          throw err;
+        }
       }
     );
   } catch (err) {
