@@ -69,6 +69,10 @@
           "name": "Accounts & Projects"
         },
         {
+          "id": "firebase-hosting",
+          "name": "Hosting"
+        },
+        {
           "id": "firebase-functions",
           "name": "Cloud Functions"
         },
@@ -88,12 +92,12 @@
     },
     "commands": [
       {
-        "command": "firebaseExplorer.functions.refresh",
-        "title": "Refresh Functions"
+        "command": "firebaseExplorer.hosting.openFile",
+        "title": "Open File"
       },
       {
-        "command": "firebaseExplorer.functions.selection",
-        "title": "Function Selection"
+        "command": "firebaseExplorer.functions.refresh",
+        "title": "Refresh Functions"
       },
       {
         "command": "firebaseExplorer.functions.trigger.GET",

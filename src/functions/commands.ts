@@ -1,17 +1,15 @@
-import * as vscode from 'vscode';
 import * as request from 'request-promise-native';
-import { FunctionsProvider, CloudFunctionItem } from './FunctionsProvider';
+import * as vscode from 'vscode';
 import { ProviderStore, TreeViewStore } from '../stores';
-import { AccountInfo } from '../accounts/AccountManager';
-import { FirebaseProject } from '../projects/ProjectManager';
-import { CloudFunction, FunctionsAPI } from './api';
-import { getDetailsFromName } from './utils';
 import {
-  readFile,
-  getFilePath,
   downloadToTmpFile,
+  getFilePath,
+  readFile,
   unzipToTmpDir
 } from '../utils';
+import { FunctionsAPI } from './api';
+import { CloudFunctionItem, FunctionsProvider } from './FunctionsProvider';
+import { getDetailsFromName } from './utils';
 
 let context: vscode.ExtensionContext;
 
@@ -22,13 +20,6 @@ export function registerFunctionsCommands(_context: vscode.ExtensionContext) {
     vscode.commands.registerCommand(
       'firebaseExplorer.functions.refresh',
       refreshFunctions
-    )
-  );
-
-  context.subscriptions.push(
-    vscode.commands.registerCommand(
-      'firebaseExplorer.functions.selection',
-      selectFunction
     )
   );
 
@@ -78,14 +69,6 @@ export function registerFunctionsCommands(_context: vscode.ExtensionContext) {
 function refreshFunctions(): void {
   const functionsProvider = ProviderStore.get<FunctionsProvider>('functions');
   functionsProvider.refresh();
-}
-
-function selectFunction(
-  _account: AccountInfo,
-  _project: FirebaseProject,
-  cloudFunction: CloudFunction
-): void {
-  console.log(cloudFunction);
 }
 
 async function triggerFunction(method: string, element: CloudFunctionItem) {

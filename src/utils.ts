@@ -48,6 +48,7 @@ export function setContext(key: ContextValue, value: any): void {
 
 export enum ContextValue {
   ProjectSelected = 'projects:selected',
+  HostingLoaded = 'hosting:loaded',
   FunctionsLoaded = 'functions:loaded',
   AppsLoaded = 'apps:loaded',
   FirestoreLoaded = 'firestore:loaded',

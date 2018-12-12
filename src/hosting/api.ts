@@ -1,7 +1,9 @@
 import * as request from 'request-promise-native';
-import { contains } from '../utils';
 import { AccountInfo, AccountManager } from '../accounts/AccountManager';
 import { FirebaseProject } from '../projects/ProjectManager';
+import { contains } from '../utils';
+
+// https://developers.google.com/apis-explorer/#search/firebase%20hosting/firebasehosting/v1beta1/
 
 const CONFIG = {
   version: 'v1beta1',
@@ -13,6 +15,8 @@ const CONFIG = {
 };
 
 const instances: { [k: string]: HostingAPI } = {};
+
+const fileListCache: { [k: string]: HostingReleaseVersionFile[] } = {};
 
 export class HostingAPI {
   static for(account: AccountInfo, project: FirebaseProject): HostingAPI {
@@ -26,10 +30,8 @@ export class HostingAPI {
   }
 
   accountManager: AccountManager;
-  projectId: string;
 
   private constructor(account: AccountInfo, public project: FirebaseProject) {
-    this.projectId = project.projectId;
     this.accountManager = AccountManager.for(account);
   }
 
@@ -66,22 +68,30 @@ export class HostingAPI {
     return response.body.site || [];
   }
 
-  async listReleases(): Promise<HostingRelease[]> {
-    const resource = `sites/${this.projectId}/releases`;
+  async listReleases(site: string): Promise<HostingRelease[]> {
+    const resource = `sites/${site}/releases`;
     const response = await this.authedRequest('GET', resource);
     return response.body.releases || [];
   }
 
-  async listDomains(): Promise<HostingDomain[]> {
-    const resource = `sites/${this.projectId}/domains`;
+  async listDomains(site: string): Promise<HostingDomain[]> {
+    const resource = `sites/${site}/domains`;
     const response = await this.authedRequest('GET', resource);
     return response.body.domains || [];
   }
 
   async listFiles(version: string): Promise<HostingReleaseVersionFile[]> {
-    const resource = `sites/${this.projectId}/versions/${version}/files`;
-    const response = await this.authedRequest('GET', resource);
-    return response.body.files || [];
+    if (!/^sites\/([^\/]+)\/versions\/([^\/]+)/.test(version)) {
+      throw new Error('Hosting: Marlformed version name: ' + version);
+    }
+
+    if (!contains(fileListCache, version)) {
+      const resource = `${version}/files`;
+      const response = await this.authedRequest('GET', resource);
+      fileListCache[version] = response.body.files || [];
+    }
+
+    return fileListCache[version];
   }
 }
 

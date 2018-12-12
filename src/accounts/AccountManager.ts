@@ -14,6 +14,17 @@ export class AccountManager {
     return instances[id];
   }
 
+  static forSelectedAccount(): AccountManager {
+    const context = getContextObj();
+    const account = context.globalState.get<AccountInfo>('selectedAccount');
+
+    if (!account) {
+      throw new Error('No selected account');
+    }
+
+    return AccountManager.for(account);
+  }
+
   static getAccounts(): AccountInfo[] {
     const context = getContextObj();
     let accounts = context.globalState.get<AccountInfo[]>('accounts');
