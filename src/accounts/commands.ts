@@ -47,6 +47,16 @@ async function addAccount(): Promise<void> {
 }
 
 function removeAccount(element: AccountItem): void {
+  const selectedAccout = context.globalState.get('selectedAccount');
+  if (selectedAccout === element.account) {
+    context.globalState.update('selectedAccount', undefined);
+    context.globalState.update('selectedProject', undefined);
+    vscode.commands.executeCommand('firebaseExplorer.functions.refresh');
+    vscode.commands.executeCommand('firebaseExplorer.apps.refresh');
+    vscode.commands.executeCommand('firebaseExplorer.firestore.refresh');
+    vscode.commands.executeCommand('firebaseExplorer.database.refresh');
+  }
+
   AccountManager.removeAccount(element.account);
   vscode.commands.executeCommand('firebaseExplorer.projects.refresh');
 }

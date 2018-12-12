@@ -73,7 +73,6 @@ export function registerFunctionsCommands(_context: vscode.ExtensionContext) {
       viewSource
     )
   );
-
 }
 
 function refreshFunctions(): void {
@@ -123,7 +122,7 @@ function openInFirebaseConsole(element: CloudFunctionItem): void {
     vscode.Uri.parse(
       `https://console.firebase.google.com/project/${
         details.projectId
-      }/functions/logs?search=true&functionFilter=${details.name}`
+      }/functions/logs?functionFilter=${details.name}`
     )
   );
 }

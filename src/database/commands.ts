@@ -8,6 +8,13 @@ import { ProviderStore } from '../stores';
 export function registerDatabaseCommands(context: vscode.ExtensionContext) {
   context.subscriptions.push(
     vscode.commands.registerCommand(
+      'firebaseExplorer.database.refresh',
+      refreshDatabase
+    )
+  );
+
+  context.subscriptions.push(
+    vscode.commands.registerCommand(
       'firebaseExplorer.database.editEntryValue',
       editEntryValue
     )
@@ -33,6 +40,11 @@ export function registerDatabaseCommands(context: vscode.ExtensionContext) {
       copyPath
     )
   );
+}
+
+function refreshDatabase(): void {
+  const provider = ProviderStore.get<DatabaseProvider>('database');
+  provider.refresh();
 }
 
 async function editEntryValue(element: DatabaseProviderItem): Promise<void> {

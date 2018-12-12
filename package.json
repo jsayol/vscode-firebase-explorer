@@ -58,7 +58,7 @@
         {
           "id": "firebase-explorer",
           "title": "Firebase Explorer",
-          "icon": "assets/possibles/firebase.svg"
+          "icon": "assets/firebase.svg"
         }
       ]
     },
@@ -236,6 +236,10 @@
         "title": "Edit Value -- TODO"
       },
       {
+        "command": "firebaseExplorer.database.refresh",
+        "title": "Refresh Database"
+      },
+      {
         "command": "firebaseExplorer.database.copyName",
         "title": "Copy Name"
       },
@@ -302,12 +306,12 @@
         },
         {
           "command": "firebaseExplorer.functions.trigger.GET",
-          "when": "viewItem == functions.ofTriggerType.https",
+          "when": "viewItem == functions.ofTriggerType.https && -- TODO",
           "group": "functions.trigger@1"
         },
         {
           "command": "firebaseExplorer.functions.trigger.POST",
-          "when": "viewItem == functions.ofTriggerType.https",
+          "when": "viewItem == functions.ofTriggerType.https && -- TODO",
           "group": "functions.trigger@2"
         },
         {

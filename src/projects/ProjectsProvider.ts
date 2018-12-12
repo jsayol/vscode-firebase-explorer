@@ -76,7 +76,7 @@ export class AccountItem extends vscode.TreeItem {
 
 export class ProjectItem extends vscode.TreeItem {
   contextValue = 'project';
-  iconPath = path.resolve(ASSETS_PATH, 'firebase.svg');
+  iconPath = path.resolve(ASSETS_PATH, 'firebase-color-small.svg');
 
   readonly command: vscode.Command = {
     command: 'firebaseExplorer.projects.selection',

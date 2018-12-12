@@ -204,6 +204,10 @@ export class FunctionTriggerTypeItem extends vscode.TreeItem {
 
 export class CloudFunctionItem extends vscode.TreeItem {
   sourceCodeDir?: string;
+  iconPath = {
+    dark: path.resolve(ASSETS_PATH, `functions/dark/cloud-functions.svg`),
+    light: path.resolve(ASSETS_PATH, `functions/light/cloud-functions.svg`)
+  };
 
   constructor(
     public account: AccountInfo,
@@ -215,10 +219,6 @@ export class CloudFunctionItem extends vscode.TreeItem {
     super(cloudFunction.entryPoint, vscode.TreeItemCollapsibleState.None);
     this.contextValue = `functions.ofTriggerType.${type}`;
     // this.iconPath = path.resolve(ASSETS_PATH, `functions/${type}-trigger.svg`);
-    this.iconPath = {
-      dark: path.resolve(ASSETS_PATH, `functions/dark/cloud-functions.svg`),
-      light: path.resolve(ASSETS_PATH, `functions/light/cloud-functions.svg`)
-    };
   }
 
   get tooltip(): string {
@@ -242,7 +242,7 @@ export class CloudFunctionSourceItem extends vscode.TreeItem {
 
     if (tree.type === 'directory') {
       this.iconPath = vscode.ThemeIcon.Folder;
-      this.collapsibleState = vscode.TreeItemCollapsibleState.Expanded;
+      this.collapsibleState = vscode.TreeItemCollapsibleState.Collapsed;
     } else {
       this.iconPath = vscode.ThemeIcon.File;
       this.collapsibleState = vscode.TreeItemCollapsibleState.None;

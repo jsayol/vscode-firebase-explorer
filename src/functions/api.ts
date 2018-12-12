@@ -121,7 +121,7 @@ export class FunctionsAPI {
     const details = getDetailsFromName(fn.name);
     const options = {
       pageSize: 50,
-      order: 'desc',
+      order: 'asc',
       ..._options
     };
 
@@ -154,6 +154,7 @@ export class FunctionsAPI {
     const url = `${CONFIG.logging.origin}/${
       CONFIG.logging.version
     }/entries:list`;
+
     const response = await this.authedRequest('POST', '', {
       url,
       body: {
@@ -164,6 +165,7 @@ export class FunctionsAPI {
         pageSize: options.pageSize
       }
     });
+
     return response.body.entries || [];
   }
 

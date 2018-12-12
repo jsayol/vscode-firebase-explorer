@@ -11,17 +11,61 @@
       #header {
         display: flex;
         justify-content: space-between;
+        border-bottom: 1px solid #757575;
       }
+
       #buttons {
         position: absolute;
         top: 0;
         left: 0;
         right: 0;
         padding: 5px;
+        display: flex;
+        justify-content: flex-end;
+      }
+
+      #functionName {
+        font-family: 'Roboto Mono', monospace;
+      }
+
+      #toggleLive {
+        padding: 0 4px 4px 4px;
+        font-size: 1.4em;
+        line-height: 1.1em;
+        width: 1.1em;
+        border-radius: 4px;
+        vertical-align: baseline;
+        cursor: pointer;
+        text-align: center;
+      }
+
+      #toggleLive:before {
+        content: '▶';
+      }
+      .vscode-dark #toggleLive {
+        color: #333333;
+        background-color: #aaaaaa;
+        border: 2px solid #777777;
+      }
+
+      .vscode-light #toggleLive {
+        content: '&#x25b6;';
+        color: #333333;
+        background-color: #dddddd;
+        border: 2px solid #aaaaaa;
+      }
+
+      body.liveState #toggleLive {
+        background-color: #10923e;
+      }
+
+      body.liveState #toggleLive:before {
+        content: '⏸' !important;
       }
 
       #logContainer {
-        border-top: 1px solid #757575;
+        display: grid;
+        grid-template-columns: minmax(65px, 95px) minmax(45px, 55px) auto;
         position: absolute;
         bottom: 0;
         top: 35px;
@@ -29,51 +73,53 @@
         right: 0;
         padding-left: 10px;
         overflow: auto;
-        font-family: Consolas, monospace;
+        font-family: 'Roboto Mono', monospace;
         font-size: 1em;
       }
 
-      #functionName {
-        font-family: Consolas, monospace;
+      #logContainer > span {
+        padding: 4px;
       }
 
-      button {
-        border-radius: 4px;
-        /* padding: 2px 6px 0 6px; */
-        vertical-align: baseline;
+      .vscode-dark #logContainer > span {
+        border-bottom: 1px solid #252525;
       }
 
-      .vscode-dark button {
-        color: #333333;
-        background-color: #aaaaaa;
-        border: 2px solid #777777;
+      .vscode-light #logContainer > span {
+        border-bottom: 1px solid #e8e8e8;
       }
 
-      .vscode-light button {
-        color: #333333;
-        background-color: #dddddd;
-        border: 2px solid #aaaaaa;
-      }
-
-      #buttons {
-        display: flex;
-        justify-content: flex-end;
-      }
-
-      #toggleLive {
-        padding: 0 4px 2px 4px;
-        font-size: 1.4em;
-        line-height: 1.1em;
-        width: 1.5em;
-      }
-
-      .dateHeader {
+      #logContainer > span.dateHeader {
         font-weight: bold;
-        font-size: 1.1em;
+        grid-column: auto / span 3;
+        position: sticky;
+        top: 0px;
+        background-color: var(--vscode-editor-inactiveSelectionBackground);
       }
 
-      * + .dateHeader {
+      #logContainer > span + span.dateHeader {
         margin-top: 10px;
+      }
+
+      #logContainer > span.timestamp {
+        white-space: pre-wrap;
+      }
+
+      #logContainer > span.severity {
+        text-align: center;
+        overflow: hidden;
+      }
+
+      #logContainer > span.text {
+        text-align: left;
+      }
+
+      .vscode-dark #logContainer > span.activeExec {
+        background-color: #303030;
+      }
+
+      .vscode-light #logContainer > span.activeExec {
+        background-color: #eaeaea;
       }
     </style>
   </head>
@@ -81,15 +127,16 @@
     <div class="header">
       <span>Function: <code id="functionName"></code></span>
       <div id="buttons">
-        <button id="toggleLive" onclick="toggleLive()">&#x25b6;</button>
+        <div id="toggleLive" onclick="toggleLive()" title="Live"></div>
       </div>
     </div>
-    <div id="logContainer">Loading...</div>
+    <div id="logContainer" class="grid">Loading...</div>
   </body>
   <script>
     let liveState = true;
     let disableTailOnScroll = true;
     let lastEntry = null;
+    let activeExec = null;
 
     // @ts-ignore
     const vscode = acquireVsCodeApi();
@@ -107,6 +154,12 @@
           addEntries(event.data.entries);
           break;
       }
+    });
+
+    logContainer.addEventListener('mouseout', () => {
+      document.querySelectorAll(`#logContainer .activeExec`).forEach(elem => {
+        elem.classList.remove('activeExec');
+      });
     });
 
     function initialize(data) {
@@ -130,10 +183,7 @@
                 }
           });
         }, 1000);
-      }
 
-      if (liveState) {
-        disableTailOnScroll = false;
         scrollToBottom();
       }
     }
@@ -141,28 +191,46 @@
     function addEntry(entry) {
       if (entry.textPayload !== undefined) {
         const date = new Date(entry.timestamp);
-        const entryDate = entry.timestamp.slice(0, 10);
-        const lastDate = !lastEntry
-          ? undefined
-          : lastEntry.timestamp.slice(0, 10);
+        const entryDate = date.toLocaleDateString();
+        const lastDate = lastEntry
+          ? new Date(lastEntry.timestamp).toLocaleDateString()
+          : undefined;
 
         if (entryDate !== lastDate) {
-          const dateDiv = document.createElement('div');
-          dateDiv.innerText = date.toLocaleDateString();
-          dateDiv.className = 'dateHeader';
-          logContainer.appendChild(dateDiv);
+          const dateHeader = document.createElement('span');
+          dateHeader.innerText = date
+            .toUTCString()
+            .split(' ')
+            .splice(0, 4)
+            .join(' ');
+          dateHeader.className = 'dateHeader';
+          logContainer.appendChild(dateHeader);
         }
 
-        lastEntry = entry;
+        const execId = entry.labels.execution_id;
 
-        const newLog = document.createElement('div');
+        const logTime = document.createElement('span');
         // @ts-ignore
-        newLog.innerHTML = `${date.toLocaleTimeString().padStart(11, ' ')} [${
-          entry.severity
-        }] ${entry.textPayload}`;
-        newLog.title = JSON.stringify(entry, null, 2);
-        logContainer.appendChild(newLog);
+        logTime.innerText = date.toLocaleTimeString().padStart(11, ' ');
+        logTime.className = 'timestamp';
+        logTime.title = date.toUTCString();
+
+        const logSeverity = document.createElement('span');
+        logSeverity.innerText = entry.severity;
+        logSeverity.className = 'severity';
+
+        const logText = document.createElement('span');
+        logText.innerText = entry.textPayload;
+        logText.className = 'text';
+
+        [logTime, logSeverity, logText].forEach(elem => {
+          elem.classList.add(`exec-${execId}`);
+          elem.addEventListener('mouseover', hoverSelector(execId));
+          logContainer.appendChild(elem);
+        });
       }
+
+      lastEntry = entry;
     }
 
     function toggleLive() {
@@ -186,17 +254,22 @@
     });
 
     function scrollToBottom() {
+      disableTailOnScroll = false;
       logContainer.scrollTo(0, logContainer.scrollHeight);
     }
 
     function onLiveStateChange() {
-      toggleLiveButton.innerHTML = liveState ? '&#x23f8;' : '&#x25b6;';
+      // toggleLiveButton.innerHTML = liveState ? '&#x23f8;' : '&#x25b6;';
       vscode.postMessage({
         command: 'liveState',
         state: liveState
       });
 
+      console.log('liveState =', liveState);
+
       if (liveState) {
+        document.body.classList.add('liveState');
+        scrollToBottom();
         vscode.postMessage({
           command: 'getEntries',
           since: !lastEntry
@@ -206,7 +279,32 @@
                 insertId: lastEntry.insertId
               }
         });
+      } else {
+        document.body.classList.remove('liveState');
       }
+    }
+
+    function injectStyles(rule) {
+      var div = document.createElement('div');
+      div.innerHTML = `&shy;<style>${rule.trim().replace(/ +/, ' ')}</style>`;
+      document.body.appendChild(div.childNodes[1]);
+    }
+
+    function hoverSelector(execId) {
+      return () => {
+        if (execId !== activeExec) {
+          document
+            .querySelectorAll(`#logContainer .activeExec:not(.exec-${execId})`)
+            .forEach(elem => {
+              elem.classList.remove('activeExec');
+            });
+          document
+            .querySelectorAll(`#logContainer .exec-${execId}`)
+            .forEach(elem => {
+              elem.classList.add('activeExec');
+            });
+        }
+      };
     }
   </script>
 </html>
