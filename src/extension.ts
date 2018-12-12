@@ -104,6 +104,24 @@ async function initialize(context: vscode.ExtensionContext): Promise<void> {
           'Hey there! We made some changes to the extension. You will need to sign in again to continue. Sorry about that!'
         );
       }
+    } else if (semver.eq(extensionConfig.version, '0.1.0')) {
+      // The accounts added while on this version always use the CLI clientID,
+      // but are stored as "login" origin. This doesn't affect the functionality
+      // of the extension (we always use the CLI clientId for now) but better
+      // to set the right value just in case. Future-proofing!
+      const accounts = AccountManager.getAccounts();
+      let hasChanges = false;
+
+      accounts.forEach(account => {
+        if (account.origin !== 'cli') {
+          account.origin = 'cli';
+          hasChanges = true;
+        }
+      });
+
+      if (hasChanges) {
+        AccountManager.setAccounts(accounts);
+      }
     }
 
     // Set the updated extension version

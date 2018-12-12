@@ -47,7 +47,7 @@ export async function initiateLogin(nonce: string): Promise<AccountInfo> {
           resolve({
             user: jwt.decode(tokens.id_token) as AccountUser,
             tokens,
-            origin: 'login'
+            origin: /*'login'*/ 'cli' // TODO: change this if we go back to own clientId
           });
         } catch (err) {
           console.error(err);
