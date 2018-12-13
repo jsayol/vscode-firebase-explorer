@@ -260,6 +260,5 @@ export function dateToString(date: Date | string) {
 }
 
 process.on('unhandledRejection', error => {
-  // Will print "unhandledRejection err is not defined"
   console.log('unhandledRejection', error);
 });
