@@ -1,5 +1,4 @@
 import * as vscode from 'vscode';
-import * as clipboardy from 'clipboardy';
 import {
   AppsProviderItem,
   AppsProvider,
@@ -194,7 +193,7 @@ async function addAppCertificate(
 }
 
 function copyAppCertificate(element: FingerprintItem): void {
-  clipboardy.write(element.label!);
+  vscode.env.clipboard.writeText(element.label!);
 }
 
 async function deleteAppCertificate(element: FingerprintItem): Promise<void> {

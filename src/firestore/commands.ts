@@ -1,5 +1,4 @@
 import * as vscode from 'vscode';
-import * as clipboardy from 'clipboardy';
 import { ProviderStore } from '../stores';
 import {
   FirestoreProviderItem,
@@ -89,11 +88,11 @@ function providerRefresh(element?: FirestoreProviderItem): void {
 }
 
 function copyItemName(element: CollectionItem | DocumentItem): void {
-  clipboardy.write(element.name);
+  vscode.env.clipboard.writeText(element.name);
 }
 
 function copyItemPath(element: CollectionItem | DocumentItem): void {
-  clipboardy.write('/' + getFullPath(element.parentPath, element.name));
+  vscode.env.clipboard.writeText('/' + getFullPath(element.parentPath, element.name));
 }
 
 async function copyDocumentContent(element: DocumentItem): Promise<void> {
@@ -123,7 +122,7 @@ async function copyDocumentContent(element: DocumentItem): Promise<void> {
       {} as { [k: string]: any }
     );
 
-    return clipboardy.write(JSON.stringify(value, null, 2));
+    return vscode.env.clipboard.writeText(JSON.stringify(value, null, 2));
   }
 }
 
@@ -159,13 +158,13 @@ async function deleteDocument(element: DocumentItem): Promise<void> {
 }
 
 function copyDocumentFieldName(element: DocumentFieldItem): void {
-  clipboardy.write(element.name);
+  vscode.env.clipboard.writeText(element.name);
 }
 
 function copyDocumentFieldValue(element: DocumentFieldItem): void {
   try {
     let value = JSON.stringify(getFieldValue(element.fieldValue));
-    clipboardy.write(value);
+    vscode.env.clipboard.writeText(value);
   } catch (err) {
     console.error(err);
   }

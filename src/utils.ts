@@ -12,7 +12,8 @@ import { ShaCertificate } from './apps/apps';
 const ASSETS_PATH = './assets';
 let _context: vscode.ExtensionContext;
 
-export function contains(obj: object, key: string): boolean {
+// export function contains(obj: object, key: string): boolean {
+export function contains<T>(obj: T, key: PropertyKey): key is keyof T {
   return Object.prototype.hasOwnProperty.call(obj, key);
 }
 
@@ -21,11 +22,9 @@ export function messageTreeItem(
   tooltip?: string,
   icon?: 'info' | 'alert'
 ): any {
-  const item = new vscode.TreeItem(
-    `<i>${msg}</i>`,
-    vscode.TreeItemCollapsibleState.None
-  );
+  const item = new vscode.TreeItem('', vscode.TreeItemCollapsibleState.None);
   item.tooltip = tooltip;
+  item.description = msg;
 
   if (icon) {
     item.iconPath = {
@@ -247,6 +246,17 @@ export interface UnzippedFile {
 export interface UnzippedDirectory {
   name: string;
   files: UnzippedFileOrDirectory[];
+}
+
+export function dateToString(date: Date | string) {
+  return new Date(date).toLocaleString(undefined, {
+    month: 'short',
+    day: 'numeric',
+    year: 'numeric',
+    hour: '2-digit',
+    minute: '2-digit',
+    second: '2-digit'
+  });
 }
 
 process.on('unhandledRejection', error => {

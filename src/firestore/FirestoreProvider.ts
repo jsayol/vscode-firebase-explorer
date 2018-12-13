@@ -232,7 +232,6 @@ export class CollectionItem extends vscode.TreeItem {
 
 export class DocumentItem extends vscode.TreeItem {
   contextValue = 'firestore.document';
-  iconPath = path.resolve(ASSETS_PATH, 'firestore/document.svg');
 
   name: string;
   fullName: string;
@@ -260,11 +259,12 @@ export class DocumentItem extends vscode.TreeItem {
   }
 
   get label(): string {
-    if (this.isRemoved) {
-      return `<strike style="color:#A83434"><i>${this.name}</i></strike>`;
-    } else {
-      return this.document.createTime ? this.name : `<i>${this.name}</i>`;
-    }
+    return this.name;
+    // if (this.isRemoved) {
+    //   return `<strike style="color:#A83434"><i>${this.name}</i></strike>`;
+    // } else {
+    //   return this.document.createTime ? this.name : `<i>${this.name}</i>`;
+    // }
   }
 
   set label(label: string) {
@@ -275,12 +275,20 @@ export class DocumentItem extends vscode.TreeItem {
   get tooltip(): string {
     let tooltip = getFullPath(this.parentPath, this.name);
 
-    if (!this.document.createTime) {
+    if (!this.document.createTime || this.isRemoved) {
       tooltip +=
         '\n\nThis document does not exist, it will not appear in queries or snapshots.';
     }
 
     return tooltip;
+  }
+
+  get iconPath(): string {
+    if (this.document.createTime || this.isRemoved) {
+      return path.resolve(ASSETS_PATH, 'firestore/document.svg');
+    } else {
+      return path.resolve(ASSETS_PATH, 'firestore/document-empty.svg');
+    }
   }
 }
 
@@ -343,7 +351,8 @@ export class DocumentFieldItem<
         }
 
         if (this.escapedValue === undefined) {
-          this.escapedValue = '<i>undefined</i>';
+          // this.escapedValue = '<i>undefined</i>';
+          this.escapedValue = 'undefined';
         } else {
           this.escapedValue = this.escapedValue
             .replace('<', '&lt;')
@@ -351,7 +360,9 @@ export class DocumentFieldItem<
         }
       }
 
-      this.label = `${name} : <code>${this.escapedValue}</code>`;
+      // this.label = `${name} : <code>${this.escapedValue}</code>`;
+      this.label = name;
+      this.description = this.escapedValue;
     }
   }
 

@@ -2,12 +2,12 @@ import * as path from 'path';
 import * as vscode from 'vscode';
 import { AccountInfo } from '../accounts/AccountManager';
 import { FirebaseProject } from '../projects/ProjectManager';
-import { messageTreeItem } from '../utils';
+import { messageTreeItem, dateToString, contains } from '../utils';
 import {
   HostingAPI,
   HostingRelease,
-  HostingReleaseType,
   HostingSite,
+  HostingReleaseType,
   HostingVersionStatus
 } from './api';
 import { filesToTree, PathTreePart, sortTreeParts } from './utils';
@@ -88,15 +88,28 @@ export class HostingProvider
     } else if (element instanceof HostingSiteItem) {
       return releasesForSite(account, project, api, element.site);
     } else if (element instanceof HostingReleaseItem) {
-      const files = await api.listFiles(element.release.version.name);
-      const parts = sortTreeParts(filesToTree(files));
-      return parts.map(part =>
-        treePartToItem(part, account, project, element.release)
-      );
+      const release = element.release;
+      return [
+        new HostingReleaseInfoItem(release, 'releaseUser'),
+        new HostingReleaseInfoItem(release, 'releaseTime'),
+        new HostingReleaseInfoItem(release, 'createTime'),
+        new HostingReleaseInfoItem(release, 'status', element.activeVersion),
+        new HostingFolderItem(release, { name: 'Files (list only)' })
+      ];
     } else if (element instanceof HostingFolderItem) {
-      return sortTreeParts(element.part.children).map(part =>
-        treePartToItem(part, account, project, element.release)
-      );
+      if (contains(element.part, 'children')) {
+        return sortTreeParts(element.part.children!).map(part =>
+          treePartToItem(part, account, project, element.release)
+        );
+      } else {
+        // Root folder for the files, we need to load them
+        const files = await api.listFiles(element.release.version.name);
+        const parts = sortTreeParts(filesToTree(files));
+        element.part.children = parts;
+        return parts.map(part =>
+          treePartToItem(part, account, project, element.release)
+        );
+      }
     } else {
       return [];
     }
@@ -132,7 +145,16 @@ export class HostingReleaseItem extends vscode.TreeItem {
     public release: HostingRelease,
     public activeVersion: string
   ) {
-    super(release.releaseTime, vscode.TreeItemCollapsibleState.Collapsed);
+    super('', vscode.TreeItemCollapsibleState.Collapsed);
+
+    this.label = new Date(release.releaseTime).toLocaleString(undefined, {
+      month: 'short',
+      day: 'numeric',
+      year: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit',
+      second: '2-digit'
+    });
 
     if (release.type === HostingReleaseType.ROLLBACK) {
       this.iconPath = {
@@ -140,7 +162,8 @@ export class HostingReleaseItem extends vscode.TreeItem {
         light: path.resolve(ASSETS_PATH, `hosting/light/rolledback.svg`)
       };
     } else if (release.version.status === HostingVersionStatus.DELETED) {
-      this.label = `<i>${this.label}</i>`;
+      // this.label = `<i>${this.label}</i>`;
+      this.label = `${this.label}`;
       this.collapsibleState = vscode.TreeItemCollapsibleState.None;
       this.iconPath = {
         dark: path.resolve(ASSETS_PATH, `hosting/dark/deleted.svg`),
@@ -161,14 +184,77 @@ export class HostingReleaseItem extends vscode.TreeItem {
   }
 }
 
+export class HostingReleaseInfoItem extends vscode.TreeItem {
+  collapsibleState = vscode.TreeItemCollapsibleState.None;
+
+  constructor(
+    public release: HostingRelease,
+    public info: string,
+    activeVersion?: string
+  ) {
+    super('');
+    this.contextValue = `hosting.release.info.${info}`;
+
+    let icon: string | undefined;
+
+    if (info === 'createTime') {
+      const date = dateToString(release.version.createTime);
+      this.label = `Created: ${date}`;
+      icon = 'calendar-clock';
+    } else if (info === 'releaseTime') {
+      const date = dateToString(release.releaseTime);
+      this.label = `Released: ${date}`;
+      icon = 'calendar-clock';
+    } else if (info === 'releaseUser') {
+      const imageUrl = release.releaseUser.imageUrl;
+      if (typeof imageUrl === 'string' && imageUrl.length > 0) {
+        this.iconPath = vscode.Uri.parse(imageUrl);
+      } else {
+        icon = 'account';
+      }
+      this.label = `User: ${release.releaseUser.email}`;
+    } else if (info === 'status') {
+      let status: string;
+
+      if (release.type === HostingReleaseType.ROLLBACK) {
+        status = 'Rolled back';
+      } else if (release.type === HostingReleaseType.SITE_DISABLE) {
+        status = 'Site disabled';
+      } else if (release.type === HostingReleaseType.DEPLOY) {
+        if (release.version.name === activeVersion) {
+          status = 'Current';
+        } else {
+          status = 'Deployed';
+        }
+      } else {
+        status = 'Unknown';
+      }
+
+      this.label = `Status: ${status}`;
+      icon = 'cloud-outline';
+    }
+
+    if (icon !== undefined) {
+      this.iconPath = {
+        dark: path.resolve(ASSETS_PATH, `dark/${icon}.svg`),
+        light: path.resolve(ASSETS_PATH, `light/${icon}.svg`)
+      };
+    }
+  }
+}
+
 export class HostingFolderItem extends vscode.TreeItem {
   contextValue = `hosting.release.folder`;
   iconPath = vscode.ThemeIcon.Folder;
   collapsibleState = vscode.TreeItemCollapsibleState.Collapsed;
+  tooltip = undefined;
 
-  constructor(public release: HostingRelease, public part: PathTreePart) {
-    super(part.name);
-    this.resourceUri = vscode.Uri.file(part.name);
+  constructor(
+    public release: HostingRelease,
+    public part: Partial<PathTreePart>
+  ) {
+    super(part.name!);
+    this.resourceUri = vscode.Uri.file(part.name!);
   }
 }
 
@@ -176,11 +262,12 @@ export class HostingFileItem extends vscode.TreeItem {
   contextValue = `hosting.release.file`;
   iconPath = vscode.ThemeIcon.File;
   collapsibleState = vscode.TreeItemCollapsibleState.None;
-  command = {
-    command: 'firebaseExplorer.hosting.openFile',
-    title: 'Open this file',
-    arguments: [this]
-  };
+  tooltip = undefined;
+  // command = {
+  //   command: 'firebaseExplorer.hosting.openFile',
+  //   title: 'Open this file',
+  //   arguments: [this]
+  // };
 
   constructor(
     public account: AccountInfo,
@@ -196,6 +283,7 @@ export class HostingFileItem extends vscode.TreeItem {
 export type HostingProviderItem =
   | HostingSiteItem
   | HostingReleaseItem
+  | HostingReleaseInfoItem
   | HostingFolderItem
   | HostingFileItem;
 

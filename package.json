@@ -17,7 +17,7 @@
     "url": "https://github.com/jsayol/vscode-firebase-explorer.git"
   },
   "engines": {
-    "vscode": "^1.29.0"
+    "vscode": "^1.30.0"
   },
   "license": "MIT",
   "categories": [
@@ -92,40 +92,44 @@
     },
     "commands": [
       {
-        "command": "firebaseExplorer.hosting.openFile",
-        "title": "Open File"
-      },
-      {
         "command": "firebaseExplorer.functions.refresh",
-        "title": "Refresh Functions"
+        "title": "Refresh Functions",
+        "category": "Functions"
       },
       {
         "command": "firebaseExplorer.functions.trigger.GET",
-        "title": "Trigger Function (GET)"
+        "title": "Trigger Function (GET)",
+        "category": "Functions"
       },
       {
         "command": "firebaseExplorer.functions.trigger.POST",
-        "title": "Trigger Function (POST)"
+        "title": "Trigger Function (POST)",
+        "category": "Functions"
       },
       {
         "command": "firebaseExplorer.functions.openInConsole.firebase",
-        "title": "Open in Firebase Console"
+        "title": "Open in Firebase Console",
+        "category": "Functions"
       },
       {
         "command": "firebaseExplorer.functions.openInConsole.cloud",
-        "title": "Open in Cloud Console"
+        "title": "Open in Cloud Console",
+        "category": "Functions"
       },
       {
         "command": "firebaseExplorer.functions.viewLogs",
-        "title": "View Logs"
+        "title": "View Logs",
+        "category": "Functions"
       },
       {
         "command": "firebaseExplorer.functions.viewSource",
-        "title": "View Source Code"
+        "title": "View Source Code",
+        "category": "Functions"
       },
       {
         "command": "firebaseExplorer.accounts.add",
         "title": "Add Account",
+        "category": "Firebase",
         "icon": {
           "light": "assets/light/account-add.svg",
           "dark": "assets/dark/account-add.svg"
@@ -133,11 +137,13 @@
       },
       {
         "command": "firebaseExplorer.accounts.remove",
-        "title": "Remove this account"
+        "title": "Remove this account",
+        "category": "Firebase"
       },
       {
         "command": "firebaseExplorer.projects.refresh",
         "title": "Refresh Projects",
+        "category": "Firebase",
         "icon": {
           "light": "assets/light/refresh.svg",
           "dark": "assets/dark/refresh.svg"
@@ -145,11 +151,13 @@
       },
       {
         "command": "firebaseExplorer.projects.selection",
-        "title": "Project Selection"
+        "title": "Select Project",
+        "category": "Firebase"
       },
       {
         "command": "firebaseExplorer.apps.create",
         "title": "Add New App",
+        "category": "Firebase",
         "icon": {
           "light": "assets/light/add.svg",
           "dark": "assets/dark/add.svg"
@@ -158,6 +166,7 @@
       {
         "command": "firebaseExplorer.apps.refresh",
         "title": "Refresh Apps",
+        "category": "Firebase",
         "icon": {
           "light": "assets/light/refresh.svg",
           "dark": "assets/dark/refresh.svg"
@@ -165,39 +174,38 @@
       },
       {
         "command": "firebaseExplorer.apps.editAppName",
-        "title": "Edit Name"
+        "title": "Edit Name",
+        "category": "Firebase Apps"
       },
       {
         "command": "firebaseExplorer.apps.showAppConfig",
-        "title": "Show Configuration"
+        "title": "Show Configuration",
+        "category": "Firebase Apps"
       },
       {
         "command": "firebaseExplorer.apps.showAppCertificates",
-        "title": "Show SHA Certificates"
+        "title": "Show SHA Certificates",
+        "category": "Firebase Apps"
       },
       {
         "command": "firebaseExplorer.apps.addAppCertificate",
-        "title": "Add new fingerprint"
+        "title": "Add new fingerprint",
+        "category": "Firebase Apps"
       },
       {
         "command": "firebaseExplorer.apps.copyAppCertificate",
-        "title": "Copy fingerprint"
+        "title": "Copy fingerprint",
+        "category": "Firebase Apps"
       },
       {
         "command": "firebaseExplorer.apps.deleteAppCertificate",
-        "title": "Delete fingerprint"
-      },
-      {
-        "command": "firebaseExplorer.firestore.addCollection",
-        "title": "Add New Collection -- TODO",
-        "icon": {
-          "light": "assets/light/add.svg",
-          "dark": "assets/dark/add.svg"
-        }
+        "title": "Delete fingerprint",
+        "category": "Firebase Apps"
       },
       {
         "command": "firebaseExplorer.firestore.refresh",
         "title": "Refresh Data",
+        "category": "Firestore",
         "icon": {
           "light": "assets/light/refresh.svg",
           "dark": "assets/dark/refresh.svg"
@@ -205,63 +213,68 @@
       },
       {
         "command": "firebaseExplorer.firestore.refreshCollection",
-        "title": "Refresh Collection"
+        "title": "Refresh Collection",
+        "category": "Firestore"
       },
       {
         "command": "firebaseExplorer.firestore.copyItemName",
-        "title": "Copy Name"
+        "title": "Copy Name",
+        "category": "Firestore"
       },
       {
         "command": "firebaseExplorer.firestore.copyItemPath",
-        "title": "Copy Path"
+        "title": "Copy Path",
+        "category": "Firestore"
       },
       {
         "command": "firebaseExplorer.firestore.refreshDocument",
-        "title": "Refresh Document"
+        "title": "Refresh Document",
+        "category": "Firestore"
       },
       {
         "command": "firebaseExplorer.firestore.deleteDocument",
-        "title": "Delete Document"
+        "title": "Delete Document",
+        "category": "Firestore"
       },
       {
         "command": "firebaseExplorer.firestore.copyDocumentContent",
-        "title": "Copy Content"
+        "title": "Copy Content",
+        "category": "Firestore"
       },
       {
         "command": "firebaseExplorer.firestore.copyDocumentFieldName",
-        "title": "Copy Name"
+        "title": "Copy Field Name",
+        "category": "Firestore"
       },
       {
         "command": "firebaseExplorer.firestore.copyDocumentFieldValue",
-        "title": "Copy Value"
-      },
-      {
-        "command": "firebaseExplorer.firestore.editDocumentFieldValue",
-        "title": "Edit Value -- TODO"
+        "title": "Copy Field Value",
+        "category": "Firestore"
       },
       {
         "command": "firebaseExplorer.database.refresh",
-        "title": "Refresh Database"
+        "title": "Refresh Database",
+        "category": "Database"
       },
       {
         "command": "firebaseExplorer.database.copyName",
-        "title": "Copy Name"
+        "title": "Copy Name",
+        "category": "Database"
       },
       {
         "command": "firebaseExplorer.database.copyPath",
-        "title": "Copy Path"
+        "title": "Copy Path",
+        "category": "Database"
       },
       {
         "command": "firebaseExplorer.database.deleteEntry",
-        "title": "Remove Entry (And Children)"
+        "title": "Remove Entry (And Children)",
+        "category": "Database"
       },
       {
         "command": "firebaseExplorer.database.editEntryValue",
-        "title": "Edit Value"
-      },
-      {
-        "command": "firebaseExplorer.database.addChildToEntry",
-        "title": "Add Child -- TODO"
+        "title": "Edit Value",
+        "category": "Database"
       }
     ],
     "menus": {
@@ -287,11 +300,6 @@
           "group": "navigation@2"
         },
         {
-          "command": "firebaseExplorer.firestore.addCollection",
-          "when": "view == firebase-firestore && firebase:firestore:loaded && -- TODO",
-          "group": "navigation@1"
-        },
-        {
           "command": "firebaseExplorer.firestore.refresh",
           "when": "view == firebase-firestore && firebase:firestore:loaded",
           "group": "navigation@2"
@@ -310,12 +318,12 @@
         },
         {
           "command": "firebaseExplorer.functions.trigger.GET",
-          "when": "viewItem == functions.ofTriggerType.https && -- TODO",
+          "when": "viewItem == functions.ofTriggerType.https",
           "group": "functions.trigger@1"
         },
         {
           "command": "firebaseExplorer.functions.trigger.POST",
-          "when": "viewItem == functions.ofTriggerType.https && -- TODO",
+          "when": "viewItem == functions.ofTriggerType.https",
           "group": "functions.trigger@2"
         },
         {
@@ -364,11 +372,6 @@
           "group": "database.parentEntry@2"
         },
         {
-          "command": "firebaseExplorer.database.addChildToEntry",
-          "when": "false && viewItem == database.parentEntry",
-          "group": "database.parentEntry@3"
-        },
-        {
           "command": "firebaseExplorer.database.deleteEntry",
           "when": "viewItem == database.parentEntry",
           "group": "database.parentEntry@4"
@@ -397,11 +400,6 @@
           "command": "firebaseExplorer.firestore.copyItemName",
           "when": "viewItem == firestore.collection",
           "group": "firestore.collection@1"
-        },
-        {
-          "command": "firebaseExplorer.firestore.addCollection",
-          "when": "view == firebase-firestore && firebase:firestore:loaded && !viewItem && -- TODO",
-          "group": "firestore@1"
         },
         {
           "command": "firebaseExplorer.firestore.copyItemPath",
@@ -447,11 +445,6 @@
           "command": "firebaseExplorer.firestore.copyDocumentFieldValue",
           "when": "viewItem == firestore.documentField",
           "group": "firestore.documentField@2"
-        },
-        {
-          "command": "firebaseExplorer.firestore.editDocumentFieldValue",
-          "when": "false && viewItem == firestore.documentField",
-          "group": "firestore.documentField@3"
         },
         {
           "command": "firebaseExplorer.apps.editAppName",
@@ -522,7 +515,6 @@
     "webpack-cli": "^3.1.2"
   },
   "dependencies": {
-    "clipboardy": "^1.2.3",
     "directory-tree": "^2.2.0",
     "jsonwebtoken": "^8.4.0",
     "portfinder": "^1.0.20",

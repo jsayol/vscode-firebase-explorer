@@ -1,14 +1,10 @@
 // // @ts-check
-
 'use strict';
 
-const fs = require('fs');
-const path = require('path');
 const semver = require('semver');
 const webpack = require('webpack');
 const CleanPlugin = require('clean-webpack-plugin');
 const TerserPlugin = require('terser-webpack-plugin');
-const FileManagerPlugin = require('filemanager-webpack-plugin');
 
 // @ts-ignore
 const pkg = require('./package.json');
@@ -16,24 +12,11 @@ const pkg = require('./package.json');
 module.exports = function(env, argv) {
   env = env || {};
   env.production = Boolean(env.production);
-  env.copyClipboardyFallbacks =
-    env.production || Boolean(env.copyClipboardyFallbacks);
-
-  if (
-    !env.copyClipboardyFallbacks &&
-    !fs.existsSync(path.resolve(__dirname, 'fallbacks'))
-  ) {
-    env.copyClipboardyFallbacks = true;
-  }
-
   return [getExtensionConfig(env)];
 };
 
 function getExtensionConfig(env) {
   const clean = ['dist'];
-  if (env.copyClipboardyFallbacks) {
-    clean.push('fallbacks');
-  }
 
   const extVersion = env.production
     ? pkg.version
@@ -47,27 +30,6 @@ function getExtensionConfig(env) {
       EXTENSION_VERSION: JSON.stringify(extVersion)
     })
   ];
-
-  if (env.copyClipboardyFallbacks) {
-    plugins.push(
-      // @ts-ignore
-      new FileManagerPlugin({
-        onEnd: [
-          {
-            copy: [
-              {
-                source: path.resolve(
-                  __dirname,
-                  'node_modules/clipboardy/fallbacks'
-                ),
-                destination: 'fallbacks/'
-              }
-            ]
-          }
-        ]
-      })
-    );
-  }
 
   return {
     name: 'extension',

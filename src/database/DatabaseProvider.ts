@@ -115,7 +115,7 @@ export class DatabaseProviderItem extends vscode.TreeItem {
   markAsRemoved() {
     this.isRemoved = true;
     this.contextValue = 'database.removedEntry';
-    this.label = `<strike style="color:#A83434"><i>${this.name}</i></strike>`;
+    // this.label = `<strike style="color:#A83434"><i>${this.name}</i></strike>`;
   }
 
   get tooltip(): string {
@@ -156,7 +156,9 @@ export class DatabaseProviderItem extends vscode.TreeItem {
       this.hasChildren = true;
     } else {
       this.contextValue = 'database.valueEntry';
-      this.label = `${this.name} : <code>${JSON.stringify(this._value)}</code>`;
+      // this.label = `${this.name} : <code>${JSON.stringify(this._value)}</code>`;
+      this.label = this.name;
+      this.description = JSON.stringify(this._value);
       this.collapsibleState = vscode.TreeItemCollapsibleState.None;
 
       let type: string;

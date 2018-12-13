@@ -1,5 +1,4 @@
 import * as vscode from 'vscode';
-import * as clipboardy from 'clipboardy';
 import { DatabaseProviderItem, DatabaseProvider } from './DatabaseProvider';
 import { getFullPath } from '../utils';
 import { DatabaseAPI } from './api';
@@ -144,9 +143,9 @@ async function deleteEntry(element: DatabaseProviderItem): Promise<void> {
 }
 
 function copyName(element: DatabaseProviderItem): void {
-  clipboardy.write(element.name);
+  vscode.env.clipboard.writeText(element.name);
 }
 
 function copyPath(element: DatabaseProviderItem): void {
-  clipboardy.write('/' + getFullPath(element.parentPath, element.name));
+  vscode.env.clipboard.writeText('/' + getFullPath(element.parentPath, element.name));
 }

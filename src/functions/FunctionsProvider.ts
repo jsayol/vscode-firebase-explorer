@@ -198,7 +198,7 @@ export class FunctionTriggerTypeItem extends vscode.TreeItem {
   }
 
   get tooltip(): string {
-    return 'Trigger: Event';
+    return this.label!;
   }
 }
 

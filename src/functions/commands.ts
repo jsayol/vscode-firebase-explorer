@@ -5,13 +5,21 @@ import {
   downloadToTmpFile,
   getFilePath,
   readFile,
-  unzipToTmpDir
+  unzipToTmpDir,
+  contains
 } from '../utils';
 import { FunctionsAPI } from './api';
 import { CloudFunctionItem, FunctionsProvider } from './FunctionsProvider';
 import { getDetailsFromName } from './utils';
 
 let context: vscode.ExtensionContext;
+const logViews: {
+  [k: string]: {
+    panel: vscode.WebviewPanel;
+    isLive: boolean;
+    isReady: boolean;
+  };
+} = {};
 
 export function registerFunctionsCommands(_context: vscode.ExtensionContext) {
   context = _context;
@@ -111,83 +119,100 @@ function openInFirebaseConsole(element: CloudFunctionItem): void {
 }
 
 async function viewLogs(element: CloudFunctionItem): Promise<void> {
-  const fnName = element.cloudFunction.entryPoint;
+  const panelId =
+    element.account.user.email + '--' + element.cloudFunction.name;
 
   try {
-    await vscode.window.withProgress(
-      {
-        title: 'Getting Cloud Functions log for ' + fnName,
-        location: vscode.ProgressLocation.Notification
-      },
-      async () => {
-        const api = FunctionsAPI.for(element.account, element.project);
-        const logEntries = await api.getLog(element.cloudFunction);
-
-        const html = await readFile(
-          getFilePath('ui/functions/log.html'),
-          'utf8'
-        );
-
-        const panel = vscode.window.createWebviewPanel(
-          'function.logTail',
-          'Log: ' + fnName,
-          vscode.ViewColumn.One,
-          {
-            enableScripts: true,
-            retainContextWhenHidden: true
-          }
-        );
-
-        let liveState = false;
-
-        panel.webview.html = html;
-
-        panel.webview.onDidReceiveMessage(async data => {
-          switch (data.command) {
-            case 'liveState':
-              liveState = data.liveState;
-              break;
-            case 'getEntries':
-              const since = data.since;
-              const entries = await api.getLog(element.cloudFunction, {
-                since
-              });
-              panel.webview.postMessage({
-                command: 'addEntries',
-                entries
-              });
-              break;
-          }
-        });
-
-        panel.onDidChangeViewState(
-          _event => {
-            // const panel = _event.webviewPanel;
-          },
-          null,
-          context.subscriptions
-        );
-
-        panel.onDidDispose(
-          () => {
-            // Do any cleanup here
-          },
-          null,
-          context.subscriptions
-        );
-
-        panel.webview.postMessage({
-          command: 'initialize',
-          name: fnName,
-          liveState
-        });
-
-        panel.webview.postMessage({
-          command: 'addEntries',
-          entries: logEntries
+    if (contains(logViews, panelId)) {
+      const { panel, isLive, isReady } = logViews[panelId];
+      if (isReady && !isLive) {
+        setImmediate(() => {
+          panel.webview.postMessage({
+            command: 'fetchNew'
+          });
         });
       }
-    );
+      panel.reveal();
+    } else {
+      const fnName = element.cloudFunction.entryPoint;
+      await vscode.window.withProgress(
+        {
+          title: 'Getting Cloud Functions log for ' + fnName,
+          location: vscode.ProgressLocation.Notification
+        },
+        async () => {
+          const api = FunctionsAPI.for(element.account, element.project);
+          let logEntries = await api.getLog(element.cloudFunction);
+
+          const panel = vscode.window.createWebviewPanel(
+            'function.logTail',
+            'Log: ' + fnName,
+            vscode.ViewColumn.One,
+            {
+              enableScripts: true,
+              retainContextWhenHidden: true
+            }
+          );
+
+          panel.webview.html = await readFile(
+            getFilePath('ui/functions/log.html'),
+            'utf8'
+          );
+
+          panel.webview.onDidReceiveMessage(async data => {
+            switch (data.command) {
+              case 'ready':
+                logViews[panelId] = {
+                  ...logViews[panelId],
+                  isReady: true
+                };
+                panel.webview.postMessage({
+                  command: 'initialize',
+                  name: fnName,
+                  isLive: false,
+                  entries: logEntries
+                });
+                // logEntries = undefined as any;
+                break;
+              case 'isLive':
+                logViews[panelId] = {
+                  ...logViews[panelId],
+                  isLive: data.isLive
+                };
+                break;
+              case 'getEntries':
+                const entries = await api.getLog(element.cloudFunction, {
+                  since: data.since
+                });
+                panel.webview.postMessage({
+                  command: 'addEntries',
+                  entries
+                });
+                break;
+            }
+          });
+
+          // panel.onDidChangeViewState(
+          //   _event => {
+          //     const panel = _event.webviewPanel;
+          //   },
+          //   null,
+          //   context.subscriptions
+          // );
+
+          panel.onDidDispose(
+            () => {
+              // Do any cleanup here
+              delete logViews[panelId];
+            },
+            null,
+            context.subscriptions
+          );
+
+          logViews[panelId] = { panel, isLive: false, isReady: false };
+        }
+      );
+    }
   } catch (err) {
     console.log({ err });
   }
