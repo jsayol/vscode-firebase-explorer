@@ -69,24 +69,24 @@
           "name": "Accounts & Projects"
         },
         {
-          "id": "firebase-hosting",
-          "name": "Hosting"
-        },
-        {
-          "id": "firebase-functions",
-          "name": "Cloud Functions"
-        },
-        {
-          "id": "firebase-apps",
-          "name": "Mobile Apps"
-        },
-        {
           "id": "firebase-firestore",
           "name": "Firestore"
         },
         {
           "id": "firebase-database",
           "name": "Database"
+        },
+        {
+          "id": "firebase-functions",
+          "name": "Cloud Functions"
+        },
+        {
+          "id": "firebase-hosting",
+          "name": "Hosting"
+        },
+        {
+          "id": "firebase-apps",
+          "name": "Mobile Apps"
         }
       ]
     },
