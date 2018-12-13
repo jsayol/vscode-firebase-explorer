@@ -127,7 +127,7 @@ async function viewLogs(element: CloudFunctionItem): Promise<void> {
       const { panel, isLive, isReady } = logViews[panelId];
       if (isReady && !isLive) {
         setImmediate(() => {
-          panel.webview.postMessage({
+          postToPanel(panel, {
             command: 'fetchNew'
           });
         });
@@ -166,7 +166,7 @@ async function viewLogs(element: CloudFunctionItem): Promise<void> {
                   ...logViews[panelId],
                   isReady: true
                 };
-                panel.webview.postMessage({
+                postToPanel(panel, {
                   command: 'initialize',
                   name: fnName,
                   isLive: false,
@@ -184,7 +184,7 @@ async function viewLogs(element: CloudFunctionItem): Promise<void> {
                 const entries = await api.getLog(element.cloudFunction, {
                   since: data.since
                 });
-                panel.webview.postMessage({
+                postToPanel(panel, {
                   command: 'addEntries',
                   entries
                 });
@@ -202,7 +202,6 @@ async function viewLogs(element: CloudFunctionItem): Promise<void> {
 
           panel.onDidDispose(
             () => {
-              // Do any cleanup here
               delete logViews[panelId];
             },
             null,
@@ -215,6 +214,14 @@ async function viewLogs(element: CloudFunctionItem): Promise<void> {
     }
   } catch (err) {
     console.log({ err });
+  }
+}
+
+function postToPanel(panel: vscode.WebviewPanel, msg: any) {
+  try {
+    panel.webview.postMessage(msg);
+  } catch (err) {
+    console.error('Failed sendig message to WebView panel', err);
   }
 }
 
