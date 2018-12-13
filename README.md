@@ -11,3 +11,7 @@ ext install jsayol.firebase-explorer
 ```
 
 Or you can just search for "Firebase Explorer" in the Extensions view.
+
+## Preview
+
+![Firebase Explorer logo](images/screenshot.png)

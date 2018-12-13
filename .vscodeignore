@@ -3,7 +3,6 @@
 out/test/**
 out/**/*.map
 src/**
-assets/**/*.xcf
 tsconfig.json
 tslint.json
 .github/**
