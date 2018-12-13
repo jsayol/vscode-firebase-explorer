@@ -132,17 +132,17 @@ async function initialize(context: vscode.ExtensionContext): Promise<void> {
   }
 }
 
-async function showSignInPrompt(msg?: string) {
+function showSignInPrompt(msg?: string): void {
   const buttonText = 'Sign In';
-  const action = await vscode.window.showInformationMessage(
+  const message =
     msg ||
-      'Hello! Please sign in with your Google account to start using Firebase Explorer.',
-    buttonText
-  );
+    'Hello! Please sign in with your Google account to start using Firebase Explorer.';
 
-  if (action === buttonText) {
-    vscode.commands.executeCommand('firebaseExplorer.accounts.add');
-  }
+  vscode.window.showInformationMessage(message, buttonText).then(action => {
+    if (action === buttonText) {
+      vscode.commands.executeCommand('firebaseExplorer.accounts.add');
+    }
+  });
 }
 
 export interface ExtensionConfig {

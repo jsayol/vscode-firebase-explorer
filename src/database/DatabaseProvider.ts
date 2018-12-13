@@ -30,7 +30,7 @@ export class DatabaseProvider
     const account = this.context.globalState.get<AccountInfo>(
       'selectedAccount'
     );
-    const project = this.context.globalState.get<FirebaseProject>(
+    const project = this.context.globalState.get<FirebaseProject | null>(
       'selectedProject'
     );
 
@@ -156,7 +156,6 @@ export class DatabaseProviderItem extends vscode.TreeItem {
       this.hasChildren = true;
     } else {
       this.contextValue = 'database.valueEntry';
-      // this.label = `${this.name} : <code>${JSON.stringify(this._value)}</code>`;
       this.label = this.name;
       this.description = JSON.stringify(this._value);
       this.collapsibleState = vscode.TreeItemCollapsibleState.None;
@@ -172,7 +171,7 @@ export class DatabaseProviderItem extends vscode.TreeItem {
         type = typeofValue;
       } else if (Array.isArray(typeofValue)) {
         type = 'array';
-      } else if (value === null || value === undefined) {
+      } else if (value === null) {
         type = 'null';
       } else {
         // Shouldn't happen, but just in case

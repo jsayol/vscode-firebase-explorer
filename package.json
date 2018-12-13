@@ -31,8 +31,8 @@
     "theme": "dark"
   },
   "scripts": {
-    "watch": "webpack --silent --env.development",
-    "build": "webpack --env.development",
+    "watch": "webpack --silent --mode=development --env.development",
+    "build": "webpack --mode=development --env.development",
     "bundle": "webpack --env.production",
     "compile": "tsc -p ./",
     "build:watch": "webpack --watch --env.development --info-verbosity verbose",

@@ -193,10 +193,13 @@ export function getFieldValue(field: DocumentFieldValue): any {
   if (processed.type === 'array') {
     return getFieldArrayValue(processed.value);
   } else if (processed.type === 'map') {
+    if (processed.value === undefined) {
+      return undefined;
+    }
     return Object.keys(processed.value)
       .map(
         (childKey): { key: string; val: any } => {
-          const childField: DocumentFieldValue = processed.value[childKey];
+          const childField: DocumentFieldValue = processed.value![childKey];
           return { key: childKey, val: getFieldValue(childField) };
         }
       )
@@ -208,13 +211,17 @@ export function getFieldValue(field: DocumentFieldValue): any {
         {} as { [k: string]: any }
       );
   } else if (processed.type === 'reference') {
-    const match = (processed.value as string).match(
-      /projects\/([^\/]+)\/databases\/([^\/]+)\/documents(\/.*)/
-    );
-    if (!match) {
-      return '<ERROR>';
+    if (processed.value !== undefined) {
+      const match = processed.value.match(
+        /projects\/([^\/]+)\/databases\/([^\/]+)\/documents(\/.*)/
+      );
+      if (!match) {
+        return '<ERROR>';
+      }
+      return match[3];
+    } else {
+      return undefined;
     }
-    return match[3];
   } else if (processed.type === 'integer') {
     // For some reason integers are returned as strings, but doubles aren't
     return processed.value !== undefined ? Number(processed.value) : undefined;
@@ -276,11 +283,11 @@ export type GeoPointValue = {
 };
 
 export type ArrayValue = {
-  values: DocumentFieldValue[];
+  values: DocumentFieldValue[] | undefined;
 };
 
 export type MapValue = {
-  fields: { [name: string]: DocumentFieldValue };
+  fields: { [name: string]: DocumentFieldValue } | undefined;
 };
 
 export type FieldValue =
@@ -294,44 +301,45 @@ export type FieldValue =
   | ReferenceValue
   | GeoPointValue
   | ArrayValue['values']
-  | MapValue['fields'];
+  | MapValue['fields']
+  | undefined;
 
 // ***********************
 
 export interface DocumentFieldNullValue {
-  nullValue: NullValue;
+  nullValue: NullValue | undefined;
 }
 
 export interface DocumentFieldBooleanValue {
-  booleanValue: BooleanValue;
+  booleanValue: BooleanValue | undefined;
 }
 
 export interface DocumentFieldIntegerValue {
-  integerValue: IntegerValue;
+  integerValue: IntegerValue | undefined;
 }
 
 export interface DocumentFieldDoubleValue {
-  doubleValue: DoubleValue;
+  doubleValue: DoubleValue | undefined;
 }
 
 export interface DocumentFieldTimestampValue {
-  timestampValue: TimestampValue;
+  timestampValue: TimestampValue | undefined;
 }
 
 export interface DocumentFieldStringValue {
-  stringValue: StringValue;
+  stringValue: StringValue | undefined;
 }
 
 export interface DocumentFieldBytesValue {
-  bytesValue: BytesValue;
+  bytesValue: BytesValue | undefined;
 }
 
 export interface DocumentFieldReferenceValue {
-  referenceValue: ReferenceValue;
+  referenceValue: ReferenceValue | undefined;
 }
 
 export interface DocumentFieldGeoPointValue {
-  geoPointValue: GeoPointValue;
+  geoPointValue: GeoPointValue | undefined;
 }
 
 export interface DocumentFieldArrayValue {
@@ -369,39 +377,39 @@ export type DocumentValueType =
 
 export interface ProcessedFieldValueNull {
   type: 'null';
-  value: NullValue;
+  value: NullValue | undefined;
 }
 export interface ProcessedFieldValueBoolean {
   type: 'boolean';
-  value: BooleanValue;
+  value: BooleanValue | undefined;
 }
 export interface ProcessedFieldValueInteger {
   type: 'integer';
-  value: IntegerValue;
+  value: IntegerValue | undefined;
 }
 export interface ProcessedFieldValueDouble {
   type: 'double';
-  value: DoubleValue;
+  value: DoubleValue | undefined;
 }
 export interface ProcessedFieldValueTimestamp {
   type: 'timestamp';
-  value: TimestampValue;
+  value: TimestampValue | undefined;
 }
 export interface ProcessedFieldValueString {
   type: 'string';
-  value: StringValue;
+  value: StringValue | undefined;
 }
 export interface ProcessedFieldValueBytes {
   type: 'bytes';
-  value: BytesValue;
+  value: BytesValue | undefined;
 }
 export interface ProcessedFieldValueReference {
   type: 'reference';
-  value: ReferenceValue;
+  value: ReferenceValue | undefined;
 }
 export interface ProcessedFieldValueGeoPoint {
   type: 'geopoint';
-  value: GeoPointValue;
+  value: GeoPointValue | undefined;
 }
 export interface ProcessedFieldValueArray {
   type: 'array';
@@ -409,7 +417,7 @@ export interface ProcessedFieldValueArray {
 }
 export interface ProcessedFieldValueMap {
   type: 'map';
-  value: MapValue['fields'];
+  value: MapValue['fields'] | undefined;
 }
 
 export type ProcessedFieldValue =

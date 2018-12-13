@@ -45,7 +45,7 @@ export class FirestoreProvider
     const account = this.context.globalState.get<AccountInfo>(
       'selectedAccount'
     );
-    const project = this.context.globalState.get<FirebaseProject>(
+    const project = this.context.globalState.get<FirebaseProject | null>(
       'selectedProject'
     );
 
@@ -146,6 +146,9 @@ export class FirestoreProvider
       return items;
     } else if (element instanceof DocumentFieldItem) {
       if (element.type === 'reference') {
+        if (element.fieldValue.referenceValue === undefined) {
+          return [];
+        }
         const databaseMatch = element.fieldValue.referenceValue.match(
           /projects\/([^\/]+)\/databases\/\(default\)\/documents\//
         );
@@ -175,7 +178,7 @@ export class FirestoreProvider
                 new DocumentFieldItem(
                   element.project,
                   name,
-                  document!.fields![name]
+                  document.fields![name]
                 )
             )
           );
@@ -336,10 +339,12 @@ export class DocumentFieldItem<
       this.label = name;
     } else {
       if (processed.type === 'geopoint') {
-        this.escapedValue =
-          decimalToDMS(processed.value.latitude, 'lat') +
-          ', ' +
-          decimalToDMS(processed.value.longitude, 'lon');
+        if (processed.value !== undefined) {
+          this.escapedValue =
+            decimalToDMS(processed.value.latitude, 'lat') +
+            ', ' +
+            decimalToDMS(processed.value.longitude, 'lon');
+        }
       } else {
         this.escapedValue = getFieldValue(this.fieldValue);
 
@@ -351,7 +356,6 @@ export class DocumentFieldItem<
         }
 
         if (this.escapedValue === undefined) {
-          // this.escapedValue = '<i>undefined</i>';
           this.escapedValue = 'undefined';
         } else {
           this.escapedValue = this.escapedValue
@@ -360,7 +364,6 @@ export class DocumentFieldItem<
         }
       }
 
-      // this.label = `${name} : <code>${this.escapedValue}</code>`;
       this.label = name;
       this.description = this.escapedValue;
     }

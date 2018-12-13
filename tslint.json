@@ -8,7 +8,8 @@
     "curly": true,
     "class-name": true,
     "semicolon": [true, "always"],
-    "triple-equals": true
+    "triple-equals": true,
+    "await-promise": [true, "Thenable", "RequestPromise"]
   },
   "defaultSeverity": "warning"
 }

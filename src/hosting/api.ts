@@ -148,7 +148,7 @@ export enum HostingReleaseType {
 
 export interface HostingReleaseActingUser {
   email: string;
-  imageUrl: string;
+  imageUrl: string | undefined;
 }
 
 export enum HostingVersionStatus {

@@ -37,7 +37,7 @@ function projectSelection(
   const currentAccount = context.globalState.get<AccountInfo>(
     'selectedAccount'
   );
-  const currentProject = context.globalState.get<FirebaseProject>(
+  const currentProject = context.globalState.get<FirebaseProject | null>(
     'selectedProject'
   );
 

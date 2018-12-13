@@ -39,7 +39,7 @@ export class FunctionsProvider
     const account = this.context.globalState.get<AccountInfo>(
       'selectedAccount'
     );
-    const project = this.context.globalState.get<FirebaseProject>(
+    const project = this.context.globalState.get<FirebaseProject | null>(
       'selectedProject'
     );
 

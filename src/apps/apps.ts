@@ -124,12 +124,12 @@ export class AndroidApp extends BaseApp {
 
   async addShaCertificate(cert: ShaCertificate): Promise<void> {
     const api = AppsAPI.for(this.account, this.project);
-    api.addShaCertificate(this.appId, cert);
+    await api.addShaCertificate(this.appId, cert);
   }
 
   async deleteShaCertificate(cert: ShaCertificate): Promise<void> {
     const api = AppsAPI.for(this.account, this.project);
-    api.deleteShaCertificate(this.appId, cert);
+    await api.deleteShaCertificate(this.appId, cert);
   }
 }
 

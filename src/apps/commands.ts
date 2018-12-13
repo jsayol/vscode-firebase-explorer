@@ -276,7 +276,7 @@ async function createNewApp(): Promise<void> {
     },
     async () => {
       const account = context.globalState.get<AccountInfo>('selectedAccount')!;
-      const project = context.globalState.get<FirebaseProject>(
+      const project = context.globalState.get<FirebaseProject | null>(
         'selectedProject'
       )!;
 
