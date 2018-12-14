@@ -227,6 +227,21 @@
         "category": "Firestore"
       },
       {
+        "command": "firebaseExplorer.firestore.copySnippet.JS.ref",
+        "title": "Copy Reference Snippet (JS)",
+        "category": "Firestore"
+      },
+      {
+        "command": "firebaseExplorer.firestore.copySnippet.JS.doc.onSnapshot",
+        "title": "Copy onSnapshot Snippet (JS)",
+        "category": "Firestore"
+      },
+      {
+        "command": "firebaseExplorer.firestore.copySnippet.JS.collection.onSnapshot",
+        "title": "Copy onSnapshot Snippet (JS)",
+        "category": "Firestore"
+      },
+      {
         "command": "firebaseExplorer.firestore.refreshDocument",
         "title": "Refresh Document",
         "category": "Firestore"
@@ -264,6 +279,16 @@
       {
         "command": "firebaseExplorer.database.copyPath",
         "title": "Copy Path",
+        "category": "Database"
+      },
+      {
+        "command": "firebaseExplorer.database.copySnippet.JS.ref",
+        "title": "Copy Reference Snippet (JS)",
+        "category": "Database"
+      },
+      {
+        "command": "firebaseExplorer.database.copySnippet.JS.onValue",
+        "title": "Copy On-Value Snippet (JS)",
         "category": "Database"
       },
       {
@@ -328,113 +353,113 @@
         },
         {
           "command": "firebaseExplorer.functions.openInConsole.firebase",
-          "when": "viewItem =~ /functions.ofTriggerType/",
+          "when": "viewItem =~ /^functions.ofTriggerType/",
           "group": "functions.openInConsole@1"
         },
         {
           "command": "firebaseExplorer.functions.openInConsole.cloud",
-          "when": "viewItem =~ /functions.ofTriggerType/",
+          "when": "viewItem =~ /^functions.ofTriggerType/",
           "group": "functions.openInConsole@2"
         },
         {
           "command": "firebaseExplorer.functions.viewLogs",
-          "when": "viewItem =~ /functions.ofTriggerType/",
+          "when": "viewItem =~ /^functions.ofTriggerType/",
           "group": "functions.details@1"
         },
         {
           "command": "firebaseExplorer.functions.viewSource",
-          "when": "viewItem =~ /functions.ofTriggerType/",
+          "when": "viewItem =~ /^functions.ofTriggerType/",
           "group": "functions.details@2"
         },
         {
           "command": "firebaseExplorer.database.copyName",
-          "when": "viewItem == database.entry",
-          "group": "database.entry@1"
+          "when": "viewItem =~ /^database\\.(entry|parentEntry|valueEntry)/",
+          "group": "database.entry-copy@1"
         },
         {
           "command": "firebaseExplorer.database.copyPath",
-          "when": "viewItem == database.entry",
-          "group": "database.entry@2"
+          "when": "viewItem =~ /^database\\.(entry|parentEntry|valueEntry)/",
+          "group": "database.entry-copy@2"
         },
         {
-          "command": "firebaseExplorer.database.deleteEntry",
-          "when": "viewItem == database.entry",
-          "group": "database.entry@3"
+          "command": "firebaseExplorer.database.copySnippet.JS.ref",
+          "when": "viewItem =~ /^database\\.(entry|parentEntry|valueEntry)/",
+          "group": "database.entry-snippet@1"
         },
         {
-          "command": "firebaseExplorer.database.copyName",
-          "when": "viewItem == database.parentEntry",
-          "group": "database.parentEntry@1"
-        },
-        {
-          "command": "firebaseExplorer.database.copyPath",
-          "when": "viewItem == database.parentEntry",
-          "group": "database.parentEntry@2"
-        },
-        {
-          "command": "firebaseExplorer.database.deleteEntry",
-          "when": "viewItem == database.parentEntry",
-          "group": "database.parentEntry@4"
-        },
-        {
-          "command": "firebaseExplorer.database.copyName",
-          "when": "viewItem == database.valueEntry",
-          "group": "database.valueEntry@1"
-        },
-        {
-          "command": "firebaseExplorer.database.copyPath",
-          "when": "viewItem == database.valueEntry",
-          "group": "database.valueEntry@2"
+          "command": "firebaseExplorer.database.copySnippet.JS.onValue",
+          "when": "viewItem =~ /^database\\.(entry|parentEntry|valueEntry)/",
+          "group": "database.entry-snippet@2"
         },
         {
           "command": "firebaseExplorer.database.editEntryValue",
           "when": "viewItem == database.valueEntry",
-          "group": "database.valueEntry@3"
+          "group": "database.entry-edit@1"
         },
         {
           "command": "firebaseExplorer.database.deleteEntry",
-          "when": "viewItem == database.valueEntry",
-          "group": "database.valueEntry@4"
+          "when": "viewItem =~ /^database\\.(entry|parentEntry|valueEntry)/",
+          "group": "database.entry-edit@2"
         },
         {
           "command": "firebaseExplorer.firestore.copyItemName",
           "when": "viewItem == firestore.collection",
-          "group": "firestore.collection@1"
+          "group": "firestore.collection-copy@1"
         },
         {
           "command": "firebaseExplorer.firestore.copyItemPath",
           "when": "viewItem == firestore.collection",
-          "group": "firestore.collection@2"
+          "group": "firestore.collection-copy@2"
+        },
+        {
+          "command": "firebaseExplorer.firestore.copySnippet.JS.ref",
+          "when": "viewItem == firestore.collection",
+          "group": "firestore.collection-snippet@1"
+        },
+        {
+          "command": "firebaseExplorer.firestore.copySnippet.JS.collection.onSnapshot",
+          "when": "viewItem == firestore.collection",
+          "group": "firestore.collection-snippet@2"
         },
         {
           "command": "firebaseExplorer.firestore.refreshCollection",
           "when": "viewItem == firestore.collection",
-          "group": "firestore.collection@3"
+          "group": "firestore.collection-other@1"
         },
         {
           "command": "firebaseExplorer.firestore.copyItemName",
           "when": "viewItem == firestore.document",
-          "group": "firestore.document@1"
+          "group": "firestore.document-copy@1"
         },
         {
           "command": "firebaseExplorer.firestore.copyItemPath",
           "when": "viewItem == firestore.document",
-          "group": "firestore.document@2"
+          "group": "firestore.document-copy@2"
         },
         {
           "command": "firebaseExplorer.firestore.copyDocumentContent",
           "when": "viewItem == firestore.document",
-          "group": "firestore.document@3"
+          "group": "firestore.document-copy@3"
         },
         {
           "command": "firebaseExplorer.firestore.deleteDocument",
           "when": "viewItem == firestore.document",
-          "group": "firestore.document@4"
+          "group": "firestore.document-edit@4"
+        },
+        {
+          "command": "firebaseExplorer.firestore.copySnippet.JS.ref",
+          "when": "viewItem == firestore.document",
+          "group": "firestore.document-snippet@5"
+        },
+        {
+          "command": "firebaseExplorer.firestore.copySnippet.JS.doc.onSnapshot",
+          "when": "viewItem == firestore.document",
+          "group": "firestore.document-snippet@6"
         },
         {
           "command": "firebaseExplorer.firestore.refreshDocument",
           "when": "viewItem == firestore.document",
-          "group": "firestore.document@4"
+          "group": "firestore.document-other@7"
         },
         {
           "command": "firebaseExplorer.firestore.copyDocumentFieldName",

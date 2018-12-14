@@ -5,4 +5,4 @@ node_modules/
 .vscode-test/
 *.vsix
 .rpt2_cache/
-notes.md
+stuff/

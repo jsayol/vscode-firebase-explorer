@@ -4,9 +4,13 @@ import { FirebaseProject, ProjectConfig } from './ProjectManager';
 import { AccountManager, AccountInfo } from '../accounts/AccountManager';
 import { contains } from '../utils';
 
-const API = {
+const CONFIG = {
   origin: 'https://firebase.googleapis.com',
-  endpointPrefix: '/v1beta1/projects'
+  prefix: '/v1beta1/projects',
+  mobilesdk: {
+    origin: 'https://mobilesdk-pa.googleapis.com',
+    prefix: '/v1/projects'
+  }
 };
 
 const instances: { [k: string]: ProjectsAPI } = {};
@@ -34,7 +38,7 @@ export class ProjectsAPI {
     const token = await this.accountManager.getAccessToken();
     const reqOptions: request.OptionsWithUrl = {
       method,
-      url: API.origin + API.endpointPrefix + resource,
+      url: CONFIG.origin + CONFIG.prefix + resource,
       resolveWithFullResponse: true,
       json: true,
       ...options
@@ -71,13 +75,30 @@ export class ProjectsAPI {
   }
 
   async getProjectConfig(project: FirebaseProject): Promise<ProjectConfig> {
-    // FIXME: this should get the config from the REST API, but there seems to be a bug
-    return {
-      projectId: project.projectId,
-      databaseURL: `https://${project.projectId}.firebaseio.com`,
-      storageBucket: project.resources.storageBucket,
-      locationId: project.resources.locationId
-    };
+    try {
+      const response = await this.authedRequest('GET', '', {
+        url: `${CONFIG.mobilesdk.origin}/${CONFIG.mobilesdk.prefix}/${
+          project.projectNumber
+        }:getServerAppConfig`
+      });
+
+      if (!response.body) {
+        throw new Error(response);
+      }
+
+      return response.body;
+    } catch (err) {
+      throw new Error(
+        `Failed to retrieve the config for project ${project.projectId}: ${err}`
+      );
+    }
+
+    // return {
+    //   projectId: project.projectId,
+    //   databaseURL: `https://${project.projectId}.firebaseio.com`,
+    //   storageBucket: project.resources.storageBucket,
+    //   locationId: project.resources.locationId
+    // };
   }
 }
 

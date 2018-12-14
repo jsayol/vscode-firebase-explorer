@@ -39,6 +39,20 @@ export function registerDatabaseCommands(context: vscode.ExtensionContext) {
       copyPath
     )
   );
+
+  context.subscriptions.push(
+    vscode.commands.registerCommand(
+      'firebaseExplorer.database.copySnippet.JS.ref',
+      copySnippetJS_ref
+    )
+  );
+
+  context.subscriptions.push(
+    vscode.commands.registerCommand(
+      'firebaseExplorer.database.copySnippet.JS.onValue',
+      copySnippetJS_OnValue
+    )
+  );
 }
 
 function refreshDatabase(): void {
@@ -147,5 +161,25 @@ function copyName(element: DatabaseProviderItem): void {
 }
 
 function copyPath(element: DatabaseProviderItem): void {
-  vscode.env.clipboard.writeText('/' + getFullPath(element.parentPath, element.name));
+  vscode.env.clipboard.writeText(
+    '/' + getFullPath(element.parentPath, element.name)
+  );
+}
+
+function copySnippetJS_ref(element: DatabaseProviderItem): void {
+  const fullPath = getFullPath(element.parentPath, element.name);
+  vscode.env.clipboard.writeText(`firebase.database().ref('${fullPath}')`);
+}
+
+function copySnippetJS_OnValue(element: DatabaseProviderItem): void {
+  const fullPath = getFullPath(element.parentPath, element.name);
+  vscode.env.clipboard.writeText(
+    [
+      `const ref = firebase.database().ref('${fullPath}');`,
+      `ref.on('value', (snapshot) => {`,
+      `  const value = snapshot.val();`,
+      `  // ...`,
+      `});`
+    ].join('\n')
+  );
 }

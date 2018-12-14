@@ -41,6 +41,27 @@ export function registerFirestoreCommands(context: vscode.ExtensionContext) {
 
   context.subscriptions.push(
     vscode.commands.registerCommand(
+      'firebaseExplorer.firestore.copySnippet.JS.ref',
+      copySnippetJS_ref
+    )
+  );
+
+  context.subscriptions.push(
+    vscode.commands.registerCommand(
+      'firebaseExplorer.firestore.copySnippet.JS.doc.onSnapshot',
+      copySnippetJS_doc_onSnapshot
+    )
+  );
+
+  context.subscriptions.push(
+    vscode.commands.registerCommand(
+      'firebaseExplorer.firestore.copySnippet.JS.collection.onSnapshot',
+      copySnippetJS_collection_onSnapshot
+    )
+  );
+
+  context.subscriptions.push(
+    vscode.commands.registerCommand(
       'firebaseExplorer.firestore.deleteDocument',
       deleteDocument
     )
@@ -92,7 +113,57 @@ function copyItemName(element: CollectionItem | DocumentItem): void {
 }
 
 function copyItemPath(element: CollectionItem | DocumentItem): void {
-  vscode.env.clipboard.writeText('/' + getFullPath(element.parentPath, element.name));
+  vscode.env.clipboard.writeText(
+    '/' + getFullPath(element.parentPath, element.name)
+  );
+}
+
+function copySnippetJS_ref(element: CollectionItem | DocumentItem): void {
+  if (!element) {
+    return;
+  }
+
+  const method = element instanceof CollectionItem ? 'collection' : 'doc';
+  const fullPath = getFullPath(element.parentPath, element.name);
+  vscode.env.clipboard.writeText(
+    `firebase.firestore().${method}('${fullPath}')`
+  );
+}
+
+function copySnippetJS_doc_onSnapshot(element: DocumentItem): void {
+  if (!element) {
+    return;
+  }
+
+  const fullPath = getFullPath(element.parentPath, element.name);
+  vscode.env.clipboard.writeText(
+    [
+      `const ref = firebase.firestore().doc('${fullPath}');`,
+      `ref.onSnapshot((doc) => {`,
+      `  const data = doc.data();`,
+      `  // ...`,
+      `});`
+    ].join('\n')
+  );
+}
+
+function copySnippetJS_collection_onSnapshot(element: CollectionItem): void {
+  if (!element) {
+    return;
+  }
+
+  const fullPath = getFullPath(element.parentPath, element.name);
+  vscode.env.clipboard.writeText(
+    [
+      `const ref = firebase.firestore().collection('${fullPath}');`,
+      `ref.onSnapshot((snapshot) => {`,
+      `  snapshot.forEach((doc) => {`,
+      `    const data = doc.data();`,
+      `    // ...`,
+      `  });`,
+      `});`
+    ].join('\n')
+  );
 }
 
 async function copyDocumentContent(element: DocumentItem): Promise<void> {
