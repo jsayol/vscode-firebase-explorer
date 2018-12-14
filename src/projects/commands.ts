@@ -58,9 +58,11 @@ function projectSelection(
   setContext(ContextValue.FirestoreLoaded, false);
   setContext(ContextValue.DatabaseLoaded, false);
 
-  // Empty selection and refresh to show "Loading..."
-  context.globalState.update('selectedAccount', null);
-  context.globalState.update('selectedProject', null);
+  if (account && project) {
+    // Empty selection and refresh to show "Loading..."
+    context.globalState.update('selectedAccount', null);
+    context.globalState.update('selectedProject', null);
+  }
 
   hostingProvider.refresh();
   functionsProvider.refresh();
@@ -68,19 +70,21 @@ function projectSelection(
   firestoreProvider.refresh();
   databaseProvider.refresh();
 
-  setTimeout(() => {
-    // Re-populate the treeviews for the selected project
-    context.globalState.update('selectedAccount', account);
-    context.globalState.update('selectedProject', project);
+  if (account && project) {
+    setTimeout(() => {
+      // Re-populate the treeviews for the selected project
+      context.globalState.update('selectedAccount', account);
+      context.globalState.update('selectedProject', project);
 
-    hostingProvider.refresh();
-    functionsProvider.refresh();
-    appsProvider.refresh();
-    firestoreProvider.refresh();
-    databaseProvider.refresh();
+      hostingProvider.refresh();
+      functionsProvider.refresh();
+      appsProvider.refresh();
+      firestoreProvider.refresh();
+      databaseProvider.refresh();
 
-    setContext(ContextValue.ProjectSelected, !!(account && project));
-  }, 250);
+      setContext(ContextValue.ProjectSelected, !!(account && project));
+    }, 250);
+  }
 }
 
 function refreshProjects(element?: AccountItem): void {

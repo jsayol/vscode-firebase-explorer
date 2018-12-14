@@ -61,6 +61,10 @@ function refreshDatabase(): void {
 }
 
 async function editEntryValue(element: DatabaseProviderItem): Promise<void> {
+  if (!element) {
+    return;
+  }
+
   const fullPath = getFullPath(element.parentPath, element.name);
   let newValueStr = await vscode.window.showInputBox({
     placeHolder: 'Enter value',
@@ -117,6 +121,10 @@ async function editEntryValue(element: DatabaseProviderItem): Promise<void> {
 }
 
 async function deleteEntry(element: DatabaseProviderItem): Promise<void> {
+  if (!element) {
+    return;
+  }
+
   const fullPath = getFullPath(element.parentPath, element.name);
 
   const confirmation = await vscode.window.showWarningMessage(
@@ -157,21 +165,37 @@ async function deleteEntry(element: DatabaseProviderItem): Promise<void> {
 }
 
 function copyName(element: DatabaseProviderItem): void {
+  if (!element) {
+    return;
+  }
+
   vscode.env.clipboard.writeText(element.name);
 }
 
 function copyPath(element: DatabaseProviderItem): void {
+  if (!element) {
+    return;
+  }
+
   vscode.env.clipboard.writeText(
     '/' + getFullPath(element.parentPath, element.name)
   );
 }
 
 function copySnippetJS_ref(element: DatabaseProviderItem): void {
+  if (!element) {
+    return;
+  }
+
   const fullPath = getFullPath(element.parentPath, element.name);
   vscode.env.clipboard.writeText(`firebase.database().ref('${fullPath}')`);
 }
 
 function copySnippetJS_OnValue(element: DatabaseProviderItem): void {
+  if (!element) {
+    return;
+  }
+
   const fullPath = getFullPath(element.parentPath, element.name);
   vscode.env.clipboard.writeText(
     [

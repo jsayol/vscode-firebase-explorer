@@ -21,6 +21,10 @@ export function registerHostingCommands(_context: vscode.ExtensionContext) {
 }
 
 async function openFile(element: HostingFileItem): Promise<void> {
+  if (!element) {
+    return;
+  }
+
   const release = element.release;
   const file = element.part.file!;
   console.log({ release, file });

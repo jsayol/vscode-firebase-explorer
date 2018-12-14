@@ -73,6 +73,10 @@ function refreshApps(): void {
 }
 
 async function editAppName(element: AppsProviderItem): Promise<void> {
+  if (!element) {
+    return;
+  }
+
   const app: IosApp | AndroidApp = element.app;
   let packageName: string;
 
@@ -118,6 +122,10 @@ async function editAppName(element: AppsProviderItem): Promise<void> {
 }
 
 function showAppConfig(element: AppsProviderItem): void {
+  if (!element) {
+    return;
+  }
+
   vscode.window.withProgress(
     {
       title: `Loading configuration for "${element.app.appName}" ...`,
@@ -151,6 +159,10 @@ async function addAppCertificate(
   element: FingerprintFolderItem,
   retryValue?: string
 ): Promise<void> {
+  if (!element) {
+    return;
+  }
+
   const shaHash = await vscode.window.showInputBox({
     placeHolder:
       '00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00',
@@ -193,10 +205,18 @@ async function addAppCertificate(
 }
 
 function copyAppCertificate(element: FingerprintItem): void {
+  if (!element) {
+    return;
+  }
+
   vscode.env.clipboard.writeText(element.label!);
 }
 
 async function deleteAppCertificate(element: FingerprintItem): Promise<void> {
+  if (!element) {
+    return;
+  }
+
   const confirmation = await vscode.window.showWarningMessage(
     'Delete certificate fingerprint?\n' +
       'Warning: Any calls made to a Google API signed with this certificate may fail.\n\n' +

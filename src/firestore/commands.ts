@@ -109,10 +109,18 @@ function providerRefresh(element?: FirestoreProviderItem): void {
 }
 
 function copyItemName(element: CollectionItem | DocumentItem): void {
+  if (!element) {
+    return;
+  }
+
   vscode.env.clipboard.writeText(element.name);
 }
 
 function copyItemPath(element: CollectionItem | DocumentItem): void {
+  if (!element) {
+    return;
+  }
+
   vscode.env.clipboard.writeText(
     '/' + getFullPath(element.parentPath, element.name)
   );
@@ -167,6 +175,10 @@ function copySnippetJS_collection_onSnapshot(element: CollectionItem): void {
 }
 
 async function copyDocumentContent(element: DocumentItem): Promise<void> {
+  if (!element) {
+    return;
+  }
+
   // Documents that have been deleted don't have a "createTime" property
   if (element.document.createTime && !element.document.fields) {
     element.document = await vscode.window.withProgress(
@@ -198,6 +210,10 @@ async function copyDocumentContent(element: DocumentItem): Promise<void> {
 }
 
 async function deleteDocument(element: DocumentItem): Promise<void> {
+  if (!element) {
+    return;
+  }
+
   const fullPath = getFullPath(element.parentPath, element.name);
 
   const confirmation = await vscode.window.showWarningMessage(
@@ -229,10 +245,18 @@ async function deleteDocument(element: DocumentItem): Promise<void> {
 }
 
 function copyDocumentFieldName(element: DocumentFieldItem): void {
+  if (!element) {
+    return;
+  }
+
   vscode.env.clipboard.writeText(element.name);
 }
 
 function copyDocumentFieldValue(element: DocumentFieldItem): void {
+  if (!element) {
+    return;
+  }
+
   try {
     let value = JSON.stringify(getFieldValue(element.fieldValue));
     vscode.env.clipboard.writeText(value);

@@ -95,6 +95,10 @@ async function triggerFunction(method: string, element: CloudFunctionItem) {
 }
 
 function openInCloudConsole(element: CloudFunctionItem): void {
+  if (!element) {
+    return;
+  }
+
   const details = getDetailsFromName(element.cloudFunction.name);
   vscode.commands.executeCommand(
     'vscode.open',
@@ -107,6 +111,10 @@ function openInCloudConsole(element: CloudFunctionItem): void {
 }
 
 function openInFirebaseConsole(element: CloudFunctionItem): void {
+  if (!element) {
+    return;
+  }
+
   const details = getDetailsFromName(element.cloudFunction.name);
   vscode.commands.executeCommand(
     'vscode.open',
@@ -119,6 +127,10 @@ function openInFirebaseConsole(element: CloudFunctionItem): void {
 }
 
 async function viewLogs(element: CloudFunctionItem): Promise<void> {
+  if (!element) {
+    return;
+  }
+
   const panelId =
     element.account.user.email + '--' + element.cloudFunction.name;
 
@@ -226,6 +238,10 @@ function postToPanel(panel: vscode.WebviewPanel, msg: any) {
 }
 
 async function viewSource(element: CloudFunctionItem): Promise<void> {
+  if (!element) {
+    return;
+  }
+
   const fnName = element.cloudFunction.entryPoint;
 
   try {
