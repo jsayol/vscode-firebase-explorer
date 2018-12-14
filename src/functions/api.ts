@@ -41,7 +41,7 @@ export class FunctionsAPI {
     method: string,
     resource: string,
     options: Partial<request.OptionsWithUrl> = {}
-  ) {
+  ): Promise<request.FullResponse> {
     const token = await this.accountManager.getAccessToken();
     const reqOptions: request.OptionsWithUrl = {
       method,
@@ -82,19 +82,19 @@ export class FunctionsAPI {
     }
   }
 
-  async trigger(method: string, fn: CloudFunction) {
+  async triggerHTTPS(
+    fn: CloudFunction,
+    method: string
+  ): Promise<request.FullResponse> {
     if (fn.httpsTrigger) {
       try {
-        const response = await request({
+        return await request({
           method,
           url: fn.httpsTrigger.url,
           resolveWithFullResponse: true
         });
-        return parseBody(response);
       } catch (err) {
-        err.response = parseBody(err.response);
-        console.log(`Failed to trigger function ${fn.name}`, { err });
-        throw err;
+        return err.response;
       }
     } else {
       try {
@@ -178,18 +178,6 @@ export class FunctionsAPI {
     );
     return response.body.downloadUrl || '';
   }
-}
-
-function parseBody(response: request.FullResponse) {
-  if (!response || !response.headers || !response.headers['content-type']) {
-    return response;
-  }
-
-  if (response.headers['content-type'].match(/^application\/json/)) {
-    response.body = JSON.parse(response.body);
-  }
-
-  return response;
 }
 
 interface CloudFunctionBase {

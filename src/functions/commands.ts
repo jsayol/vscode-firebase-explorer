@@ -1,5 +1,5 @@
-import * as request from 'request-promise-native';
 import * as vscode from 'vscode';
+import * as mime from 'mime-types';
 import { ProviderStore, TreeViewStore } from '../stores';
 import {
   downloadToTmpFile,
@@ -33,15 +33,15 @@ export function registerFunctionsCommands(_context: vscode.ExtensionContext) {
 
   context.subscriptions.push(
     vscode.commands.registerCommand(
-      'firebaseExplorer.functions.trigger.GET',
-      triggerFunction.bind(null, 'GET')
+      'firebaseExplorer.functions.triggerHTTPS',
+      triggerHTTPSFunction
     )
   );
 
   context.subscriptions.push(
     vscode.commands.registerCommand(
-      'firebaseExplorer.functions.trigger.POST',
-      triggerFunction.bind(null, 'POST')
+      'firebaseExplorer.functions.copyTrigger',
+      copyTrigger
     )
   );
 
@@ -79,19 +79,77 @@ function refreshFunctions(): void {
   functionsProvider.refresh();
 }
 
-async function triggerFunction(method: string, element: CloudFunctionItem) {
+async function triggerHTTPSFunction(element: CloudFunctionItem) {
+  if (!element) {
+    return;
+  }
+
+  if (!element.cloudFunction.httpsTrigger) {
+    throw new Error('Function is not HTTPS-triggered.');
+  }
+
   const fn = element.cloudFunction;
   const api = FunctionsAPI.for(element.account, element.project);
 
-  // if (fn.httpsTrigger) {
-  //   vscode.commands.executeCommand(
-  //     'vscode.open',
-  //     vscode.Uri.parse(fn.httpsTrigger.url)
-  //   );
-  // }
+  const methodOptions: vscode.QuickPickItem[] = [
+    {
+      label: 'GET',
+      description: 'Do a GET request'
+    },
+    {
+      label: 'POST',
+      description: 'Do a POST request'
+    }
+  ];
 
-  const response: request.FullResponse = await api.trigger(method, fn);
-  console.log({ response });
+  const methodPick = await vscode.window.showQuickPick(methodOptions, {
+    ignoreFocusOut: true
+  });
+
+  if (!methodPick) {
+    return;
+  }
+
+  await vscode.window.withProgress(
+    {
+      title: 'Triggering HTTPS Cloud Function: ' + fn.entryPoint,
+      location: vscode.ProgressLocation.Notification
+    },
+    async () => {
+      const response = await api.triggerHTTPS(fn, methodPick.label);
+
+      vscode.window
+        .showInformationMessage(
+          `Function triggered. Response status code: ${response.statusCode}`,
+          'See response body'
+        )
+        .then(async action => {
+          if (action === 'See response body') {
+            const contentType: string =
+              response.headers['content-type'] || 'text/plain';
+
+            const textDocument = await vscode.workspace.openTextDocument({
+              language: mime.extension(contentType) || undefined,
+              content: response.body
+            });
+
+            vscode.window.showTextDocument(textDocument);
+          }
+        });
+    }
+  );
+}
+
+function copyTrigger(element: CloudFunctionItem) {
+  if (!element) {
+    return;
+  }
+
+  if (!element.cloudFunction.httpsTrigger) {
+    throw new Error('Function is not HTTPS-triggered.');
+  }
+
+  vscode.env.clipboard.writeText(element.cloudFunction.httpsTrigger.url);
 }
 
 function openInCloudConsole(element: CloudFunctionItem): void {

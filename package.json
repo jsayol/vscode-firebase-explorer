@@ -97,13 +97,13 @@
         "category": "Functions"
       },
       {
-        "command": "firebaseExplorer.functions.trigger.GET",
-        "title": "Trigger Function (GET)",
+        "command": "firebaseExplorer.functions.triggerHTTPS",
+        "title": "Trigger HTTPS Function",
         "category": "Functions"
       },
       {
-        "command": "firebaseExplorer.functions.trigger.POST",
-        "title": "Trigger Function (POST)",
+        "command": "firebaseExplorer.functions.copyTrigger",
+        "title": "Copy Trigger URL",
         "category": "Functions"
       },
       {
@@ -342,14 +342,14 @@
           "group": "account@2"
         },
         {
-          "command": "firebaseExplorer.functions.trigger.GET",
+          "command": "firebaseExplorer.functions.copyTrigger",
           "when": "viewItem == functions.ofTriggerType.https",
-          "group": "functions.trigger@1"
+          "group": "functions.copy@1"
         },
         {
-          "command": "firebaseExplorer.functions.trigger.POST",
+          "command": "firebaseExplorer.functions.triggerHTTPS",
           "when": "viewItem == functions.ofTriggerType.https",
-          "group": "functions.trigger@2"
+          "group": "functions.trigger@1"
         },
         {
           "command": "firebaseExplorer.functions.openInConsole.firebase",
@@ -518,6 +518,7 @@
     "@types/clean-webpack-plugin": "^0.1.2",
     "@types/clipboardy": "^1.1.0",
     "@types/jsonwebtoken": "^8.3.0",
+    "@types/mime-types": "^2.1.0",
     "@types/mocha": "^5.2.5",
     "@types/node": "^10.12.12",
     "@types/request-promise-native": "^1.0.15",
@@ -542,6 +543,7 @@
   "dependencies": {
     "directory-tree": "^2.2.0",
     "jsonwebtoken": "^8.4.0",
+    "mime-types": "^2.1.21",
     "portfinder": "^1.0.20",
     "request": "^2.88.0",
     "request-promise-native": "^1.0.5",
