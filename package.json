@@ -50,7 +50,8 @@
     "onView:firebase-functions",
     "onView:firebase-apps",
     "onView:firebase-firestore",
-    "onView:firebase-database"
+    "onView:firebase-database",
+    "onCommand:firebaseExplorer.accounts.debug"
   ],
   "contributes": {
     "viewsContainers": {
