@@ -3,6 +3,7 @@ import { DatabaseProviderItem, DatabaseProvider } from './DatabaseProvider';
 import { getFullPath } from '../utils';
 import { DatabaseAPI } from './api';
 import { providerStore } from '../stores';
+import { analytics } from '../analytics';
 
 export function registerDatabaseCommands(context: vscode.ExtensionContext) {
   context.subscriptions.push(
@@ -56,6 +57,8 @@ export function registerDatabaseCommands(context: vscode.ExtensionContext) {
 }
 
 function refreshDatabase(): void {
+  analytics.event('Database', 'refreshDatabase');
+
   const provider = providerStore.get<DatabaseProvider>('database');
   provider.refresh();
 }
@@ -64,6 +67,8 @@ async function editEntryValue(element: DatabaseProviderItem): Promise<void> {
   if (!element) {
     return;
   }
+
+  analytics.event('Database', 'editEntryValue');
 
   const fullPath = getFullPath(element.parentPath, element.name);
   let newValueStr = await vscode.window.showInputBox({
@@ -125,6 +130,8 @@ async function deleteEntry(element: DatabaseProviderItem): Promise<void> {
     return;
   }
 
+  analytics.event('Database', 'deleteEntry');
+
   const fullPath = getFullPath(element.parentPath, element.name);
 
   const confirmation = await vscode.window.showWarningMessage(
@@ -169,6 +176,8 @@ function copyName(element: DatabaseProviderItem): void {
     return;
   }
 
+  analytics.event('Database', 'copyName');
+
   vscode.env.clipboard.writeText(element.name);
 }
 
@@ -176,6 +185,8 @@ function copyPath(element: DatabaseProviderItem): void {
   if (!element) {
     return;
   }
+
+  analytics.event('Database', 'copyPath');
 
   vscode.env.clipboard.writeText(
     '/' + getFullPath(element.parentPath, element.name)
@@ -187,6 +198,8 @@ function copySnippetJS_ref(element: DatabaseProviderItem): void {
     return;
   }
 
+  analytics.event('Database', 'copySnippetJS_ref');
+
   const fullPath = getFullPath(element.parentPath, element.name);
   vscode.env.clipboard.writeText(`firebase.database().ref('${fullPath}')`);
 }
@@ -195,6 +208,8 @@ function copySnippetJS_OnValue(element: DatabaseProviderItem): void {
   if (!element) {
     return;
   }
+
+  analytics.event('Database', 'copySnippetJS_OnValue');
 
   const fullPath = getFullPath(element.parentPath, element.name);
   vscode.env.clipboard.writeText(

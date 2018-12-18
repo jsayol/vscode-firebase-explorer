@@ -1,0 +1,5 @@
+{
+  "projects": {
+    "default": "vscode-ext-firebase"
+  }
+}

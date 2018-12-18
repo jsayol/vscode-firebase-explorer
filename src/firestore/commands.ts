@@ -9,6 +9,7 @@ import {
 } from './FirestoreProvider';
 import { getFieldValue, FirestoreAPI } from './api';
 import { getFullPath } from '../utils';
+import { analytics } from '../analytics';
 
 export function registerFirestoreCommands(context: vscode.ExtensionContext) {
   context.subscriptions.push(
@@ -104,6 +105,8 @@ export function registerFirestoreCommands(context: vscode.ExtensionContext) {
 }
 
 function providerRefresh(element?: FirestoreProviderItem): void {
+  analytics.event('Firestore', 'providerRefresh');
+
   const firestoreProvider = providerStore.get<FirestoreProvider>('firestore');
   firestoreProvider.refresh(element);
 }
@@ -113,6 +116,8 @@ function copyItemName(element: CollectionItem | DocumentItem): void {
     return;
   }
 
+  analytics.event('Firestore', 'copyItemName');
+
   vscode.env.clipboard.writeText(element.name);
 }
 
@@ -120,6 +125,8 @@ function copyItemPath(element: CollectionItem | DocumentItem): void {
   if (!element) {
     return;
   }
+
+  analytics.event('Firestore', 'copyItemPath');
 
   vscode.env.clipboard.writeText(
     '/' + getFullPath(element.parentPath, element.name)
@@ -130,6 +137,8 @@ function copySnippetJS_ref(element: CollectionItem | DocumentItem): void {
   if (!element) {
     return;
   }
+
+  analytics.event('Firestore', 'copySnippetJS_ref');
 
   const method = element instanceof CollectionItem ? 'collection' : 'doc';
   const fullPath = getFullPath(element.parentPath, element.name);
@@ -142,6 +151,8 @@ function copySnippetJS_doc_onSnapshot(element: DocumentItem): void {
   if (!element) {
     return;
   }
+
+  analytics.event('Firestore', 'copySnippetJS_doc_onSnapshot');
 
   const fullPath = getFullPath(element.parentPath, element.name);
   vscode.env.clipboard.writeText(
@@ -159,6 +170,8 @@ function copySnippetJS_collection_onSnapshot(element: CollectionItem): void {
   if (!element) {
     return;
   }
+
+  analytics.event('Firestore', 'copySnippetJS_collection_onSnapshot');
 
   const fullPath = getFullPath(element.parentPath, element.name);
   vscode.env.clipboard.writeText(
@@ -178,6 +191,8 @@ async function copyDocumentContent(element: DocumentItem): Promise<void> {
   if (!element) {
     return;
   }
+
+  analytics.event('Firestore', 'copyDocumentContent');
 
   // Documents that have been deleted don't have a "createTime" property
   if (element.document.createTime && !element.document.fields) {
@@ -214,6 +229,8 @@ async function deleteDocument(element: DocumentItem): Promise<void> {
     return;
   }
 
+  analytics.event('Firestore', 'deleteDocument');
+
   const fullPath = getFullPath(element.parentPath, element.name);
 
   const confirmation = await vscode.window.showWarningMessage(
@@ -249,6 +266,8 @@ function copyDocumentFieldName(element: DocumentFieldItem): void {
     return;
   }
 
+  analytics.event('Firestore', 'copyDocumentFieldName');
+
   vscode.env.clipboard.writeText(element.name);
 }
 
@@ -256,6 +275,8 @@ function copyDocumentFieldValue(element: DocumentFieldItem): void {
   if (!element) {
     return;
   }
+
+  analytics.event('Firestore', 'copyDocumentFieldValue');
 
   try {
     let value = JSON.stringify(getFieldValue(element.fieldValue));

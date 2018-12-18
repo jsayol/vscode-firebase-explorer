@@ -11,6 +11,7 @@ import { getCertTypeForFingerprint } from '../utils';
 import { FirebaseProject } from '../projects/ProjectManager';
 import { AppsAPI } from './api';
 import { AccountInfo } from '../accounts/AccountManager';
+import { analytics } from '../analytics';
 
 let context: vscode.ExtensionContext;
 
@@ -68,6 +69,8 @@ export function registerAppsCommands(_context: vscode.ExtensionContext) {
 }
 
 function refreshApps(): void {
+  analytics.event('Apps', 'refreshApps');
+
   const appsProvider = providerStore.get<AppsProvider>('apps');
   appsProvider.refresh();
 }
@@ -76,6 +79,8 @@ async function editAppName(element: AppsProviderItem): Promise<void> {
   if (!element) {
     return;
   }
+
+  analytics.event('Apps', 'editAppName');
 
   const app: IosApp | AndroidApp = element.app;
   let packageName: string;
@@ -126,6 +131,8 @@ function showAppConfig(element: AppsProviderItem): void {
     return;
   }
 
+  analytics.event('Apps', 'showAppConfig');
+
   vscode.window.withProgress(
     {
       title: `Loading configuration for "${element.app.appName}" ...`,
@@ -162,6 +169,8 @@ async function addAppCertificate(
   if (!element) {
     return;
   }
+
+  analytics.event('Apps', 'addAppCertificate');
 
   const shaHash = await vscode.window.showInputBox({
     placeHolder:
@@ -209,6 +218,8 @@ function copyAppCertificate(element: FingerprintItem): void {
     return;
   }
 
+  analytics.event('Apps', 'copyAppCertificate');
+
   vscode.env.clipboard.writeText(element.label!);
 }
 
@@ -216,6 +227,8 @@ async function deleteAppCertificate(element: FingerprintItem): Promise<void> {
   if (!element) {
     return;
   }
+
+  analytics.event('Apps', 'deleteAppCertificate');
 
   const confirmation = await vscode.window.showWarningMessage(
     'Delete certificate fingerprint?\n' +
@@ -250,6 +263,8 @@ async function deleteAppCertificate(element: FingerprintItem): Promise<void> {
 }
 
 async function createNewApp(): Promise<void> {
+  analytics.event('Apps', 'createNewApp');
+
   const appOptions: (vscode.QuickPickItem & {
     options: { type: string; field: string; prompt: string };
   })[] = [
@@ -318,8 +333,7 @@ async function createNewApp(): Promise<void> {
 }
 
 /**
- *
- * @param options Helper function to prompt for a new app's bundle ID or package name
+ * Helper function to prompt for a new app's bundle ID or package name
  */
 async function promptAppName(options: {
   type: string;

@@ -127,32 +127,28 @@ export class ProjectManager {
   }
 }
 
-// export interface IosApp {
-//   app: firebaseAdmin.projectManagement.IosApp;
-//   metadata: firebaseAdmin.projectManagement.IosAppMetadata;
-// }
-
-// export interface AndroidApp {
-//   app: firebaseAdmin.projectManagement.AndroidApp;
-//   metadata: firebaseAdmin.projectManagement.AndroidAppMetadata;
-// }
-
 export interface ProjectApps {
   ios: IosApp[];
   android: AndroidApp[];
 }
 
 export interface FirebaseProject {
-  displayName: string;
   projectId: string;
   projectNumber: string;
-  resources: {
-    hostingSite: string;
-    realtimeDatabaseInstance: string;
-    storageBucket: string;
-    locationId: string;
-  };
+  displayName: string;
 }
+
+// export interface FirebaseProject {
+//   displayName: string;
+//   projectId: string;
+//   projectNumber: string;
+//   resources: {
+//     hostingSite: string;
+//     realtimeDatabaseInstance: string;
+//     storageBucket: string;
+//     locationId: string;
+//   };
+// }
 
 export interface ProjectConfig {
   projectId: string;

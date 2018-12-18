@@ -1,6 +1,7 @@
 import * as vscode from 'vscode';
 // import * as request from 'request-promise-native';
 import { HostingFileItem } from './HostingProvider';
+import { analytics } from '../analytics';
 // import { ProviderStore, TreeViewStore } from '../stores';
 // import { AccountInfo } from '../accounts/AccountManager';
 // import { FirebaseProject } from '../projects/ProjectManager';
@@ -24,6 +25,8 @@ async function openFile(element: HostingFileItem): Promise<void> {
   if (!element) {
     return;
   }
+
+  analytics.event('Hosting', 'openFile');
 
   const release = element.release;
   const file = element.part.file!;

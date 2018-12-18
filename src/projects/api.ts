@@ -56,11 +56,18 @@ export class ProjectsAPI {
     return request(reqOptions);
   }
 
+  /**
+   * Several projects seem to be missing for some users when listing them
+   * using the Project Management API.
+   * We switched to using the private "mobilesdk-pa" API for now.
+   */
   async listProjects(): Promise<FirebaseProject[]> {
     try {
-      const response = await this.authedRequest('GET', 'projects');
-      if (response.body && response.body.results) {
-        return response.body.results;
+      const response = await this.authedRequest('GET', '', {
+        url: `${CONFIG.mobilesdk.origin}/${CONFIG.mobilesdk.version}/projects`
+      });
+      if (response.body && response.body.project) {
+        return response.body.project;
       } else {
         return [];
       }
@@ -70,6 +77,21 @@ export class ProjectsAPI {
       );
     }
   }
+
+  // async listProjects_missing(): Promise<FirebaseProject[]> {
+  //   try {
+  //     const response = await this.authedRequest('GET', 'projects');
+  //     if (response.body && response.body.results) {
+  //       return response.body.results;
+  //     } else {
+  //       return [];
+  //     }
+  //   } catch (err) {
+  //     throw new Error(
+  //       `Failed to retrieve the projects for ${this.accountManager.getEmail()}: ${err}`
+  //     );
+  //   }
+  // }
 
   async listAvailableProjects(): Promise<ProjectInfo[]> {
     try {
@@ -104,6 +126,23 @@ export class ProjectsAPI {
         `Failed to retrieve the config for project ${project.projectId}: ${err}`
       );
     }
+  }
+
+  async getDebugData() {
+    const projectsUrl = `${CONFIG.mobilesdk.origin}/${
+      CONFIG.mobilesdk.version
+    }/projects`;
+
+    const [firebase, mobilesdk] = await Promise.all([
+      this.authedRequest('GET', 'projects')
+        .then(resp => resp.body.results)
+        .catch(err => err),
+      this.authedRequest('GET', '', { url: projectsUrl })
+        .then(resp => resp.body.project)
+        .catch(err => err)
+    ]);
+
+    return { firebase, mobilesdk };
   }
 }
 

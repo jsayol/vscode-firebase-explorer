@@ -1,22 +1,23 @@
-import * as vscode from 'vscode';
 import * as semver from 'semver';
-import { setContextObj } from './utils';
-import { getCliAccount } from './accounts/cli';
-import { providerStore, treeViewStore } from './stores';
-import { HostingProvider } from './hosting/HostingProvider';
-import { FunctionsProvider } from './functions/FunctionsProvider';
-import { AppsProvider } from './apps/AppsProvider';
+import * as vscode from 'vscode';
 import { AccountManager } from './accounts/AccountManager';
-import { ProjectsProvider } from './projects/ProjectsProvider';
-import { DatabaseProvider } from './database/DatabaseProvider';
-import { FirestoreProvider } from './firestore/FirestoreProvider';
-import { registerAppsCommands } from './apps/commands';
-import { registerHostingCommands } from './hosting/commands';
-import { registerFunctionsCommands } from './functions/commands';
+import { getCliAccount } from './accounts/cli';
 import { registerAccountsCommands } from './accounts/commands';
-import { registerProjectsCommands } from './projects/commands';
-import { registerFirestoreCommands } from './firestore/commands';
+import { analytics } from './analytics';
+import { AppsProvider } from './apps/AppsProvider';
+import { registerAppsCommands } from './apps/commands';
 import { registerDatabaseCommands } from './database/commands';
+import { DatabaseProvider } from './database/DatabaseProvider';
+import { registerFirestoreCommands } from './firestore/commands';
+import { FirestoreProvider } from './firestore/FirestoreProvider';
+import { registerFunctionsCommands } from './functions/commands';
+import { FunctionsProvider } from './functions/FunctionsProvider';
+import { registerHostingCommands } from './hosting/commands';
+import { HostingProvider } from './hosting/HostingProvider';
+import { registerProjectsCommands } from './projects/commands';
+import { ProjectsProvider } from './projects/ProjectsProvider';
+import { providerStore, treeViewStore } from './stores';
+import { setContextObj } from './utils';
 
 export async function activate(context: vscode.ExtensionContext) {
   setContextObj(context);
@@ -42,6 +43,8 @@ export async function activate(context: vscode.ExtensionContext) {
   registerProjectsCommands(context);
   registerFirestoreCommands(context);
   registerDatabaseCommands(context);
+
+  analytics.event('Extension', 'activate');
 }
 
 export function deactivate() {
@@ -64,6 +67,9 @@ async function initialize(context: vscode.ExtensionContext): Promise<void> {
   if (!PRODUCTION) {
     // context.globalState.update('config', undefined);
   }
+
+  // Initialize analytics
+  analytics.initialize(context);
 
   let extensionConfig = context.globalState.get<ExtensionConfig>('config');
 

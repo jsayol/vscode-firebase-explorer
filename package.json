@@ -141,6 +141,11 @@
         "category": "Firebase"
       },
       {
+        "command": "firebaseExplorer.accounts.debug",
+        "title": "Run account debug commands",
+        "category": "Firebase Debug"
+      },
+      {
         "command": "firebaseExplorer.projects.refresh",
         "title": "Refresh Projects",
         "category": "Firebase",
@@ -334,12 +339,12 @@
         {
           "command": "firebaseExplorer.projects.refresh",
           "when": "viewItem == account",
-          "group": "account@1"
+          "group": "1_account@1"
         },
         {
           "command": "firebaseExplorer.accounts.remove",
           "when": "viewItem == account",
-          "group": "account@2"
+          "group": "1_account@2"
         },
         {
           "command": "firebaseExplorer.functions.copyTrigger",
@@ -524,6 +529,7 @@
     "@types/request-promise-native": "^1.0.15",
     "@types/semver": "^5.5.0",
     "@types/tmp": "^0.0.33",
+    "@types/universal-analytics": "^0.4.2",
     "@types/webpack": "^4.4.20",
     "@types/yauzl": "^2.9.0",
     "clean-webpack-plugin": "^1.0.0",
@@ -550,6 +556,8 @@
     "semver": "^5.6.0",
     "tmp-promise": "^1.0.5",
     "tslib": "^1.9.3",
+    "universal-analytics": "^0.4.20",
+    "uuid": "^3.3.2",
     "vscode": "^1.1.24",
     "yauzl": "^2.10.0"
   },
