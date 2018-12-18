@@ -160,3 +160,9 @@ export interface ProjectConfig {
   storageBucket: string;
   locationId: string;
 }
+
+export interface ProjectInfo {
+  projectId: string;
+  displayName: string;
+  locationId: string;
+}

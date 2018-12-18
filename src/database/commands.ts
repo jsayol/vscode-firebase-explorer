@@ -2,7 +2,7 @@ import * as vscode from 'vscode';
 import { DatabaseProviderItem, DatabaseProvider } from './DatabaseProvider';
 import { getFullPath } from '../utils';
 import { DatabaseAPI } from './api';
-import { ProviderStore } from '../stores';
+import { providerStore } from '../stores';
 
 export function registerDatabaseCommands(context: vscode.ExtensionContext) {
   context.subscriptions.push(
@@ -56,7 +56,7 @@ export function registerDatabaseCommands(context: vscode.ExtensionContext) {
 }
 
 function refreshDatabase(): void {
-  const provider = ProviderStore.get<DatabaseProvider>('database');
+  const provider = providerStore.get<DatabaseProvider>('database');
   provider.refresh();
 }
 
@@ -104,7 +104,7 @@ async function editEntryValue(element: DatabaseProviderItem): Promise<void> {
             element.value = newValue;
           }
 
-          const databaseProvider = ProviderStore.get<DatabaseProvider>(
+          const databaseProvider = providerStore.get<DatabaseProvider>(
             'database'
           );
           databaseProvider.refresh(element);
@@ -147,7 +147,7 @@ async function deleteEntry(element: DatabaseProviderItem): Promise<void> {
           if (response.statusCode !== 200) {
             throw new Error(response.body);
           }
-          const databaseProvider = ProviderStore.get<DatabaseProvider>(
+          const databaseProvider = providerStore.get<DatabaseProvider>(
             'database'
           );
           element.markAsRemoved();

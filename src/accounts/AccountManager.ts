@@ -2,6 +2,7 @@ import { contains, getContextObj } from '../utils';
 import { FirebaseProject } from '../projects/ProjectManager';
 import { ProjectsAPI } from '../projects/api';
 import { AccountsAPI } from './api';
+import { ProjectStore } from '../projects/ProjectStore';
 
 const instances: { [k: string]: AccountManager } = {};
 
@@ -60,18 +61,12 @@ export class AccountManager {
     return AccountManager.setAccounts(accounts);
   }
 
+  projects = new ProjectStore();
+
   private constructor(readonly account: AccountInfo) {}
 
   getRefreshToken(): string {
     return this.account.tokens.refresh_token;
-  }
-
-  private isCachedTokenValid(): boolean {
-    if (!this.account.tokens.access_token) {
-      return false;
-    }
-
-    return Date.now() < this.account.tokens.expires_at;
   }
 
   async getAccessToken(): Promise<string> {
@@ -88,6 +83,14 @@ export class AccountManager {
     };
 
     return tokens.access_token;
+  }
+
+  private isCachedTokenValid(): boolean {
+    if (!this.account.tokens.access_token) {
+      return false;
+    }
+
+    return Date.now() < this.account.tokens.expires_at;
   }
 
   getEmail(): string {

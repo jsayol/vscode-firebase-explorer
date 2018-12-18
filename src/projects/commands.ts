@@ -1,5 +1,5 @@
 import * as vscode from 'vscode';
-import { ProviderStore } from '../stores';
+import { providerStore } from '../stores';
 import { FirebaseProject } from '../projects/ProjectManager';
 import { ProjectsProvider, AccountItem } from '../projects/ProjectsProvider';
 import { FirestoreProvider } from '../firestore/FirestoreProvider';
@@ -45,11 +45,11 @@ function projectSelection(
     return;
   }
 
-  const hostingProvider = ProviderStore.get<HostingProvider>('hosting');
-  const functionsProvider = ProviderStore.get<FunctionsProvider>('functions');
-  const appsProvider = ProviderStore.get<AppsProvider>('apps');
-  const firestoreProvider = ProviderStore.get<FirestoreProvider>('firestore');
-  const databaseProvider = ProviderStore.get<DatabaseProvider>('database');
+  const hostingProvider = providerStore.get<HostingProvider>('hosting');
+  const functionsProvider = providerStore.get<FunctionsProvider>('functions');
+  const appsProvider = providerStore.get<AppsProvider>('apps');
+  const firestoreProvider = providerStore.get<FirestoreProvider>('firestore');
+  const databaseProvider = providerStore.get<DatabaseProvider>('database');
 
   setContext(ContextValue.ProjectSelected, false);
   setContext(ContextValue.HostingLoaded, false);
@@ -88,6 +88,6 @@ function projectSelection(
 }
 
 function refreshProjects(element?: AccountItem): void {
-  const projectsProvider = ProviderStore.get<ProjectsProvider>('projects');
+  const projectsProvider = providerStore.get<ProjectsProvider>('projects');
   projectsProvider.refresh(element);
 }

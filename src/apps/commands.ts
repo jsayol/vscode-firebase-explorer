@@ -5,7 +5,7 @@ import {
   FingerprintFolderItem,
   FingerprintItem
 } from './AppsProvider';
-import { ProviderStore } from '../stores';
+import { providerStore } from '../stores';
 import { IosApp, AndroidApp, ShaCertificate } from './apps';
 import { getCertTypeForFingerprint } from '../utils';
 import { FirebaseProject } from '../projects/ProjectManager';
@@ -68,7 +68,7 @@ export function registerAppsCommands(_context: vscode.ExtensionContext) {
 }
 
 function refreshApps(): void {
-  const appsProvider = ProviderStore.get<AppsProvider>('apps');
+  const appsProvider = providerStore.get<AppsProvider>('apps');
   appsProvider.refresh();
 }
 
@@ -106,7 +106,7 @@ async function editAppName(element: AppsProviderItem): Promise<void> {
           const success = await app.setDisplayName(newName);
           if (success) {
             element.label = newName;
-            const appsProvider = ProviderStore.get<AppsProvider>('apps');
+            const appsProvider = providerStore.get<AppsProvider>('apps');
             appsProvider.refresh(element);
           }
         } catch (err) {
@@ -189,7 +189,7 @@ async function addAppCertificate(
             const cert: ShaCertificate = { shaHash, certType };
             await element.app.addShaCertificate(cert);
 
-            const appsProvider = ProviderStore.get<AppsProvider>('apps');
+            const appsProvider = providerStore.get<AppsProvider>('apps');
             appsProvider.refresh(element.appItem);
           } catch (err) {
             vscode.window.showErrorMessage(
@@ -235,7 +235,7 @@ async function deleteAppCertificate(element: FingerprintItem): Promise<void> {
       async () => {
         try {
           await element.app.deleteShaCertificate(element.cert);
-          const appsProvider = ProviderStore.get<AppsProvider>('apps');
+          const appsProvider = providerStore.get<AppsProvider>('apps');
           appsProvider.refresh(element.folderItem);
         } catch (err) {
           vscode.window.showErrorMessage(
@@ -306,7 +306,7 @@ async function createNewApp(): Promise<void> {
           [pick.options.field]: name
         });
 
-        const appsProvider = ProviderStore.get<AppsProvider>('apps');
+        const appsProvider = providerStore.get<AppsProvider>('apps');
         appsProvider.refresh();
       } catch (err) {
         vscode.window.showErrorMessage(

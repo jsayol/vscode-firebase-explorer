@@ -307,12 +307,12 @@
         {
           "command": "firebaseExplorer.accounts.add",
           "when": "view == firebase-projects",
-          "group": "navigation"
+          "group": "navigation@1"
         },
         {
           "command": "firebaseExplorer.projects.refresh",
           "when": "view == firebase-projects",
-          "group": "navigation"
+          "group": "navigation@2"
         },
         {
           "command": "firebaseExplorer.apps.create",
@@ -327,7 +327,7 @@
         {
           "command": "firebaseExplorer.firestore.refresh",
           "when": "view == firebase-firestore && firebase:firestore:loaded",
-          "group": "navigation@2"
+          "group": "navigation@1"
         }
       ],
       "view/item/context": [

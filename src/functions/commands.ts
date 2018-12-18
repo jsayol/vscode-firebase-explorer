@@ -1,6 +1,6 @@
 import * as vscode from 'vscode';
 import * as mime from 'mime-types';
-import { ProviderStore, TreeViewStore } from '../stores';
+import { providerStore, treeViewStore } from '../stores';
 import {
   downloadToTmpFile,
   getFilePath,
@@ -75,7 +75,7 @@ export function registerFunctionsCommands(_context: vscode.ExtensionContext) {
 }
 
 function refreshFunctions(): void {
-  const functionsProvider = ProviderStore.get<FunctionsProvider>('functions');
+  const functionsProvider = providerStore.get<FunctionsProvider>('functions');
   functionsProvider.refresh();
 }
 
@@ -317,8 +317,8 @@ async function viewSource(element: CloudFunctionItem): Promise<void> {
           tmpZipFile.cleanup();
           element.setSourceDir(tmpDir.path);
 
-          const provider = ProviderStore.get<FunctionsProvider>('functions');
-          const treeView = TreeViewStore.get('functions');
+          const provider = providerStore.get<FunctionsProvider>('functions');
+          const treeView = treeViewStore.get('functions');
 
           provider.refresh(element);
           treeView.reveal(element, { expand: true });

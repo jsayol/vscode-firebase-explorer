@@ -1,5 +1,5 @@
 import * as vscode from 'vscode';
-import { ProviderStore } from '../stores';
+import { providerStore } from '../stores';
 import {
   FirestoreProviderItem,
   FirestoreProvider,
@@ -104,7 +104,7 @@ export function registerFirestoreCommands(context: vscode.ExtensionContext) {
 }
 
 function providerRefresh(element?: FirestoreProviderItem): void {
-  const firestoreProvider = ProviderStore.get<FirestoreProvider>('firestore');
+  const firestoreProvider = providerStore.get<FirestoreProvider>('firestore');
   firestoreProvider.refresh(element);
 }
 
@@ -234,7 +234,7 @@ async function deleteDocument(element: DocumentItem): Promise<void> {
         const api = FirestoreAPI.for(element.account, element.project);
         const docPath = getFullPath(element.parentPath, element.name);
         await api.deleteDocument(docPath);
-        const firestoreProvider = ProviderStore.get<FirestoreProvider>(
+        const firestoreProvider = providerStore.get<FirestoreProvider>(
           'firestore'
         );
         element.markAsRemoved();

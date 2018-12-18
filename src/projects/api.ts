@@ -1,15 +1,17 @@
-import * as vscode from 'vscode';
 import * as request from 'request-promise-native';
-import { FirebaseProject, ProjectConfig } from './ProjectManager';
+import { FirebaseProject, ProjectConfig, ProjectInfo } from './ProjectManager';
 import { AccountManager, AccountInfo } from '../accounts/AccountManager';
 import { contains } from '../utils';
 
+// https://mobilesdk-pa.googleapis.com/v1/projects
+// https://mobilesdk-pa.googleapis.com/v1/projects/[projectNumber]
+
 const CONFIG = {
   origin: 'https://firebase.googleapis.com',
-  prefix: '/v1beta1/projects',
+  version: 'v1beta1',
   mobilesdk: {
     origin: 'https://mobilesdk-pa.googleapis.com',
-    prefix: '/v1/projects'
+    version: 'v1'
   }
 };
 
@@ -38,7 +40,7 @@ export class ProjectsAPI {
     const token = await this.accountManager.getAccessToken();
     const reqOptions: request.OptionsWithUrl = {
       method,
-      url: CONFIG.origin + CONFIG.prefix + resource,
+      url: `${CONFIG.origin}/${CONFIG.version}/${resource}`,
       resolveWithFullResponse: true,
       json: true,
       ...options
@@ -56,28 +58,38 @@ export class ProjectsAPI {
 
   async listProjects(): Promise<FirebaseProject[]> {
     try {
-      const response = await this.authedRequest('GET', '');
-
+      const response = await this.authedRequest('GET', 'projects');
       if (response.body && response.body.results) {
-        const projects: FirebaseProject[] = response.body.results;
-        return projects;
+        return response.body.results;
+      } else {
+        return [];
       }
     } catch (err) {
-      console.log('listProjects', { err });
-      // Failed to retrieve the projects
+      throw new Error(
+        `Failed to retrieve the projects for ${this.accountManager.getEmail()}: ${err}`
+      );
     }
+  }
 
-    vscode.window.showErrorMessage(
-      `Failed to retrieve the projects for ${this.accountManager.getEmail()}`
-    );
-
-    return [];
+  async listAvailableProjects(): Promise<ProjectInfo[]> {
+    try {
+      const response = await this.authedRequest('GET', 'availableProjects');
+      if (response.body && response.body.projectInfo) {
+        return response.body.projectInfo;
+      } else {
+        return [];
+      }
+    } catch (err) {
+      throw new Error(
+        `Failed to retrieve the available projects for ${this.accountManager.getEmail()}: ${err}`
+      );
+    }
   }
 
   async getProjectConfig(project: FirebaseProject): Promise<ProjectConfig> {
     try {
       const response = await this.authedRequest('GET', '', {
-        url: `${CONFIG.mobilesdk.origin}/${CONFIG.mobilesdk.prefix}/${
+        url: `${CONFIG.mobilesdk.origin}/${CONFIG.mobilesdk.version}/projects/${
           project.projectNumber
         }:getServerAppConfig`
       });
@@ -92,13 +104,6 @@ export class ProjectsAPI {
         `Failed to retrieve the config for project ${project.projectId}: ${err}`
       );
     }
-
-    // return {
-    //   projectId: project.projectId,
-    //   databaseURL: `https://${project.projectId}.firebaseio.com`,
-    //   storageBucket: project.resources.storageBucket,
-    //   locationId: project.resources.locationId
-    // };
   }
 }
 

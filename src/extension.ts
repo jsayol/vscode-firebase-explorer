@@ -2,7 +2,7 @@ import * as vscode from 'vscode';
 import * as semver from 'semver';
 import { setContextObj } from './utils';
 import { getCliAccount } from './accounts/cli';
-import { ProviderStore, TreeViewStore } from './stores';
+import { providerStore, treeViewStore } from './stores';
 import { HostingProvider } from './hosting/HostingProvider';
 import { FunctionsProvider } from './functions/FunctionsProvider';
 import { AppsProvider } from './apps/AppsProvider';
@@ -55,8 +55,8 @@ function registerProvider<T>(
   const treeView = vscode.window.createTreeView(`firebase-${name}`, {
     treeDataProvider: provider
   });
-  TreeViewStore.add(name, treeView);
-  ProviderStore.add(name, provider);
+  treeViewStore.add(name, treeView);
+  providerStore.add(name, provider);
   // vscode.window.registerTreeDataProvider(`firebase-${name}`, provider);
 }
 
