@@ -1,4 +1,7 @@
-<svg xmlns="http://www.w3.org/2000/svg" width="192" height="192">
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
+<svg xmlns="http://www.w3.org/2000/svg" 
+  xmlns:xlink="http://www.w3.org/1999/xlink" version="1.1" width="192" height="192">
   <defs>
     <clipPath id="a">
       <path d="M143.41 47.34a4 4 0 0 0-6.77-2.16L115.88 66 99.54 34.89a4 4 0 0 0-7.08 0l-8.93 17-22.4-41.77a4 4 0 0 0-7.48 1.28L32 150l57.9 32.46a12 12 0 0 0 11.7 0L160 150z" fill="none"/>
