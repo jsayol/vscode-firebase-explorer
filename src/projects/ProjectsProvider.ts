@@ -2,9 +2,7 @@ import * as path from 'path';
 import * as vscode from 'vscode';
 import { FirebaseProject } from './ProjectManager';
 import { AccountManager, AccountInfo } from '../accounts/AccountManager';
-import { messageTreeItem } from '../utils';
-
-const ASSETS_PATH = './assets';
+import { messageTreeItem, extContext } from '../utils';
 
 export class ProjectsProvider
   implements vscode.TreeDataProvider<AccountsProviderItem> {
@@ -60,7 +58,9 @@ export class ProjectsProvider
 
 export class AccountItem extends vscode.TreeItem {
   contextValue = 'account';
-  iconPath = path.resolve(ASSETS_PATH, 'account-google.svg');
+  iconPath = extContext().asAbsolutePath(
+    path.join('assets', 'account-google.svg')
+  );
 
   constructor(
     public account: AccountInfo,
@@ -76,7 +76,9 @@ export class AccountItem extends vscode.TreeItem {
 
 export class ProjectItem extends vscode.TreeItem {
   contextValue = 'project';
-  iconPath = path.resolve(ASSETS_PATH, 'firebase-color-small.svg');
+  iconPath = extContext().asAbsolutePath(
+    path.join('assets', 'firebase-color-small.svg')
+  );
 
   readonly command: vscode.Command = {
     command: 'firebaseExplorer.projects.selection',

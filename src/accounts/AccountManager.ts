@@ -1,4 +1,4 @@
-import { contains, getContextObj } from '../utils';
+import { contains, extContext } from '../utils';
 import { FirebaseProject } from '../projects/ProjectManager';
 import { ProjectsAPI } from '../projects/api';
 import { AccountsAPI } from './api';
@@ -16,7 +16,7 @@ export class AccountManager {
   }
 
   static forSelectedAccount(): AccountManager {
-    const context = getContextObj();
+    const context = extContext();
     const account = context.globalState.get<AccountInfo>('selectedAccount');
 
     if (!account) {
@@ -27,7 +27,7 @@ export class AccountManager {
   }
 
   static getAccounts(): AccountInfo[] {
-    const context = getContextObj();
+    const context = extContext();
     let accounts = context.globalState.get<AccountInfo[]>('accounts');
 
     if (!Array.isArray(accounts)) {
@@ -38,7 +38,7 @@ export class AccountManager {
   }
 
   static setAccounts(accounts: AccountInfo[]): Thenable<void> {
-    const context = getContextObj();
+    const context = extContext();
     return context.globalState.update('accounts', accounts);
   }
 

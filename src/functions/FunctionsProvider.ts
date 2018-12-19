@@ -2,11 +2,9 @@ import * as path from 'path';
 import * as vscode from 'vscode';
 import * as directoryTree from 'directory-tree';
 import { FirebaseProject } from '../projects/ProjectManager';
-import { messageTreeItem } from '../utils';
+import { messageTreeItem, extContext } from '../utils';
 import { AccountInfo } from '../accounts/AccountManager';
 import { FunctionsAPI, CloudFunction, CloudFunctionTriggerType } from './api';
-
-const ASSETS_PATH = './assets';
 
 export class FunctionsProvider
   implements vscode.TreeDataProvider<FunctionsProviderItem> {
@@ -175,10 +173,12 @@ export class FunctionTriggerTypeItem extends vscode.TreeItem {
     super('', vscode.TreeItemCollapsibleState.Expanded);
     this.contextValue = `functions.triggerType.${type}`;
     // this.iconPath = {
-    //   light: path.resolve(ASSETS_PATH, `functions/light/${type}-trigger.svg`),
-    //   dark: path.resolve(ASSETS_PATH, `functions/dark/${type}-trigger.svg`)
+    //   light: extContext().asAbsolutePath(path.join('assets', `functions/light/${type}-trigger.svg`),
+    //   dark: extContext().asAbsolutePath(path.join('assets', `functions/dark/${type}-trigger.svg`)
     // };
-    this.iconPath = path.resolve(ASSETS_PATH, `functions/${type}-trigger.svg`);
+    this.iconPath = extContext().asAbsolutePath(
+      path.join('assets', 'functions', `${type}-trigger.svg`)
+    );
 
     switch (type) {
       case CloudFunctionTriggerType.Event:
@@ -205,8 +205,12 @@ export class FunctionTriggerTypeItem extends vscode.TreeItem {
 export class CloudFunctionItem extends vscode.TreeItem {
   sourceCodeDir?: string;
   iconPath = {
-    dark: path.resolve(ASSETS_PATH, `functions/dark/cloud-functions.svg`),
-    light: path.resolve(ASSETS_PATH, `functions/light/cloud-functions.svg`)
+    dark: extContext().asAbsolutePath(
+      path.join('assets', 'functions', 'dark', 'cloud-functions.svg')
+    ),
+    light: extContext().asAbsolutePath(
+      path.join('assets', 'functions', 'light', 'cloud-functions.svg')
+    )
   };
 
   constructor(
@@ -218,7 +222,7 @@ export class CloudFunctionItem extends vscode.TreeItem {
   ) {
     super(cloudFunction.entryPoint, vscode.TreeItemCollapsibleState.None);
     this.contextValue = `functions.ofTriggerType.${type}`;
-    // this.iconPath = path.resolve(ASSETS_PATH, `functions/${type}-trigger.svg`);
+    // this.iconPath = extContext().asAbsolutePath(path.join('assets', `functions/${type}-trigger.svg`);
   }
 
   get tooltip(): string {

@@ -16,11 +16,10 @@ import {
   setContext,
   ContextValue,
   getFullPath,
-  decimalToDMS
+  decimalToDMS,
+  extContext
 } from '../utils';
 import { AccountInfo } from '../accounts/AccountManager';
-
-const ASSETS_PATH = './assets';
 
 export class FirestoreProvider
   implements vscode.TreeDataProvider<FirestoreProviderItem> {
@@ -216,7 +215,9 @@ export class FirestoreProvider
 
 export class CollectionItem extends vscode.TreeItem {
   contextValue = 'firestore.collection';
-  iconPath = path.resolve(ASSETS_PATH, 'firestore/collection.svg');
+  iconPath = extContext().asAbsolutePath(
+    path.join('assets', 'firestore', 'collection.svg')
+  );
 
   constructor(
     public name: string,
@@ -288,9 +289,13 @@ export class DocumentItem extends vscode.TreeItem {
 
   get iconPath(): string {
     if (this.document.createTime || this.isRemoved) {
-      return path.resolve(ASSETS_PATH, 'firestore/document.svg');
+      return extContext().asAbsolutePath(
+        path.join('assets', 'firestore/document.svg')
+      );
     } else {
-      return path.resolve(ASSETS_PATH, 'firestore/document-empty.svg');
+      return extContext().asAbsolutePath(
+        path.join('assets', 'firestore/document-empty.svg')
+      );
     }
   }
 }
@@ -320,7 +325,9 @@ export class DocumentFieldItem<
       processed.type === 'integer' || processed.type === 'double'
         ? 'number'
         : processed.type;
-    this.iconPath = path.resolve(ASSETS_PATH, `valuetype/${typeIcon}.svg`);
+    this.iconPath = extContext().asAbsolutePath(
+      path.join('assets', 'valuetype', `${typeIcon}.svg`)
+    );
 
     if (processed.type === 'map' || processed.type === 'array') {
       this.collapsibleState = expand

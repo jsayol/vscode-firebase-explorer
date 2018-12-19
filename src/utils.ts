@@ -9,7 +9,6 @@ import * as tmp from 'tmp-promise';
 import * as vscode from 'vscode';
 import { ShaCertificate } from './apps/apps';
 
-const ASSETS_PATH = './assets';
 let _context: vscode.ExtensionContext;
 
 // export function contains(obj: object, key: string): boolean {
@@ -28,8 +27,12 @@ export function messageTreeItem(
 
   if (icon) {
     item.iconPath = {
-      light: path.resolve(ASSETS_PATH, `light/${icon}.svg`),
-      dark: path.resolve(ASSETS_PATH, `dark/${icon}.svg`)
+      light: extContext().asAbsolutePath(
+        path.join('assets', 'light', `${icon}.svg`)
+      ),
+      dark: extContext().asAbsolutePath(
+        path.join('assets', 'dark', `${icon}.svg`)
+      )
     };
   } else {
     item.iconPath = undefined;
@@ -58,7 +61,7 @@ export function setContextObj(context: vscode.ExtensionContext) {
   _context = context;
 }
 
-export function getContextObj(): vscode.ExtensionContext {
+export function extContext(): vscode.ExtensionContext {
   return _context;
 }
 
