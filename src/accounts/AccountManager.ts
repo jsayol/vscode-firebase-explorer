@@ -102,16 +102,6 @@ export class AccountManager {
       const projectsAPI = ProjectsAPI.for(this.account);
       const list: FirebaseProject[] = await projectsAPI.listProjects();
       return list;
-      // return list.filter(
-      //   project =>
-      //     [
-      //       'Firebase Demo Project',
-      //       'Personal Project',
-      //       'firestore-sql-test',
-      //       'fb-js-samples',
-      //       'js-sdk-persistence'
-      //     ].indexOf(project.displayName) !== -1
-      // );
     } catch (err) {
       console.error({ err });
       return [];

@@ -66,8 +66,14 @@ export class ProjectsAPI {
       const response = await this.authedRequest('GET', '', {
         url: `${CONFIG.mobilesdk.origin}/${CONFIG.mobilesdk.version}/projects`
       });
-      if (response.body && response.body.project) {
-        return response.body.project;
+      if (response.body && Array.isArray(response.body.project)) {
+        return (response.body.project as FirebaseProject[]).sort(
+          (projA, projB) => {
+            const nameA = (projA.displayName || projA.projectId).toLowerCase();
+            const nameB = (projB.displayName || projB.projectId).toLowerCase();
+            return nameA < nameB ? -1 : 1;
+          }
+        );
       } else {
         return [];
       }
