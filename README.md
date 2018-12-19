@@ -14,4 +14,4 @@ Or you can just search for "Firebase Explorer" in the Extensions view.
 
 ## Preview
 
-![Firebase Explorer logo](images/screenshot.png)
+![Firebase Explorer screenshot](images/screenshot.png)
