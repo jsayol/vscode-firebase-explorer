@@ -13,4 +13,11 @@ src/**
 CHANGELOG.md
 webpack.config.js
 yarn.lock
+yarn-error.log
 *.vsix
+.opensource/
+stuff/
+images/
+functions/
+firebase.json
+.firebaserc
