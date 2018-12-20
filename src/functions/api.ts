@@ -68,7 +68,13 @@ export class FunctionsAPI {
 
     try {
       const response = await this.authedRequest('GET', resource);
-      return response.body.functions || [];
+      return (response.body.functions || []).map((fn: any) => {
+        const nameMatch = fn.name.match(/(.+)\/([^\/]+)/);
+        return {
+          displayName: nameMatch[2],
+          ...fn
+        };
+      });
     } catch (err) {
       if (err.statusCode === 403) {
         // Cloud Functions is not enabled for this project
@@ -181,6 +187,9 @@ export class FunctionsAPI {
 }
 
 interface CloudFunctionBase {
+  // Added. Just the last part of the name
+  displayName: string;
+
   name: string;
   description?: string;
   status: CloudFunctionStatus;

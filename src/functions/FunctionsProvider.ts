@@ -193,7 +193,7 @@ export class FunctionTriggerTypeItem extends vscode.TreeItem {
     }
 
     this.functions = this.functions.sort((fnA, fnB) =>
-      fnA.entryPoint > fnB.entryPoint ? 1 : -1
+      fnA.displayName > fnB.displayName ? 1 : -1
     );
   }
 
@@ -220,7 +220,7 @@ export class CloudFunctionItem extends vscode.TreeItem {
     public cloudFunction: CloudFunction,
     public parent: FunctionsProviderItem
   ) {
-    super(cloudFunction.entryPoint, vscode.TreeItemCollapsibleState.None);
+    super(cloudFunction.displayName, vscode.TreeItemCollapsibleState.None);
     this.contextValue = `functions.ofTriggerType.${type}`;
     // this.iconPath = extContext().asAbsolutePath(path.join('assets', `functions/${type}-trigger.svg`);
   }

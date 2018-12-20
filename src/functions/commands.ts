@@ -117,7 +117,7 @@ async function triggerHTTPSFunction(element: CloudFunctionItem) {
 
   await vscode.window.withProgress(
     {
-      title: 'Triggering HTTPS Cloud Function: ' + fn.entryPoint,
+      title: 'Triggering HTTPS Cloud Function: ' + fn.displayName,
       location: vscode.ProgressLocation.Notification
     },
     async () => {
@@ -217,7 +217,7 @@ async function viewLogs(element: CloudFunctionItem): Promise<void> {
       }
       panel.reveal();
     } else {
-      const fnName = element.cloudFunction.entryPoint;
+      const fnName = element.cloudFunction.displayName;
       await vscode.window.withProgress(
         {
           title: 'Getting Cloud Functions log for ' + fnName,
@@ -315,7 +315,7 @@ async function viewSource(element: CloudFunctionItem): Promise<void> {
 
   analytics.event('Functions', 'viewSource');
 
-  const fnName = element.cloudFunction.entryPoint;
+  const fnName = element.cloudFunction.displayName;
 
   try {
     await vscode.window.withProgress(
