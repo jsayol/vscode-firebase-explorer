@@ -1,7 +1,7 @@
 import * as request from 'request-promise-native';
-import { FirebaseProject, ProjectConfig, ProjectInfo } from './ProjectManager';
-import { AccountManager, AccountInfo } from '../accounts/AccountManager';
+import { AccountInfo, AccountManager } from '../accounts/AccountManager';
 import { contains } from '../utils';
+import { FirebaseProject, ProjectConfig, ProjectInfo } from './ProjectManager';
 
 // https://mobilesdk-pa.googleapis.com/v1/projects
 // https://mobilesdk-pa.googleapis.com/v1/projects/[projectNumber]
@@ -132,23 +132,6 @@ export class ProjectsAPI {
         `Failed to retrieve the config for project ${project.projectId}: ${err}`
       );
     }
-  }
-
-  async getDebugData() {
-    const projectsUrl = `${CONFIG.mobilesdk.origin}/${
-      CONFIG.mobilesdk.version
-    }/projects`;
-
-    const [firebase, mobilesdk] = await Promise.all([
-      this.authedRequest('GET', 'projects')
-        .then(resp => resp.body.results)
-        .catch(err => err),
-      this.authedRequest('GET', '', { url: projectsUrl })
-        .then(resp => resp.body.project)
-        .catch(err => err)
-    ]);
-
-    return { firebase, mobilesdk };
   }
 }
 

@@ -50,8 +50,7 @@
     "onView:firebase-functions",
     "onView:firebase-apps",
     "onView:firebase-firestore",
-    "onView:firebase-database",
-    "onCommand:firebaseExplorer.accounts.debug"
+    "onView:firebase-database"
   ],
   "contributes": {
     "viewsContainers": {
@@ -140,11 +139,6 @@
         "command": "firebaseExplorer.accounts.remove",
         "title": "Remove this account",
         "category": "Firebase"
-      },
-      {
-        "command": "firebaseExplorer.accounts.debug",
-        "title": "Run account debug commands",
-        "category": "Firebase Debug"
       },
       {
         "command": "firebaseExplorer.projects.refresh",
