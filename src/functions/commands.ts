@@ -304,7 +304,7 @@ function postToPanel(panel: vscode.WebviewPanel, msg: any) {
   try {
     panel.webview.postMessage(msg);
   } catch (err) {
-    console.log('Failed sendig message to WebView panel', err);
+    console.log('Failed sending message to WebView panel', err);
   }
 }
 
@@ -338,7 +338,6 @@ async function viewSource(element: CloudFunctionItem): Promise<void> {
           provider.refresh(element);
           treeView.reveal(element, { expand: true });
         } catch (err) {
-          console.log('Catch1', err);
           tmpZipFile.cleanup();
           throw err;
         }

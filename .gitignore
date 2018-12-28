@@ -7,3 +7,4 @@ node_modules/
 .rpt2_cache/
 stuff/
 yarn-error.log
+stats.json

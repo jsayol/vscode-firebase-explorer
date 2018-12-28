@@ -5,7 +5,7 @@ import * as https from 'https';
 import { IncomingMessage } from 'http';
 import { promisify } from 'util';
 import * as yauzl from 'yauzl';
-import * as tmp from 'tmp-promise';
+import * as tmp from 'tmp';
 import * as vscode from 'vscode';
 import { ShaCertificate } from './apps/apps';
 
@@ -143,11 +143,44 @@ export function getFilePath(filename: string) {
   return path.resolve('./', filename);
 }
 
-export async function downloadToTmpFile(url: string): Promise<tmp.FileResult> {
+interface DirectoryResult {
+  path: string;
+  cleanup(): void;
+}
+
+interface FileResult extends DirectoryResult {
+  fd: number;
+}
+
+function createTmpDir(options?: tmp.Options): Promise<DirectoryResult> {
+  return new Promise((resolve, reject) => {
+    tmp.dir(options || {}, (err, path, cleanup) => {
+      if (err) {
+        reject(err);
+      } else {
+        resolve({ path, cleanup });
+      }
+    });
+  });
+}
+
+function createTmpFile(options?: tmp.Options): Promise<FileResult> {
+  return new Promise((resolve, reject) => {
+    tmp.file(options || {}, (err, path, fd, cleanup) => {
+      if (err) {
+        reject(err);
+      } else {
+        resolve({ path, fd, cleanup });
+      }
+    });
+  });
+}
+
+export async function downloadToTmpFile(url: string): Promise<FileResult> {
   const response = await httpsGet(url);
 
-  return new Promise<tmp.FileResult>(async (resolve, reject) => {
-    const tmpFile = await tmp.file();
+  return new Promise<FileResult>(async (resolve, reject) => {
+    const tmpFile = await createTmpFile();
     const writeStream = fs.createWriteStream(tmpFile.path);
     response.pipe(
       writeStream,
@@ -171,8 +204,8 @@ export async function downloadToTmpFile(url: string): Promise<tmp.FileResult> {
 
 export async function unzipToTmpDir(
   filePath: string
-): Promise<tmp.DirectoryResult> {
-  return new Promise<tmp.DirectoryResult>((resolve, reject) => {
+): Promise<DirectoryResult> {
+  return new Promise<DirectoryResult>((resolve, reject) => {
     yauzl.open(filePath, { lazyEntries: true }, async (err, zipFile) => {
       if (err) {
         reject(err);
@@ -184,7 +217,7 @@ export async function unzipToTmpDir(
         return;
       }
 
-      const tmpDir = await tmp.dir({ unsafeCleanup: true });
+      const tmpDir = await createTmpDir({ unsafeCleanup: true });
 
       zipFile.on('entry', (entry: yauzl.Entry) => {
         if (/\/$/.test(entry.fileName)) {
@@ -235,7 +268,7 @@ export async function unzipToTmpDir(
 }
 
 export interface UnzipToDirResult {
-  dir: tmp.DirectoryResult;
+  dir: DirectoryResult;
   files: UnzippedFileOrDirectory[];
 }
 

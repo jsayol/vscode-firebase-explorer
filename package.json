@@ -549,12 +549,15 @@
     "request": "^2.88.0",
     "request-promise-native": "^1.0.5",
     "semver": "^5.6.0",
-    "tmp-promise": "^1.0.5",
+    "tmp": "^0.0.33",
     "tslib": "^1.9.3",
     "universal-analytics": "^0.4.20",
     "uuid": "^3.3.2",
     "vscode": "^1.1.24",
     "yauzl": "^2.10.0"
+  },
+  "resolutions": {
+    "request/tough-cookie": "2.5.0"
   },
   "prettier": {
     "semi": true,
