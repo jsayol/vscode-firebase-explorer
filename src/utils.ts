@@ -295,6 +295,15 @@ export function dateToString(date: Date | string) {
   });
 }
 
+/**
+ * Performs a case-insensitive comparison of two strings
+ * @param a
+ * @param b
+ */
+export function ciCompare(a: string, b: string): number {
+  return a.localeCompare(b, 'en', { 'sensitivity': 'base' });
+}
+
 process.on('unhandledRejection', error => {
   console.log('unhandledRejection', error);
 });

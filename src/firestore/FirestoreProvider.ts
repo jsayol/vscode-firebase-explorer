@@ -17,7 +17,8 @@ import {
   ContextValue,
   getFullPath,
   decimalToDMS,
-  extContext
+  extContext,
+  ciCompare
 } from '../utils';
 import { AccountInfo } from '../accounts/AccountManager';
 
@@ -118,7 +119,7 @@ export class FirestoreProvider
 
       const hasFields = document && !!document.fields;
       if (hasFields) {
-        const docFields = Object.keys(document!.fields!).sort();
+        const docFields = Object.keys(document!.fields!).sort(ciCompare);
         items.push(
           ...docFields.map(
             name =>
@@ -170,7 +171,7 @@ export class FirestoreProvider
         );
 
         if (document && document.fields) {
-          const docFields = Object.keys(document.fields).sort();
+          const docFields = Object.keys(document.fields).sort(ciCompare);
           items.push(
             ...docFields.map(
               name =>

@@ -1,6 +1,6 @@
 import * as request from 'request-promise-native';
 import { AccountInfo, AccountManager } from '../accounts/AccountManager';
-import { contains } from '../utils';
+import { contains, ciCompare } from '../utils';
 import { FirebaseProject, ProjectConfig, ProjectInfo } from './ProjectManager';
 
 // https://mobilesdk-pa.googleapis.com/v1/projects
@@ -71,7 +71,7 @@ export class ProjectsAPI {
           (projA, projB) => {
             const nameA = (projA.displayName || projA.projectId).toLowerCase();
             const nameB = (projB.displayName || projB.projectId).toLowerCase();
-            return nameA < nameB ? -1 : 1;
+            return ciCompare(nameA, nameB);
           }
         );
       } else {
