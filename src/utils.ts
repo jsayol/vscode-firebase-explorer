@@ -300,7 +300,7 @@ export function dateToString(date: Date | string) {
  * @param a
  * @param b
  */
-export function ciCompare(a: string, b: string): number {
+export function caseInsensitiveCompare(a: string, b: string): number {
   return a.localeCompare(b, 'en', { 'sensitivity': 'base' });
 }
 

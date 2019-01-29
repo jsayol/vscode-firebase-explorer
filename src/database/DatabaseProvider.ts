@@ -2,7 +2,7 @@ import * as path from 'path';
 import * as vscode from 'vscode';
 import { FirebaseProject } from '../projects/ProjectManager';
 import { DatabaseAPI, DatabaseShallowValue } from './api';
-import { ciCompare, messageTreeItem, getFullPath, extContext } from '../utils';
+import { caseInsensitiveCompare, messageTreeItem, getFullPath, extContext } from '../utils';
 import { AccountInfo } from '../accounts/AccountManager';
 
 export class DatabaseProvider
@@ -88,7 +88,7 @@ export class DatabaseProvider
         this._onDidChangeTreeData.fire(element);
       }
       return Object.keys(value)
-        .sort(ciCompare)
+        .sort(caseInsensitiveCompare)
         .map(
           key => new DatabaseProviderItem(key, path, account, project)
         );
