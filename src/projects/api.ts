@@ -69,8 +69,8 @@ export class ProjectsAPI {
       if (response.body && Array.isArray(response.body.project)) {
         return (response.body.project as FirebaseProject[]).sort(
           (projA, projB) => {
-            const nameA = (projA.displayName || projA.projectId).toLowerCase();
-            const nameB = (projB.displayName || projB.projectId).toLowerCase();
+            const nameA = projA.displayName || projA.projectId;
+            const nameB = projB.displayName || projB.projectId;
             return ciCompare(nameA, nameB);
           }
         );
