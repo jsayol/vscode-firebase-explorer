@@ -2,7 +2,7 @@ import * as path from 'path';
 import * as vscode from 'vscode';
 import * as directoryTree from 'directory-tree';
 import { FirebaseProject } from '../projects/ProjectManager';
-import { messageTreeItem, extContext } from '../utils';
+import { messageTreeItem, extContext, caseInsensitiveCompare } from '../utils';
 import { AccountInfo } from '../accounts/AccountManager';
 import { FunctionsAPI, CloudFunction, CloudFunctionTriggerType } from './api';
 
@@ -193,7 +193,7 @@ export class FunctionTriggerTypeItem extends vscode.TreeItem {
     }
 
     this.functions = this.functions.sort((fnA, fnB) =>
-      fnA.displayName > fnB.displayName ? 1 : -1
+      caseInsensitiveCompare(fnA.displayName, fnB.displayName)
     );
   }
 

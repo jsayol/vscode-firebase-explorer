@@ -1,6 +1,6 @@
 import * as request from 'request-promise-native';
 import { AccountInfo, AccountManager } from '../accounts/AccountManager';
-import { contains } from '../utils';
+import { contains, caseInsensitiveCompare } from '../utils';
 import { FirebaseProject, ProjectConfig, ProjectInfo } from './ProjectManager';
 
 // https://mobilesdk-pa.googleapis.com/v1/projects
@@ -69,9 +69,9 @@ export class ProjectsAPI {
       if (response.body && Array.isArray(response.body.project)) {
         return (response.body.project as FirebaseProject[]).sort(
           (projA, projB) => {
-            const nameA = (projA.displayName || projA.projectId).toLowerCase();
-            const nameB = (projB.displayName || projB.projectId).toLowerCase();
-            return nameA < nameB ? -1 : 1;
+            const nameA = projA.displayName || projA.projectId;
+            const nameB = projB.displayName || projB.projectId;
+            return caseInsensitiveCompare(nameA, nameB);
           }
         );
       } else {

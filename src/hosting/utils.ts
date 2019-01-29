@@ -1,4 +1,5 @@
 import { HostingReleaseVersionFile } from './api';
+import { caseInsensitiveCompare } from '../utils';
 
 export function filesToTree(
   files: HostingReleaseVersionFile[]
@@ -68,7 +69,7 @@ export function sortTreeParts(parts: PathTreePart[]): PathTreePart[] {
     } else if (a.file && !b.file) {
       return 1;
     } else {
-      return a.name < b.name ? -1 : 1;
+      return caseInsensitiveCompare(a.name, b.name);
     }
   });
 }
