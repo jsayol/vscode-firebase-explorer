@@ -538,6 +538,7 @@
     "tslint-config-standard": "^8.0.1",
     "tslint-loader": "^3.5.4",
     "typescript": "^3.2.1",
+    "vscode": "^1.1.24",
     "webpack": "^4.27.1",
     "webpack-cli": "^3.1.2"
   },
@@ -553,7 +554,6 @@
     "tslib": "^1.9.3",
     "universal-analytics": "^0.4.20",
     "uuid": "^3.3.2",
-    "vscode": "^1.1.24",
     "yauzl": "^2.10.0"
   },
   "resolutions": {
