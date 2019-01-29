@@ -32,7 +32,7 @@ export class DatabaseAPI {
       return request(reqOptions);
     } catch (err) {
       // TODO: handle error
-      console.log('getShallow', { err });
+      console.log('getShallow', err);
       return null;
     }
   }

@@ -116,11 +116,10 @@ export class ProjectsAPI {
 
   async getProjectConfig(project: FirebaseProject): Promise<ProjectConfig> {
     try {
-      const response = await this.authedRequest('GET', '', {
-        url: `${CONFIG.mobilesdk.origin}/${CONFIG.mobilesdk.version}/projects/${
-          project.projectNumber
-        }:getServerAppConfig`
-      });
+      const response = await this.authedRequest(
+        'GET',
+        `projects/${project.projectId}/adminSdkConfig`
+      );
 
       if (!response.body) {
         throw new Error(response);
@@ -134,28 +133,3 @@ export class ProjectsAPI {
     }
   }
 }
-
-// export async function getProjectConfig_old(
-//   accountManager: AccountManager,
-//   project: FirebaseProject
-// ): Promise<ProjectConfig> {
-//   console.log(project);
-//   try {
-//     const response = await apiRequest(
-//       'GET',
-//       `/${project.projectId}/adminSdkConfig`,
-//       {
-//         accountManager
-//       }
-//     );
-//     if (response.body) {
-//       return response.body;
-//     }
-//   } catch (err) {
-//     console.log('ERR getProjectConfig ' + project.projectId, { err });
-//   }
-
-//   throw new Error(
-//     `Failed to retrieve the config for project ${project.projectId}`
-//   );
-// }
