@@ -23,7 +23,6 @@
   "categories": [
     "Other"
   ],
-  "preview": true,
   "main": "./dist/extension",
   "icon": "assets/icon.png",
   "galleryBanner": {
