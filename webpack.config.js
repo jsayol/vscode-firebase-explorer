@@ -60,15 +60,6 @@ function getExtensionConfig(env) {
     },
     externals: {
       vscode: 'commonjs vscode',
-
-      // Imported by request#tough-cookie but unnecessary, since it's
-      // only needed when calling toughCookie.getPublicSuffix() and
-      // "request" doesn't call it.
-      psl: 'psl',
-
-      // Imported by "request". This in turn imports "ajv". Both are
-      // unnecessary since we're not using options.har in request.
-      'har-validator': 'har-validator'
     },
     module: {
       rules: [
