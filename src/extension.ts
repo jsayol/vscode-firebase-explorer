@@ -3,7 +3,6 @@ import * as vscode from 'vscode';
 import { AccountManager } from './accounts/AccountManager';
 import { getCliAccount } from './accounts/cli';
 import { registerAccountsCommands } from './accounts/commands';
-import { analytics } from './analytics';
 import { AppsProvider } from './apps/AppsProvider';
 import { registerAppsCommands } from './apps/commands';
 import { registerDatabaseCommands } from './database/commands';
@@ -43,8 +42,6 @@ export async function activate(context: vscode.ExtensionContext) {
   registerProjectsCommands(context);
   registerFirestoreCommands(context);
   registerDatabaseCommands(context);
-
-  analytics.event('Extension', 'activate');
 }
 
 export function deactivate() {
@@ -67,9 +64,6 @@ async function initialize(context: vscode.ExtensionContext): Promise<void> {
   if (!PRODUCTION) {
     // context.globalState.update('config', undefined);
   }
-
-  // Initialize analytics
-  analytics.initialize(context);
 
   let extensionConfig = context.globalState.get<ExtensionConfig>('config');
 

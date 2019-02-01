@@ -9,7 +9,6 @@ import { AppsProvider } from '../apps/AppsProvider';
 import { AccountInfo } from '../accounts/AccountManager';
 import { FunctionsProvider } from '../functions/FunctionsProvider';
 import { HostingProvider } from '../hosting/HostingProvider';
-import { analytics } from '../analytics';
 
 let context: vscode.ExtensionContext;
 
@@ -35,8 +34,6 @@ function projectSelection(
   account: AccountInfo,
   project: FirebaseProject
 ): void {
-  analytics.event('Projects', 'projectSelection');
-
   const currentAccount = context.globalState.get<AccountInfo>(
     'selectedAccount'
   );
@@ -91,8 +88,6 @@ function projectSelection(
 }
 
 function refreshProjects(element?: AccountItem): void {
-  analytics.event('Projects', 'refreshProjects');
-
   const projectsProvider = providerStore.get<ProjectsProvider>('projects');
   projectsProvider.refresh(element);
 }

@@ -1,12 +1,5 @@
 import * as vscode from 'vscode';
-// import * as request from 'request-promise-native';
 import { HostingFileItem } from './HostingProvider';
-import { analytics } from '../analytics';
-// import { ProviderStore, TreeViewStore } from '../stores';
-// import { AccountInfo } from '../accounts/AccountManager';
-// import { FirebaseProject } from '../projects/ProjectManager';
-// import { HostingAPI } from './api';
-// import { readFile, getFilePath, downloadToTmpFile } from '../utils';
 
 let context: vscode.ExtensionContext;
 
@@ -26,23 +19,7 @@ async function openFile(element: HostingFileItem): Promise<void> {
     return;
   }
 
-  analytics.event('Hosting', 'openFile');
-
   const release = element.release;
   const file = element.part.file!;
   console.log({ release, file });
-  // try {
-  //   await vscode.window.withProgress(
-  //     {
-  //       title: 'Getting file ' + file.path,
-  //       location: vscode.ProgressLocation.Notification
-  //     },
-  //     async () => {
-  //       console.log({ release, file });
-  //       console.log(await AccountManager.forSelectedAccount().getAccessToken());
-  //     }
-  //   );
-  // } catch (err) {
-  //   console.log(err);
-  // }
 }

@@ -11,7 +11,6 @@ import {
 import { FunctionsAPI } from './api';
 import { CloudFunctionItem, FunctionsProvider } from './FunctionsProvider';
 import { getDetailsFromName } from './utils';
-import { analytics } from '../analytics';
 
 let context: vscode.ExtensionContext;
 const logViews: {
@@ -76,8 +75,6 @@ export function registerFunctionsCommands(_context: vscode.ExtensionContext) {
 }
 
 function refreshFunctions(): void {
-  analytics.event('Functions', 'refreshFunctions');
-
   const functionsProvider = providerStore.get<FunctionsProvider>('functions');
   functionsProvider.refresh();
 }
@@ -90,8 +87,6 @@ async function triggerHTTPSFunction(element: CloudFunctionItem) {
   if (!element.cloudFunction.httpsTrigger) {
     throw new Error('Function is not HTTPS-triggered.');
   }
-
-  analytics.event('Functions', 'triggerHTTPSFunction');
 
   const fn = element.cloudFunction;
   const api = FunctionsAPI.for(element.account, element.project);
@@ -154,8 +149,6 @@ function copyTrigger(element: CloudFunctionItem) {
     throw new Error('Function is not HTTPS-triggered.');
   }
 
-  analytics.event('Functions', 'copyTrigger');
-
   vscode.env.clipboard.writeText(element.cloudFunction.httpsTrigger.url);
 }
 
@@ -163,8 +156,6 @@ function openInCloudConsole(element: CloudFunctionItem): void {
   if (!element) {
     return;
   }
-
-  analytics.event('Functions', 'openInCloudConsole');
 
   const details = getDetailsFromName(element.cloudFunction.name);
   vscode.commands.executeCommand(
@@ -182,8 +173,6 @@ function openInFirebaseConsole(element: CloudFunctionItem): void {
     return;
   }
 
-  analytics.event('Functions', 'openInFirebaseConsole');
-
   const details = getDetailsFromName(element.cloudFunction.name);
   vscode.commands.executeCommand(
     'vscode.open',
@@ -199,8 +188,6 @@ async function viewLogs(element: CloudFunctionItem): Promise<void> {
   if (!element) {
     return;
   }
-
-  analytics.event('Functions', 'viewLogs');
 
   const panelId =
     element.account.user.email + '--' + element.cloudFunction.name;
@@ -312,8 +299,6 @@ async function viewSource(element: CloudFunctionItem): Promise<void> {
   if (!element) {
     return;
   }
-
-  analytics.event('Functions', 'viewSource');
 
   const fnName = element.cloudFunction.displayName;
 

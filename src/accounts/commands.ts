@@ -3,7 +3,6 @@ import { AccountItem } from '../projects/ProjectsProvider';
 import { generateNonce } from '../utils';
 import { AccountManager } from './AccountManager';
 import { endLogin, initiateLogin } from './login';
-import { analytics } from '../analytics';
 
 let context: vscode.ExtensionContext;
 
@@ -23,8 +22,6 @@ export function registerAccountsCommands(_context: vscode.ExtensionContext) {
 }
 
 async function addAccount(): Promise<void> {
-  analytics.event('Accounts', 'addAccount');
-
   const account = await vscode.window.withProgress(
     {
       title: 'Waiting for login to complete...',
@@ -51,8 +48,6 @@ async function addAccount(): Promise<void> {
 }
 
 function removeAccount(element: AccountItem): void {
-  analytics.event('Accounts', 'removeAccount');
-
   const selectedAccout = context.globalState.get('selectedAccount');
   if (selectedAccout === element.account) {
     context.globalState.update('selectedAccount', undefined);
