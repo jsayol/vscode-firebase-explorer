@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html lang="en">
+<script>
+    // @ts-check
+</script>
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Function Log</title>
+  <style>
+    body {
+      position: absolute;
+      top: 0;
+      bottom: 0;
+      padding: 0;
+      overflow: hidden;
+      width: 100%;
+    }
+
+    #container {
+      display: flex;
+      flex-direction: column;
+      height: 100%;
+      color: var(--vscode-foreground);
+      background-color: var(--vscode-editor-background);
+    }
+
+    #header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 0 5px;
+      background-color: inherit;
+      min-height: 38px;
+      max-height: 38px;
+    }
+
+    code {
+      font-family: 'Roboto Mono', monospace;
+    }
+
+    #contentWrapper {
+      overflow: auto;
+      display: flex;
+    }
+
+    /*******************************/
+
+    ul.tree,
+    ul.tree ul {
+      list-style: none;
+      margin: 0;
+      padding: 0;
+    }
+
+    ul.tree ul {
+      margin-left: 10px;
+    }
+
+    ul.tree li {
+      margin: 0;
+      padding: 0 7px;
+      line-height: 20px;
+      color: #369;
+      font-weight: bold;
+      border-left: 1px solid rgb(100, 100, 100);
+
+    }
+
+    ul.tree li:last-child {
+      border-left: none;
+    }
+
+    ul.tree li:before {
+      position: relative;
+      top: -0.3em;
+      height: 1em;
+      width: 12px;
+      color: white;
+      border-bottom: 1px solid rgb(100, 100, 100);
+      content: "";
+      display: inline-block;
+      left: -7px;
+    }
+
+    ul.tree li:last-child:before {
+      border-left: 1px solid rgb(100, 100, 100);
+    }
+  </style>
+
+  <!-- <link rel="stylesheet" type="text/css" href="https://fonts.googleapis.com/icon?family=Material+Icons+Extended"> -->
+</head>
+
+<body>
+  <div id="container">
+    <div id="header">
+      <div>
+        Document: <code id="documentPath"></code>
+      </div>
+    </div>
+    <div id="contentWrapper">
+      <div>
+        <!-- <form id="docForm">
+        <ul class="flex-outer" id="docFormList"></ul>
+      </form> -->
+        <div>
+          <ul class="tree" id="docFormList"></ul>
+        </div>
+
+        <br />
+
+        <div id="container">
+          <pre><code id="docjson"></code></pre>
+        </div>
+      </div>
+    </div>
+</body>
+<script>
+  let isLive = true;
+  let disableTailOnScroll = true;
+  let lastEntry = null;
+  let activeExec = null;
+  let entriesConter = 0;
+
+  // @ts-ignore
+  const vscode = acquireVsCodeApi();
+  const docjson = document.querySelector('#docjson');
+  const documentPath = document.querySelector('#documentPath');
+  const docForm = document.querySelector('#docForm');
+  const docFormList = document.querySelector('#docFormList');
+
+  window.addEventListener('message', event => {
+    const command = event.data.command;
+    const data = event.data.data;
+
+    switch (command) {
+      case 'initialize':
+        initialize(data);
+        break;
+    }
+  });
+
+  vscode.postMessage({
+    command: 'ready'
+  });
+
+  function initialize(data) {
+    documentPath.textContent = data.path;
+    docjson.textContent = JSON.stringify(data.fields, null, 2);
+
+    for (const fieldItem in data.fields) {
+      const field = data.fields[fieldItem];
+
+      docFormList.appendChild(newDOM(getFieldHTML(field)));
+
+    }
+
+    // let fieldCounter = 0;
+    // const fields = data.document.fields;
+
+    // for (const fieldName in data.document.fields) {
+    //   docFormList.appendChild(newDOM(`
+    //     <li>
+    //       <label for="field-${fieldCounter}">${fieldName}</label>
+    //       <span id="field-${fieldCounter}">${fields[fieldName]}</span>
+    //     </li>
+    //   `));
+
+    //   fieldCounter += 1;
+    // }
+  }
+
+  function getFieldHTML(field) {
+    let fieldValueHTML = '';
+
+    if (field.type === 'array') {
+      return `<ul class="tree">${field.value.map(v => getFieldHTML(v)).join('')}</ul>`;
+    } else if (field.type === 'map') {
+      //
+    } else {
+      fieldValueHTML = field.value;
+    }
+
+    return `
+      <li>
+        <div class="fieldName">${field.name}</div>
+        ${fieldValueHTML}
+      </li>
+    `;
+  }
+
+  function newDOM(domString) {
+    const html = new DOMParser().parseFromString(domString, 'text/html');
+    return html.body.firstChild;
+  };
+</script>
+
+</html>

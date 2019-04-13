@@ -6,14 +6,15 @@ import {
   getFilePath,
   readFile,
   unzipToTmpDir,
-  contains
+  contains,
+  postToPanel
 } from '../utils';
 import { FunctionsAPI } from './api';
 import { CloudFunctionItem, FunctionsProvider } from './FunctionsProvider';
 import { getDetailsFromName } from './utils';
 
 let context: vscode.ExtensionContext;
-const logViews: {
+const panelViews: {
   [k: string]: {
     panel: vscode.WebviewPanel;
     isLive: boolean;
@@ -193,8 +194,8 @@ async function viewLogs(element: CloudFunctionItem): Promise<void> {
     element.account.user.email + '--' + element.cloudFunction.name;
 
   try {
-    if (contains(logViews, panelId)) {
-      const { panel, isLive, isReady } = logViews[panelId];
+    if (contains(panelViews, panelId)) {
+      const { panel, isLive, isReady } = panelViews[panelId];
       if (isReady && !isLive) {
         setImmediate(() => {
           postToPanel(panel, {
@@ -232,8 +233,8 @@ async function viewLogs(element: CloudFunctionItem): Promise<void> {
           panel.webview.onDidReceiveMessage(async data => {
             switch (data.command) {
               case 'ready':
-                logViews[panelId] = {
-                  ...logViews[panelId],
+                panelViews[panelId] = {
+                  ...panelViews[panelId],
                   isReady: true
                 };
                 postToPanel(panel, {
@@ -245,8 +246,8 @@ async function viewLogs(element: CloudFunctionItem): Promise<void> {
                 // logEntries = undefined as any;
                 break;
               case 'isLive':
-                logViews[panelId] = {
-                  ...logViews[panelId],
+                panelViews[panelId] = {
+                  ...panelViews[panelId],
                   isLive: data.isLive
                 };
                 break;
@@ -272,26 +273,18 @@ async function viewLogs(element: CloudFunctionItem): Promise<void> {
 
           panel.onDidDispose(
             () => {
-              delete logViews[panelId];
+              delete panelViews[panelId];
             },
             null,
             context.subscriptions
           );
 
-          logViews[panelId] = { panel, isLive: false, isReady: false };
+          panelViews[panelId] = { panel, isLive: false, isReady: false };
         }
       );
     }
   } catch (err) {
     console.log({ err });
-  }
-}
-
-function postToPanel(panel: vscode.WebviewPanel, msg: any) {
-  try {
-    panel.webview.postMessage(msg);
-  } catch (err) {
-    console.log('Failed sending message to WebView panel', err);
   }
 }
 

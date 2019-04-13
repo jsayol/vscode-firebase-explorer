@@ -300,6 +300,14 @@ export function caseInsensitiveCompare(a: string, b: string): number {
   return a.localeCompare(b, 'en', { sensitivity: 'base' });
 }
 
+export function postToPanel(panel: vscode.WebviewPanel, msg: any) {
+  try {
+    panel.webview.postMessage(msg);
+  } catch (err) {
+    console.log('Failed sending message to WebView panel', err);
+  }
+}
+
 process.on('unhandledRejection', error => {
   console.log('unhandledRejection', error);
 });

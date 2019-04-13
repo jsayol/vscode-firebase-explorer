@@ -252,6 +252,11 @@
         "category": "Firestore"
       },
       {
+        "command": "firebaseExplorer.firestore.editDocument",
+        "title": "Edit Document",
+        "category": "Firestore"
+      },
+      {
         "command": "firebaseExplorer.firestore.copyDocumentContent",
         "title": "Copy Content",
         "category": "Firestore"
@@ -445,6 +450,11 @@
           "command": "firebaseExplorer.firestore.deleteDocument",
           "when": "viewItem == firestore.document",
           "group": "firestore.document-edit@4"
+        },
+        {
+          "command": "firebaseExplorer.firestore.editDocument",
+          "when": "viewItem == firestore.document",
+          "group": "firestore.document-edit@5"
         },
         {
           "command": "firebaseExplorer.firestore.copySnippet.JS.ref",

@@ -7,10 +7,32 @@ import {
   DocumentItem,
   CollectionItem
 } from './FirestoreProvider';
-import { getFieldValue, FirestoreAPI } from './api';
-import { getFullPath } from '../utils';
+import {
+  getFieldValue,
+  FirestoreAPI,
+  processFieldValue,
+  DocumentFieldValue,
+  EditableDocumentField
+} from './api';
+import {
+  getFullPath,
+  contains,
+  postToPanel,
+  readFile,
+  getFilePath
+} from '../utils';
 
-export function registerFirestoreCommands(context: vscode.ExtensionContext) {
+let context: vscode.ExtensionContext;
+const panelViews: {
+  [k: string]: {
+    panel: vscode.WebviewPanel;
+    isReady: boolean;
+  };
+} = {};
+
+export function registerFirestoreCommands(_context: vscode.ExtensionContext) {
+  context = _context;
+
   context.subscriptions.push(
     vscode.commands.registerCommand(
       'firebaseExplorer.firestore.refresh',
@@ -64,6 +86,13 @@ export function registerFirestoreCommands(context: vscode.ExtensionContext) {
     vscode.commands.registerCommand(
       'firebaseExplorer.firestore.deleteDocument',
       deleteDocument
+    )
+  );
+
+  context.subscriptions.push(
+    vscode.commands.registerCommand(
+      'firebaseExplorer.firestore.editDocument',
+      editDocument
     )
   );
 
@@ -179,20 +208,7 @@ async function copyDocumentContent(element: DocumentItem): Promise<void> {
     return;
   }
 
-  // Documents that have been deleted don't have a "createTime" property
-  if (element.document.createTime && !element.document.fields) {
-    element.document = await vscode.window.withProgress(
-      {
-        title: 'Fetching document contents...',
-        location: vscode.ProgressLocation.Notification
-      },
-      async () => {
-        const api = FirestoreAPI.for(element.account, element.project);
-        const docPath = getFullPath(element.parentPath, element.name);
-        return api.getDocument(docPath);
-      }
-    );
-  }
+  await ensureDocumentFields(element);
 
   if (element.document.fields) {
     const fields = element.document.fields;
@@ -244,6 +260,126 @@ async function deleteDocument(element: DocumentItem): Promise<void> {
   }
 }
 
+async function editDocument(element: DocumentItem): Promise<void> {
+  if (!element) {
+    return;
+  }
+
+  await ensureDocumentFields(element);
+
+  // TODO: remove
+  console.log(element.document);
+
+  const panelId = element.account.user.email + '--' + element.fullName;
+
+  try {
+    if (contains(panelViews, panelId)) {
+      const { panel, isReady } = panelViews[panelId];
+      if (isReady) {
+        setImmediate(() => {
+          postToPanel(panel, {
+            command: 'fetchNew'
+          });
+        });
+      }
+      panel.reveal();
+    } else {
+      const docNameMatch = element.fullName.match(
+        /projects\/([^\/]+)\/databases\/([^\/]+)\/documents\/(.*)/
+      );
+      const documentPath = docNameMatch![3];
+      const panel = vscode.window.createWebviewPanel(
+        'firestore.editDocument',
+        'Edit: ' + documentPath,
+        vscode.ViewColumn.One,
+        {
+          enableScripts: true,
+          retainContextWhenHidden: true
+        }
+      );
+
+      panel.webview.html = await readFile(
+        getFilePath('ui/firestore/edit-document.html'),
+        'utf8'
+      );
+
+      panel.webview.onDidReceiveMessage(async data => {
+        switch (data.command) {
+          case 'ready':
+            panelViews[panelId] = {
+              ...panelViews[panelId],
+              isReady: true
+            };
+            postToPanel(panel, {
+              command: 'initialize',
+              data: {
+                path: documentPath,
+                fields: getFieldsForEditing(element.document.fields)
+              }
+            });
+            break;
+          case 'save':
+            // TODO
+            break;
+        }
+      });
+
+      // panel.onDidChangeViewState(
+      //   _event => {
+      //     const panel = _event.webviewPanel;
+      //   },
+      //   null,
+      //   context.subscriptions
+      // );
+
+      panel.onDidDispose(
+        () => {
+          delete panelViews[panelId];
+        },
+        null,
+        context.subscriptions
+      );
+
+      panelViews[panelId] = { panel, isReady: false };
+    }
+  } catch (err) {
+    console.log(err);
+  }
+}
+
+function getFieldsForEditing(
+  fields: { [name: string]: DocumentFieldValue } | undefined
+): EditableDocumentField[] {
+  let fieldValues: EditableDocumentField[] = [];
+
+  if (fields) {
+    for (const field in fields) {
+      fieldValues.push(getFieldForEditing(fields[field]));
+    }
+  }
+
+  return fieldValues;
+}
+
+function getFieldForEditing(field: DocumentFieldValue): EditableDocumentField {
+  const processedField = processFieldValue(field);
+  let editableField: Partial<EditableDocumentField> = {
+    name: processFieldValue.name,
+    type: processedField.type
+  };
+
+  if (processedField.type === 'array') {
+    editableField.value = (processedField.value || []).map(fieldValue => {
+      return getFieldForEditing(fieldValue);
+    });
+  } else if (processedField.type === 'map') {
+    editableField.value = getFieldsForEditing(processedField.value);
+  } else {
+    editableField.value = processedField.value;
+  }
+  return editableField as EditableDocumentField;
+}
+
 function copyDocumentFieldName(element: DocumentFieldItem): void {
   if (!element) {
     return;
@@ -262,5 +398,25 @@ function copyDocumentFieldValue(element: DocumentFieldItem): void {
     vscode.env.clipboard.writeText(value);
   } catch (err) {
     console.error(err);
+  }
+}
+
+/**
+ * Checks if the document has its fields. If not, it retrieves them.
+ */
+async function ensureDocumentFields(element: DocumentItem): Promise<void> {
+  // Documents that have been deleted don't have a "createTime" property
+  if (element.document.createTime && !element.document.fields) {
+    element.document = await vscode.window.withProgress(
+      {
+        title: 'Fetching document contents...',
+        location: vscode.ProgressLocation.Notification
+      },
+      async () => {
+        const api = FirestoreAPI.for(element.account, element.project);
+        const docPath = getFullPath(element.parentPath, element.name);
+        return api.getDocument(docPath);
+      }
+    );
   }
 }

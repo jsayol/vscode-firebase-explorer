@@ -432,3 +432,9 @@ export type ProcessedFieldValue =
   | ProcessedFieldValueGeoPoint
   | ProcessedFieldValueArray
   | ProcessedFieldValueMap;
+
+export interface EditableDocumentField {
+  name?: string;
+  type: DocumentValueType;
+  value: any;
+}
