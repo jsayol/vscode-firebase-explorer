@@ -2,7 +2,12 @@ import * as path from 'path';
 import * as vscode from 'vscode';
 import { FirebaseProject } from '../projects/ProjectManager';
 import { DatabaseAPI, DatabaseShallowValue } from './api';
-import { caseInsensitiveCompare, messageTreeItem, getFullPath, extContext } from '../utils';
+import {
+  caseInsensitiveCompare,
+  messageTreeItem,
+  getFullPath,
+  extContext
+} from '../utils';
 import { AccountInfo } from '../accounts/AccountManager';
 
 export class DatabaseProvider
@@ -42,14 +47,72 @@ export class DatabaseProvider
     }
 
     const api = DatabaseAPI.for(account, project);
-    const path = element ? getFullPath(element.parentPath, element.name) : '';
-    const value = await api.getShallow(path);
+    let instance: string;
+    let path: string;
+    let atTheRoot: boolean;
 
-    if (!element && value === null) {
+    if (!element) {
+      // We're at the root, so first we need to check if the project has more
+      // than one database instance.
+      const instances = await api.listDatabases();
+      atTheRoot = true;
+
+      if (instances.length === 0) {
+        // There are no database instances database
+        return [
+          messageTreeItem(
+            'No database instance for this project',
+            'There is no database instance associated for this project. Refresh to fetch any updates.'
+          )
+        ];
+      } else if (instances.length > 1) {
+        // More than 1 database instances
+        return instances.map(inst => {
+          return new DatabaseInstanceItem(
+            inst.instance,
+            inst.type === 'DEFAULT_REALTIME_DATABASE',
+            account,
+            project
+          );
+        });
+      } else {
+        // Only 1 database instance
+        path = '';
+        instance = instances[0].instance;
+      }
+    } else if (element instanceof DatabaseInstanceItem) {
+      atTheRoot = true;
+      path = '';
+      instance = element.name;
+    } else {
+      atTheRoot = false;
+      path = getFullPath(element.parentPath, element.name);
+      instance = element.instance;
+    }
+
+    let value: DatabaseShallowValue;
+
+    try {
+      value = await api.getShallow(path, instance);
+    } catch (err) {
+      if (err.statusCode && err.statusCode === 423) {
+        // Database is disabled
+        return [
+          messageTreeItem(
+            `Manually disabled for this ${!element ? 'project' : 'instance'}`,
+            'This database has been disabled by a database owner. Refresh to fetch any updates.'
+          )
+        ];
+      } else {
+        throw err;
+      }
+    }
+
+    if (atTheRoot && value === null) {
       // Nothing in the database
       return [
         messageTreeItem(
-          'Database is empty for this project',
+          `Database is empty for this ${!element ? 'project' : 'instance'}`,
           'There is no data in the database. Refresh to fetch any updates.'
         )
       ];
@@ -64,13 +127,13 @@ export class DatabaseProvider
       Array.isArray(value)
     ) {
       // It's a value
-      if (!element) {
+      if (atTheRoot) {
         if (value !== null) {
           console.log(
             'The root of the database is not supposed to have values, only fields!'
           );
         }
-      } else {
+      } else if (element instanceof DatabaseElementItem) {
         element.value = value;
         element.collapsibleState = vscode.TreeItemCollapsibleState.None;
         this._onDidChangeTreeData.fire(element);
@@ -78,7 +141,7 @@ export class DatabaseProvider
       return [];
     } else {
       // It's a nested object
-      if (element && !element.hasChildren) {
+      if (element instanceof DatabaseElementItem && !element.hasChildren) {
         element.hasChildren = true;
 
         // We need to fire this in order for the TreeView to update this
@@ -90,13 +153,13 @@ export class DatabaseProvider
       return Object.keys(value)
         .sort(caseInsensitiveCompare)
         .map(
-          key => new DatabaseProviderItem(key, path, account, project)
+          key => new DatabaseElementItem(key, path, instance, account, project)
         );
     }
   }
 }
 
-export class DatabaseProviderItem extends vscode.TreeItem {
+export class DatabaseElementItem extends vscode.TreeItem {
   contextValue = 'database.entry';
   iconPath = extContext().asAbsolutePath(
     path.join('assets', 'database', 'unknown-entry.svg')
@@ -108,6 +171,7 @@ export class DatabaseProviderItem extends vscode.TreeItem {
   constructor(
     public name: string,
     public parentPath: string,
+    public instance: string,
     public account: AccountInfo,
     public project: FirebaseProject
   ) {
@@ -188,3 +252,33 @@ export class DatabaseProviderItem extends vscode.TreeItem {
     }
   }
 }
+
+export class DatabaseInstanceItem extends vscode.TreeItem {
+  contextValue = 'database.instance';
+  iconPath = {
+    dark: extContext().asAbsolutePath(
+      path.join('assets', 'database', 'dark', 'database.svg')
+    ),
+    light: extContext().asAbsolutePath(
+      path.join('assets', 'database', 'light', 'database.svg')
+    )
+  };
+
+  constructor(
+    public name: string,
+    public isDefault: boolean,
+    public account: AccountInfo,
+    public project: FirebaseProject
+  ) {
+    super(
+      name,
+      vscode.TreeItemCollapsibleState[isDefault ? 'Expanded' : 'Collapsed']
+    );
+
+    if (isDefault) {
+      this.description = '(default)';
+    }
+  }
+}
+
+export type DatabaseProviderItem = DatabaseElementItem | DatabaseInstanceItem;

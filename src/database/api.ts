@@ -3,6 +3,13 @@ import { contains } from '../utils';
 import { FirebaseProject, ProjectManager } from '../projects/ProjectManager';
 import { AccountInfo } from '../accounts/AccountManager';
 
+const CONFIG = {
+  mobilesdk: {
+    origin: 'https://mobilesdk-pa.googleapis.com',
+    version: 'v1'
+  }
+};
+
 const instances: { [k: string]: DatabaseAPI } = {};
 
 export class DatabaseAPI {
@@ -20,42 +27,92 @@ export class DatabaseAPI {
     this.projectManager = ProjectManager.for(account, project);
   }
 
-  async getShallow(path: string): Promise<DatabaseShallowValue> {
-    try {
-      const token = await this.projectManager.getAccessToken();
-      const reqOptions: request.OptionsWithUrl = {
-        method: 'GET',
-        url: await this.getURLForPath(path),
-        json: true,
-        qs: { shallow: true, access_token: token }
-      };
-      return request(reqOptions);
-    } catch (err) {
-      // TODO: handle error
-      console.log('getShallow', err);
-      return null;
-    }
-  }
-
-  async setValue(path: string, value: any): Promise<request.FullResponse> {
+  private async authedRequest(
+    method: string,
+    url: string,
+    options: Partial<request.OptionsWithUrl> = {}
+  ) {
     const token = await this.projectManager.getAccessToken();
     const reqOptions: request.OptionsWithUrl = {
-      method: 'PUT',
-      url: await this.getURLForPath(path),
+      method,
+      url,
+      resolveWithFullResponse: true,
       json: true,
-      qs: { access_token: token },
-      body: value,
-      resolveWithFullResponse: true
+      ...options
     };
+
+    reqOptions.headers = {
+      Authorization: `Bearer ${token}`,
+      'User-Agent': 'VSCodeFirebaseExtension/' + EXTENSION_VERSION,
+      'X-Client-Version': 'VSCodeFirebaseExtension/' + EXTENSION_VERSION,
+      ...options.headers
+    };
+
     return request(reqOptions);
   }
 
-  remove(path: string): Promise<request.FullResponse> {
-    return this.setValue(path, null);
+  async listDatabases(): Promise<DatabaseInstance[]> {
+    const response = await this.authedRequest(
+      'GET',
+      `${CONFIG.mobilesdk.origin}/${CONFIG.mobilesdk.version}/projects/${
+        this.project.projectNumber
+      }/databases`
+    );
+    return response.body.instance || [];
   }
 
-  private async getURLForPath(path: string): Promise<string> {
-    const { databaseURL } = await this.projectManager.getConfig();
+  async getShallow(
+    path: string,
+    instance?: string
+  ): Promise<DatabaseShallowValue> {
+    try {
+      const response = await this.authedRequest(
+        'GET',
+        await this.getURLForPath(path, instance),
+        {
+          qs: { shallow: true }
+        }
+      );
+      return response.body;
+    } catch (err) {
+      if (err.statusCode && err.statusCode === 423) {
+        // Database disabled
+        throw err;
+      } else {
+        // TODO: handle error
+        console.log('getShallow', err);
+        return null;
+      }
+    }
+  }
+
+  async setValue(
+    path: string,
+    value: any,
+    instance?: string
+  ): Promise<request.FullResponse> {
+    return this.authedRequest('PUT', await this.getURLForPath(path, instance), {
+      body: value,
+      resolveWithFullResponse: true
+    });
+  }
+
+  remove(path: string, instance?: string): Promise<request.FullResponse> {
+    return this.setValue(path, null, instance);
+  }
+
+  private async getURLForPath(
+    path: string,
+    instance?: string
+  ): Promise<string> {
+    let databaseURL: string;
+
+    if (typeof instance === 'string' && instance.length > 0) {
+      databaseURL = `https://${instance}.firebaseio.com`;
+    } else {
+      databaseURL = (await this.projectManager.getConfig()).databaseURL;
+    }
+
     return `${databaseURL}/${path}.json`;
   }
 }
@@ -70,3 +127,9 @@ export type DatabaseShallowValue =
   | boolean
   | number
   | null;
+
+export interface DatabaseInstance {
+  instance: string;
+  projectNumber: string;
+  type: 'DEFAULT_REALTIME_DATABASE' | 'USER_REALTIME_DATABASE';
+}

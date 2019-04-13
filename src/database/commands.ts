@@ -1,5 +1,5 @@
 import * as vscode from 'vscode';
-import { DatabaseProviderItem, DatabaseProvider } from './DatabaseProvider';
+import { DatabaseElementItem, DatabaseProvider } from './DatabaseProvider';
 import { getFullPath } from '../utils';
 import { DatabaseAPI } from './api';
 import { providerStore } from '../stores';
@@ -60,7 +60,7 @@ function refreshDatabase(): void {
   provider.refresh();
 }
 
-async function editEntryValue(element: DatabaseProviderItem): Promise<void> {
+async function editEntryValue(element: DatabaseElementItem): Promise<void> {
   if (!element) {
     return;
   }
@@ -90,7 +90,7 @@ async function editEntryValue(element: DatabaseProviderItem): Promise<void> {
           }
 
           const api = DatabaseAPI.for(element.account, element.project);
-          const response = await api.setValue(fullPath, newValue);
+          const response = await api.setValue(fullPath, newValue, element.instance);
 
           if (response.statusCode !== 200) {
             throw new Error(response.body);
@@ -120,7 +120,7 @@ async function editEntryValue(element: DatabaseProviderItem): Promise<void> {
   }
 }
 
-async function deleteEntry(element: DatabaseProviderItem): Promise<void> {
+async function deleteEntry(element: DatabaseElementItem): Promise<void> {
   if (!element) {
     return;
   }
@@ -143,7 +143,7 @@ async function deleteEntry(element: DatabaseProviderItem): Promise<void> {
       async () => {
         try {
           const api = DatabaseAPI.for(element.account, element.project);
-          const response = await api.remove(fullPath);
+          const response = await api.remove(fullPath, element.instance);
           if (response.statusCode !== 200) {
             throw new Error(response.body);
           }
@@ -164,7 +164,7 @@ async function deleteEntry(element: DatabaseProviderItem): Promise<void> {
   }
 }
 
-function copyName(element: DatabaseProviderItem): void {
+function copyName(element: DatabaseElementItem): void {
   if (!element) {
     return;
   }
@@ -172,7 +172,7 @@ function copyName(element: DatabaseProviderItem): void {
   vscode.env.clipboard.writeText(element.name);
 }
 
-function copyPath(element: DatabaseProviderItem): void {
+function copyPath(element: DatabaseElementItem): void {
   if (!element) {
     return;
   }
@@ -182,7 +182,7 @@ function copyPath(element: DatabaseProviderItem): void {
   );
 }
 
-function copySnippetJS_ref(element: DatabaseProviderItem): void {
+function copySnippetJS_ref(element: DatabaseElementItem): void {
   if (!element) {
     return;
   }
@@ -191,7 +191,7 @@ function copySnippetJS_ref(element: DatabaseProviderItem): void {
   vscode.env.clipboard.writeText(`firebase.database().ref('${fullPath}')`);
 }
 
-function copySnippetJS_OnValue(element: DatabaseProviderItem): void {
+function copySnippetJS_OnValue(element: DatabaseElementItem): void {
   if (!element) {
     return;
   }
