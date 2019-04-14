@@ -1,11 +1,10 @@
 import * as http from 'http';
-import * as path from 'path';
 import * as request from 'request-promise-native';
 import * as jwt from 'jsonwebtoken';
 import * as portfinder from 'portfinder';
 import { parse as parseUrl } from 'url';
 import * as vscode from 'vscode';
-import { contains, readFile } from '../utils';
+import { contains, readFile, getFilePath } from '../utils';
 import { AccountInfo, AccountTokens, AccountUser } from './AccountManager';
 import { API_CONFIG } from './api';
 import { CLI_API_CONFIG } from './cli';
@@ -42,7 +41,12 @@ export async function initiateLogin(nonce: string): Promise<AccountInfo> {
       if (query.state === nonce && typeof query.code === 'string') {
         try {
           const tokens = await getTokensFromAuthCode(query.code, callbackUrl);
-          await respondWithFile(req, res, 200, '../ui/login/success.html');
+          await respondWithFile(
+            req,
+            res,
+            200,
+            getFilePath('ui', 'login', 'success.html')
+          );
           endLogin(nonce);
           resolve({
             user: jwt.decode(tokens.id_token) as AccountUser,
@@ -59,7 +63,12 @@ export async function initiateLogin(nonce: string): Promise<AccountInfo> {
       }
 
       if (failure) {
-        await respondWithFile(req, res, 400, '../ui/login/failure.html');
+        await respondWithFile(
+          req,
+          res,
+          400,
+          getFilePath('ui', 'login', 'failure.html')
+        );
         reject();
       }
 
@@ -68,7 +77,7 @@ export async function initiateLogin(nonce: string): Promise<AccountInfo> {
 
     servers[nonce].listen(port, () => {
       const loginParams: { [k: string]: string } = {
-        client_id: /*API_CONFIG*/CLI_API_CONFIG.clientId,
+        client_id: /*API_CONFIG*/ CLI_API_CONFIG.clientId,
         scope: SCOPES.join(' '),
         response_type: 'code',
         state: nonce,
@@ -109,8 +118,8 @@ async function getTokensFromAuthCode(
     json: true,
     form: {
       code: code,
-      client_id: /*API_CONFIG*/CLI_API_CONFIG.clientId,
-      client_secret: /*API_CONFIG*/CLI_API_CONFIG.clientSecret,
+      client_id: /*API_CONFIG*/ CLI_API_CONFIG.clientId,
+      client_secret: /*API_CONFIG*/ CLI_API_CONFIG.clientSecret,
       redirect_uri: callbackUrl,
       grant_type: 'authorization_code'
     }
@@ -147,7 +156,7 @@ async function respondWithFile(
   statusCode: number,
   filename: string
 ): Promise<void> {
-  const response = await readFile(path.join(__dirname, filename));
+  const response = await readFile(filename);
   res.writeHead(statusCode, {
     'Content-Length': response.length,
     'Content-Type': 'text/html'

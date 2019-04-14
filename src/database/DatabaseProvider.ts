@@ -1,4 +1,3 @@
-import * as path from 'path';
 import * as vscode from 'vscode';
 import { FirebaseProject } from '../projects/ProjectManager';
 import { DatabaseAPI, DatabaseShallowValue } from './api';
@@ -6,7 +5,7 @@ import {
   caseInsensitiveCompare,
   messageTreeItem,
   getFullPath,
-  extContext
+  getFilePath
 } from '../utils';
 import { AccountInfo } from '../accounts/AccountManager';
 
@@ -161,9 +160,7 @@ export class DatabaseProvider
 
 export class DatabaseElementItem extends vscode.TreeItem {
   contextValue = 'database.entry';
-  iconPath = extContext().asAbsolutePath(
-    path.join('assets', 'database', 'unknown-entry.svg')
-  );
+  iconPath = getFilePath('assets', 'database', 'unknown-entry.svg');
   isRemoved = false;
 
   private _value: DatabaseShallowValue | undefined;
@@ -207,9 +204,7 @@ export class DatabaseElementItem extends vscode.TreeItem {
   set hasChildren(hasChildren: boolean) {
     if (hasChildren) {
       this.contextValue = 'database.parentEntry';
-      this.iconPath = extContext().asAbsolutePath(
-        path.join('assets', 'valuetype', 'map.svg')
-      );
+      this.iconPath = getFilePath('assets', 'valuetype', 'map.svg');
     }
   }
 
@@ -246,9 +241,7 @@ export class DatabaseElementItem extends vscode.TreeItem {
         type = 'map';
       }
 
-      this.iconPath = extContext().asAbsolutePath(
-        path.join('assets', 'valuetype', `${type}.svg`)
-      );
+      this.iconPath = getFilePath('assets', 'valuetype', `${type}.svg`);
     }
   }
 }
@@ -256,12 +249,8 @@ export class DatabaseElementItem extends vscode.TreeItem {
 export class DatabaseInstanceItem extends vscode.TreeItem {
   contextValue = 'database.instance';
   iconPath = {
-    dark: extContext().asAbsolutePath(
-      path.join('assets', 'database', 'dark', 'database.svg')
-    ),
-    light: extContext().asAbsolutePath(
-      path.join('assets', 'database', 'light', 'database.svg')
-    )
+    dark: getFilePath('assets', 'database', 'dark', 'database.svg'),
+    light: getFilePath('assets', 'database', 'light', 'database.svg')
   };
 
   constructor(

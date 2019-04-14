@@ -15,9 +15,11 @@ export async function getCliAccount(): Promise<AccountInfo | null> {
   try {
     const configPath = resolvePath(
       homedir(),
-      '.config/configstore/firebase-tools.json'
+      '.config',
+      'configstore',
+      'firebase-tools.json'
     );
-    
+
     const config = JSON.parse(await readFile(configPath, 'utf8'));
     cachedConfig = config;
   } catch (err) {

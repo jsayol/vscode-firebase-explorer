@@ -1,4 +1,3 @@
-import * as path from 'path';
 import * as vscode from 'vscode';
 import { FirebaseProject } from '../projects/ProjectManager';
 import {
@@ -17,8 +16,8 @@ import {
   ContextValue,
   getFullPath,
   decimalToDMS,
-  extContext,
-  caseInsensitiveCompare
+  caseInsensitiveCompare,
+  getFilePath
 } from '../utils';
 import { AccountInfo } from '../accounts/AccountManager';
 
@@ -119,7 +118,9 @@ export class FirestoreProvider
 
       const hasFields = document && !!document.fields;
       if (hasFields) {
-        const docFields = Object.keys(document!.fields!).sort(caseInsensitiveCompare);
+        const docFields = Object.keys(document!.fields!).sort(
+          caseInsensitiveCompare
+        );
         items.push(
           ...docFields.map(
             name =>
@@ -171,7 +172,9 @@ export class FirestoreProvider
         );
 
         if (document && document.fields) {
-          const docFields = Object.keys(document.fields).sort(caseInsensitiveCompare);
+          const docFields = Object.keys(document.fields).sort(
+            caseInsensitiveCompare
+          );
           items.push(
             ...docFields.map(
               name =>
@@ -216,9 +219,7 @@ export class FirestoreProvider
 
 export class CollectionItem extends vscode.TreeItem {
   contextValue = 'firestore.collection';
-  iconPath = extContext().asAbsolutePath(
-    path.join('assets', 'firestore', 'collection.svg')
-  );
+  iconPath = getFilePath('assets', 'firestore', 'collection.svg');
 
   constructor(
     public name: string,
@@ -290,13 +291,9 @@ export class DocumentItem extends vscode.TreeItem {
 
   get iconPath(): string {
     if (this.document.createTime || this.isRemoved) {
-      return extContext().asAbsolutePath(
-        path.join('assets', 'firestore/document.svg')
-      );
+      return getFilePath('assets', 'firestore/document.svg');
     } else {
-      return extContext().asAbsolutePath(
-        path.join('assets', 'firestore/document-empty.svg')
-      );
+      return getFilePath('assets', 'firestore/document-empty.svg');
     }
   }
 }
@@ -326,9 +323,7 @@ export class DocumentFieldItem<
       processed.type === 'integer' || processed.type === 'double'
         ? 'number'
         : processed.type;
-    this.iconPath = extContext().asAbsolutePath(
-      path.join('assets', 'valuetype', `${typeIcon}.svg`)
-    );
+    this.iconPath = getFilePath('assets', 'valuetype', `${typeIcon}.svg`);
 
     if (processed.type === 'map' || processed.type === 'array') {
       this.collapsibleState = expand

@@ -1,7 +1,6 @@
-import * as path from 'path';
 import * as vscode from 'vscode';
 import { ProjectManager, FirebaseProject } from '../projects/ProjectManager';
-import { messageTreeItem, extContext } from '../utils';
+import { messageTreeItem, getFilePath } from '../utils';
 import { IosApp, AndroidApp, ShaCertificate } from './apps';
 import { AccountInfo } from '../accounts/AccountManager';
 
@@ -78,9 +77,7 @@ export class AppsProvider implements vscode.TreeDataProvider<AppsProviderItem> {
 
 export class IosAppItem extends vscode.TreeItem {
   contextValue = 'apps.iosApp';
-  iconPath = extContext().asAbsolutePath(
-    path.join('assets', 'apps', 'ios.svg')
-  );
+  iconPath = getFilePath('assets', 'apps', 'ios.svg');
 
   constructor(
     public app: IosApp,
@@ -97,9 +94,7 @@ export class IosAppItem extends vscode.TreeItem {
 
 export class AndroidAppItem extends vscode.TreeItem {
   contextValue = 'apps.androidApp';
-  iconPath = extContext().asAbsolutePath(
-    path.join('assets', 'apps', 'android-head.svg')
-  );
+  iconPath = getFilePath('assets', 'apps', 'android-head.svg');
 
   constructor(
     public app: AndroidApp,
@@ -117,12 +112,8 @@ export class AndroidAppItem extends vscode.TreeItem {
 export class FingerprintFolderItem extends vscode.TreeItem {
   contextValue = 'apps.androidApp.fingerprintsFolder';
   iconPath = {
-    light: extContext().asAbsolutePath(
-      path.join('assets', 'apps', 'light', 'fingerprint.svg')
-    ),
-    dark: extContext().asAbsolutePath(
-      path.join('assets', 'apps', 'dark', 'fingerprint.svg')
-    )
+    light: getFilePath('assets', 'apps', 'light', 'fingerprint.svg'),
+    dark: getFilePath('assets', 'apps', 'dark', 'fingerprint.svg')
   };
 
   constructor(public app: AndroidApp, public appItem: AndroidAppItem) {
@@ -137,12 +128,8 @@ export class FingerprintFolderItem extends vscode.TreeItem {
 export class FingerprintItem extends vscode.TreeItem {
   contextValue = 'apps.androidApp.fingerprint';
   iconPath = {
-    light: extContext().asAbsolutePath(
-      path.join('assets', 'apps', 'light', 'certificate.svg')
-    ),
-    dark: extContext().asAbsolutePath(
-      path.join('assets', 'apps', 'dark', 'certificate.svg')
-    )
+    light: getFilePath('assets', 'apps', 'light', 'certificate.svg'),
+    dark: getFilePath('assets', 'apps', 'dark', 'certificate.svg')
   };
 
   constructor(

@@ -1,8 +1,7 @@
-import * as path from 'path';
 import * as vscode from 'vscode';
 import { AccountInfo } from '../accounts/AccountManager';
 import { FirebaseProject } from '../projects/ProjectManager';
-import { messageTreeItem, dateToString, contains, extContext } from '../utils';
+import { messageTreeItem, dateToString, contains, getFilePath } from '../utils';
 import {
   HostingAPI,
   HostingRelease,
@@ -117,12 +116,8 @@ export class HostingProvider
 export class HostingSiteItem extends vscode.TreeItem {
   contextValue = 'hosting.site';
   iconPath = {
-    dark: extContext().asAbsolutePath(
-      path.join('assets', 'hosting', 'dark', 'site.svg')
-    ),
-    light: extContext().asAbsolutePath(
-      path.join('assets', 'hosting', 'light', 'site.svg')
-    )
+    dark: getFilePath('assets', 'hosting', 'dark', 'site.svg'),
+    light: getFilePath('assets', 'hosting', 'light', 'site.svg')
   };
 
   constructor(
@@ -160,12 +155,8 @@ export class HostingReleaseItem extends vscode.TreeItem {
 
     if (release.type === HostingReleaseType.ROLLBACK) {
       this.iconPath = {
-        dark: extContext().asAbsolutePath(
-          path.join('assets', 'hosting', 'dark', 'rolledback.svg')
-        ),
-        light: extContext().asAbsolutePath(
-          path.join('assets', 'hosting', 'light', 'rolledback.svg')
-        )
+        dark: getFilePath('assets', 'hosting', 'dark', 'rolledback.svg'),
+        light: getFilePath('assets', 'hosting', 'light', 'rolledback.svg')
       };
     } else if (release.version) {
       if (
@@ -175,25 +166,15 @@ export class HostingReleaseItem extends vscode.TreeItem {
         // this.label = `<i>${this.label}</i>`;
         this.collapsibleState = vscode.TreeItemCollapsibleState.None;
         this.iconPath = {
-          dark: extContext().asAbsolutePath(
-            path.join('assets', 'hosting', 'dark', 'deleted.svg')
-          ),
-          light: extContext().asAbsolutePath(
-            path.join('assets', 'hosting', 'light', 'deleted.svg')
-          )
+          dark: getFilePath('assets', 'hosting', 'dark', 'deleted.svg'),
+          light: getFilePath('assets', 'hosting', 'light', 'deleted.svg')
         };
       } else if (release.version.name === activeVersion) {
-        this.iconPath = extContext().asAbsolutePath(
-          path.join('assets', 'hosting', 'release-active.svg')
-        );
+        this.iconPath = getFilePath('assets', 'hosting', 'release-active.svg');
       } else {
         this.iconPath = {
-          dark: extContext().asAbsolutePath(
-            path.join('assets', 'hosting', 'dark', 'deployed.svg')
-          ),
-          light: extContext().asAbsolutePath(
-            path.join('assets', 'hosting', 'light', 'deployed.svg')
-          )
+          dark: getFilePath('assets', 'hosting', 'dark', 'deployed.svg'),
+          light: getFilePath('assets', 'hosting', 'light', 'deployed.svg')
         };
       }
     } else {
@@ -203,12 +184,8 @@ export class HostingReleaseItem extends vscode.TreeItem {
       // TODO: Find out what's going on.
       this.collapsibleState = vscode.TreeItemCollapsibleState.None;
       this.iconPath = {
-        dark: extContext().asAbsolutePath(
-          path.join('assets', 'dark', 'alert.svg')
-        ),
-        light: extContext().asAbsolutePath(
-          path.join('assets', 'light', 'alert.svg')
-        )
+        dark: getFilePath('assets', 'dark', 'alert.svg'),
+        light: getFilePath('assets', 'light', 'alert.svg')
       };
       console.log(`
 [DEBUG] ******** COPY FROM HERE ********
@@ -277,12 +254,8 @@ export class HostingReleaseInfoItem extends vscode.TreeItem {
 
     if (icon !== undefined) {
       this.iconPath = {
-        dark: extContext().asAbsolutePath(
-          path.join('assets', 'dark', `${icon}.svg`)
-        ),
-        light: extContext().asAbsolutePath(
-          path.join('assets', 'light', `${icon}.svg`)
-        )
+        dark: getFilePath('assets', 'dark', `${icon}.svg`),
+        light: getFilePath('assets', 'light', `${icon}.svg`)
       };
     }
   }

@@ -27,12 +27,8 @@ export function messageTreeItem(
 
   if (icon) {
     item.iconPath = {
-      light: extContext().asAbsolutePath(
-        path.join('assets', 'light', `${icon}.svg`)
-      ),
-      dark: extContext().asAbsolutePath(
-        path.join('assets', 'dark', `${icon}.svg`)
-      )
+      light: getFilePath('assets', 'light', `${icon}.svg`),
+      dark: getFilePath('assets', 'dark', `${icon}.svg`)
     };
   } else {
     item.iconPath = undefined;
@@ -139,8 +135,8 @@ export function httpsGet(
   });
 }
 
-export function getFilePath(filename: string) {
-  return path.resolve('./', filename);
+export function getFilePath(...filenameParts: string[]): string {
+  return extContext().asAbsolutePath(path.join(...filenameParts));
 }
 
 interface DirectoryResult {
@@ -301,7 +297,7 @@ export function dateToString(date: Date | string) {
  * @param b
  */
 export function caseInsensitiveCompare(a: string, b: string): number {
-  return a.localeCompare(b, 'en', { 'sensitivity': 'base' });
+  return a.localeCompare(b, 'en', { sensitivity: 'base' });
 }
 
 process.on('unhandledRejection', error => {

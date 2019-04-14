@@ -225,7 +225,7 @@ async function viewLogs(element: CloudFunctionItem): Promise<void> {
           );
 
           panel.webview.html = await readFile(
-            getFilePath('ui/functions/log.html'),
+            getFilePath('ui', 'functions', 'log.html'),
             'utf8'
           );
 

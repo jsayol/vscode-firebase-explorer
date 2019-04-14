@@ -1,8 +1,7 @@
-import * as path from 'path';
 import * as vscode from 'vscode';
 import * as directoryTree from 'directory-tree';
 import { FirebaseProject } from '../projects/ProjectManager';
-import { messageTreeItem, extContext, caseInsensitiveCompare } from '../utils';
+import { messageTreeItem, caseInsensitiveCompare, getFilePath } from '../utils';
 import { AccountInfo } from '../accounts/AccountManager';
 import { FunctionsAPI, CloudFunction, CloudFunctionTriggerType } from './api';
 
@@ -173,12 +172,10 @@ export class FunctionTriggerTypeItem extends vscode.TreeItem {
     super('', vscode.TreeItemCollapsibleState.Expanded);
     this.contextValue = `functions.triggerType.${type}`;
     // this.iconPath = {
-    //   light: extContext().asAbsolutePath(path.join('assets', `functions/light/${type}-trigger.svg`),
-    //   dark: extContext().asAbsolutePath(path.join('assets', `functions/dark/${type}-trigger.svg`)
+    //   light: getFilePath('assets', 'functions', 'light', `${type}-trigger.svg`),
+    //   dark: getFilePath('assets', 'functions', 'dark', `${type}-trigger.svg`)
     // };
-    this.iconPath = extContext().asAbsolutePath(
-      path.join('assets', 'functions', `${type}-trigger.svg`)
-    );
+    this.iconPath = getFilePath('assets', 'functions', `${type}-trigger.svg`);
 
     switch (type) {
       case CloudFunctionTriggerType.Event:
@@ -205,12 +202,8 @@ export class FunctionTriggerTypeItem extends vscode.TreeItem {
 export class CloudFunctionItem extends vscode.TreeItem {
   sourceCodeDir?: string;
   iconPath = {
-    dark: extContext().asAbsolutePath(
-      path.join('assets', 'functions', 'dark', 'cloud-functions.svg')
-    ),
-    light: extContext().asAbsolutePath(
-      path.join('assets', 'functions', 'light', 'cloud-functions.svg')
-    )
+    dark: getFilePath('assets', 'functions', 'dark', 'cloud-functions.svg'),
+    light: getFilePath('assets', 'functions', 'light', 'cloud-functions.svg')
   };
 
   constructor(
@@ -222,7 +215,7 @@ export class CloudFunctionItem extends vscode.TreeItem {
   ) {
     super(cloudFunction.displayName, vscode.TreeItemCollapsibleState.None);
     this.contextValue = `functions.ofTriggerType.${type}`;
-    // this.iconPath = extContext().asAbsolutePath(path.join('assets', `functions/${type}-trigger.svg`);
+    // this.iconPath = getFilePath('assets', 'functions', `${type}-trigger.svg`);
   }
 
   get tooltip(): string {
