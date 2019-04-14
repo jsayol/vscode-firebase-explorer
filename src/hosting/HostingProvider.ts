@@ -86,13 +86,26 @@ export class HostingProvider
       return releasesForSite(account, project, api, element.site);
     } else if (element instanceof HostingReleaseItem) {
       const release = element.release;
-      return [
+      const items: HostingProviderItem[] = [
         new HostingReleaseInfoItem(release, 'releaseUser'),
-        new HostingReleaseInfoItem(release, 'releaseTime'),
-        new HostingReleaseInfoItem(release, 'createTime'),
-        new HostingReleaseInfoItem(release, 'status', element.activeVersion),
-        new HostingFolderItem(release, { name: 'Files (list only)' })
+        new HostingReleaseInfoItem(release, 'releaseTime')
       ];
+
+      if (release.version) {
+        items.push(new HostingReleaseInfoItem(release, 'createTime'));
+      }
+
+      items.push(
+        new HostingReleaseInfoItem(release, 'status', element.activeVersion)
+      );
+
+      if (release.version) {
+        items.push(
+          new HostingFolderItem(release, { name: 'Files (list only)' })
+        );
+      }
+
+      return items;
     } else if (element instanceof HostingFolderItem) {
       if (contains(element.part, 'children')) {
         return sortTreeParts(element.part.children!).map(part =>
@@ -158,42 +171,32 @@ export class HostingReleaseItem extends vscode.TreeItem {
         dark: getFilePath('assets', 'hosting', 'dark', 'rolledback.svg'),
         light: getFilePath('assets', 'hosting', 'light', 'rolledback.svg')
       };
-    } else if (release.version) {
-      if (
-        release.version.status === HostingVersionStatus.DELETED ||
-        release.version.status === HostingVersionStatus.EXPIRED
-      ) {
-        // this.label = `<i>${this.label}</i>`;
-        this.collapsibleState = vscode.TreeItemCollapsibleState.None;
-        this.iconPath = {
-          dark: getFilePath('assets', 'hosting', 'dark', 'deleted.svg'),
-          light: getFilePath('assets', 'hosting', 'light', 'deleted.svg')
-        };
-      } else if (release.version.name === activeVersion) {
-        this.iconPath = getFilePath('assets', 'hosting', 'release-active.svg');
-      } else {
-        this.iconPath = {
-          dark: getFilePath('assets', 'hosting', 'dark', 'deployed.svg'),
-          light: getFilePath('assets', 'hosting', 'light', 'deployed.svg')
-        };
-      }
-    } else {
-      // Weird! AFAIK a release should always have a version, but I've gotten
-      // a report about an error where it doesn't. Let's handle it as a special
-      // case for now until I can figure this out.
-      // TODO: Find out what's going on.
+    } else if (
+      release.type === HostingReleaseType.SITE_DISABLE ||
+      !release.version
+    ) {
+      // this.collapsibleState = vscode.TreeItemCollapsibleState.None;
+      this.iconPath = {
+        dark: getFilePath('assets', 'dark', 'cancel.svg'),
+        light: getFilePath('assets', 'light', 'cancel.svg')
+      };
+    } else if (
+      release.version.status === HostingVersionStatus.DELETED ||
+      release.version.status === HostingVersionStatus.EXPIRED
+    ) {
+      // this.label = `<i>${this.label}</i>`;
       this.collapsibleState = vscode.TreeItemCollapsibleState.None;
       this.iconPath = {
-        dark: getFilePath('assets', 'dark', 'alert.svg'),
-        light: getFilePath('assets', 'light', 'alert.svg')
+        dark: getFilePath('assets', 'hosting', 'dark', 'deleted.svg'),
+        light: getFilePath('assets', 'hosting', 'light', 'deleted.svg')
       };
-      console.log(`
-[DEBUG] ******** COPY FROM HERE ********
-
-  ${JSON.stringify(release, null, 2)}
-
-[DEBUG] ******** COPY UNTIL HERE ********
-`);
+    } else if (release.version.name === activeVersion) {
+      this.iconPath = getFilePath('assets', 'hosting', 'release-active.svg');
+    } else {
+      this.iconPath = {
+        dark: getFilePath('assets', 'hosting', 'dark', 'deployed.svg'),
+        light: getFilePath('assets', 'hosting', 'light', 'deployed.svg')
+      };
     }
   }
 
@@ -336,7 +339,7 @@ async function releasesForSite(
     ];
   } else {
     if (releases.length > 0) {
-      const activeVersion = releases[0].version.name;
+      const activeVersion = releases[0].version ? releases[0].version.name : '';
       return releases.map(release => {
         return new HostingReleaseItem(account, project, release, activeVersion);
       });
