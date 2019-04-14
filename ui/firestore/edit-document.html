@@ -44,6 +44,84 @@
       overflow: auto;
       display: flex;
     }
+
+    /**********************************************/
+
+    .wrap-collabsible {
+      /* margin-bottom: 1.2rem; */
+    }
+
+    input[type='checkbox'] {
+      display: none;
+    }
+
+    .lbl-toggle {
+      display: block;
+      font-family: monospace;
+      text-align: start;
+      /* color: #A77B0E; */
+      cursor: pointer;
+      border-radius: 7px;
+      transition: all 0.25s ease-out;
+    }
+
+    .lbl-toggle:hover {
+      /* color: #7C5A0B; */
+    }
+
+    .lbl-toggle::before {
+      content: ' ';
+      display: inline-block;
+
+      border-top: 5px solid transparent;
+      border-bottom: 5px solid transparent;
+      border-left: 5px solid currentColor;
+      vertical-align: middle;
+      margin-top: 0.25rem;
+      margin-right: 0.5rem;
+      transform: translateY(-2px);
+
+      transition: transform 0.2s ease-out;
+    }
+
+    .toggle:checked+.lbl-toggle::before {
+      transform: rotate(90deg) translateX(-3px);
+    }
+
+    .collapsible-content {
+      max-height: 0px;
+      overflow: hidden;
+      transition: max-height 0.2s ease-in-out;
+    }
+
+    .toggle:checked+.lbl-toggle+.collapsible-content {
+      max-height: 500px;
+    }
+
+    .toggle:checked+.lbl-toggle {
+      border-bottom-right-radius: 0;
+      border-bottom-left-radius: 0;
+    }
+
+    .collapsible-content .content-inner {
+      padding: 0.1rem 1.2rem;
+    }
+
+    /*****************************/
+
+    .tree {
+      margin: 0 1rem;
+    }
+
+    .wrap-field {
+      display: flex;
+      justify-content: flex-start;
+      margin-left: 0.78rem;
+    }
+
+    .wrap-field .field-name {
+      font-family: monospace;
+    }
   </style>
 
   <!-- <link rel="stylesheet" type="text/css" href="https://fonts.googleapis.com/icon?family=Material+Icons+Extended"> -->
@@ -61,8 +139,7 @@
         <!-- <form id="docForm">
         <ul class="flex-outer" id="docFormList"></ul>
       </form> -->
-        <div>
-          <ul class="tree" id="docFormList"></ul>
+        <div class="tree" id="docFormList">
         </div>
 
         <br />
@@ -111,39 +188,56 @@
 
       docFormList.appendChild(newDOM(getFieldHTML(field)));
     }
-
-    // let fieldCounter = 0;
-    // const fields = data.document.fields;
-
-    // for (const fieldName in data.document.fields) {
-    //   docFormList.appendChild(newDOM(`
-    //     <li>
-    //       <label for="field-${fieldCounter}">${fieldName}</label>
-    //       <span id="field-${fieldCounter}">${fields[fieldName]}</span>
-    //     </li>
-    //   `));
-
-    //   fieldCounter += 1;
-    // }
   }
 
   function getFieldHTML(field) {
-    let fieldValueHTML = '';
-
-    if (field.type === 'array') {
-      return `<ul class="tree">${field.value.map(v => getFieldHTML(v)).join('')}</ul>`;
-    } else if (field.type === 'map') {
-      //
+    if (field.type === 'array' || field.type === 'map') {
+      return `
+        <div class="wrap-collabsible">
+          <input id="field-${escapeHtml(field.name)}" class="toggle" type="checkbox" checked>
+          <label for="field-${escapeHtml(field.name)}" class="lbl-toggle">${escapeHtml(field.name)}</label>
+          <div class="collapsible-content">
+            <div class="content-inner">${
+        field.value.map((arrayField, pos) => {
+          return (field.type === 'array' ? `<span class="arrayPos">${pos}</span>` : '') + getFieldHTML(arrayField)
+        }).join('')
+        }  </div>
+          </div>
+        </div>
+      `;
     } else {
-      fieldValueHTML = field.value;
-    }
+      let escapedValue = escapeHtml(field.value);
 
-    return `
-      <li>
-        <div class="fieldName">${field.name}</div>
-        ${fieldValueHTML}
-      </li>
-    `;
+      switch (field.type) {
+        case 'string':
+          escapedValue = `"${escapedValue}"`;
+          break;
+        case 'geopoint':
+          // TODO
+          break;
+        case 'timestamp':
+          // TODO
+          break;
+      }
+
+      return `
+        <div class="wrap-field">
+          ${'name' in field ? `<div class="field-name">${escapeHtml(field.name)}</div>` : ''}
+          <div class="fieldValue" field-type-${field.type}">${escapedValue}</div>
+        </div>
+      `;
+    }
+  }
+
+  function escapeHtml(text) {
+    return !text || typeof text !== 'string'
+      ? text
+      : text
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#039;');
   }
 
   function newDOM(domString) {
