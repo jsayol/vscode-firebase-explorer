@@ -353,18 +353,21 @@ function getFieldsForEditing(
   let fieldValues: EditableDocumentField[] = [];
 
   if (fields) {
-    for (const field in fields) {
-      fieldValues.push(getFieldForEditing(fields[field]));
+    for (const fieldName in fields) {
+      fieldValues.push(getFieldForEditing(fields[fieldName], fieldName));
     }
   }
 
   return fieldValues;
 }
 
-function getFieldForEditing(field: DocumentFieldValue): EditableDocumentField {
+function getFieldForEditing(
+  field: DocumentFieldValue,
+  fieldName?: string
+): EditableDocumentField {
   const processedField = processFieldValue(field);
   let editableField: Partial<EditableDocumentField> = {
-    name: processFieldValue.name,
+    name: fieldName,
     type: processedField.type
   };
 
