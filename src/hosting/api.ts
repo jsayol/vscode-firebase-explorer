@@ -156,7 +156,8 @@ export enum HostingVersionStatus {
   CREATED = 'CREATED',
   FINALIZED = 'FINALIZED',
   DELETED = 'DELETED',
-  ABANDONED = 'ABANDONED'
+  ABANDONED = 'ABANDONED',
+  EXPIRED = 'EXPIRED'
 }
 
 export interface HostingReleaseServingConfig {

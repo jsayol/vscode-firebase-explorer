@@ -167,30 +167,56 @@ export class HostingReleaseItem extends vscode.TreeItem {
           path.join('assets', 'hosting', 'light', 'rolledback.svg')
         )
       };
-    } else if (release.version.status === HostingVersionStatus.DELETED) {
-      // this.label = `<i>${this.label}</i>`;
+    } else if (release.version) {
+      if (
+        release.version.status === HostingVersionStatus.DELETED ||
+        release.version.status === HostingVersionStatus.EXPIRED
+      ) {
+        // this.label = `<i>${this.label}</i>`;
+        this.collapsibleState = vscode.TreeItemCollapsibleState.None;
+        this.iconPath = {
+          dark: extContext().asAbsolutePath(
+            path.join('assets', 'hosting', 'dark', 'deleted.svg')
+          ),
+          light: extContext().asAbsolutePath(
+            path.join('assets', 'hosting', 'light', 'deleted.svg')
+          )
+        };
+      } else if (release.version.name === activeVersion) {
+        this.iconPath = extContext().asAbsolutePath(
+          path.join('assets', 'hosting', 'release-active.svg')
+        );
+      } else {
+        this.iconPath = {
+          dark: extContext().asAbsolutePath(
+            path.join('assets', 'hosting', 'dark', 'deployed.svg')
+          ),
+          light: extContext().asAbsolutePath(
+            path.join('assets', 'hosting', 'light', 'deployed.svg')
+          )
+        };
+      }
+    } else {
+      // Weird! AFAIK a release should always have a version, but I've gotten
+      // a report about an error where it doesn't. Let's handle it as a special
+      // case for now until I can figure this out.
+      // TODO: Find out what's going on.
       this.collapsibleState = vscode.TreeItemCollapsibleState.None;
       this.iconPath = {
         dark: extContext().asAbsolutePath(
-          path.join('assets', 'hosting', 'dark', 'deleted.svg')
+          path.join('assets', 'dark', 'alert.svg')
         ),
         light: extContext().asAbsolutePath(
-          path.join('assets', 'hosting', 'light', 'deleted.svg')
+          path.join('assets', 'light', 'alert.svg')
         )
       };
-    } else if (release.version.name === activeVersion) {
-      this.iconPath = extContext().asAbsolutePath(
-        path.join('assets', 'hosting', 'release-active.svg')
-      );
-    } else {
-      this.iconPath = {
-        dark: extContext().asAbsolutePath(
-          path.join('assets', 'hosting', 'dark', 'deployed.svg')
-        ),
-        light: extContext().asAbsolutePath(
-          path.join('assets', 'hosting', 'light', 'deployed.svg')
-        )
-      };
+      console.log(`
+[DEBUG] ******** COPY FROM HERE ********
+
+  ${JSON.stringify(release, null, 2)}
+
+[DEBUG] ******** COPY UNTIL HERE ********
+`);
     }
   }
 
@@ -338,10 +364,9 @@ async function releasesForSite(
   } else {
     if (releases.length > 0) {
       const activeVersion = releases[0].version.name;
-      return releases.map(
-        release =>
-          new HostingReleaseItem(account, project, release, activeVersion)
-      );
+      return releases.map(release => {
+        return new HostingReleaseItem(account, project, release, activeVersion);
+      });
     } else {
       return [];
     }

@@ -42,6 +42,7 @@
     "publish:patch": "vsce publish patch --yarn",
     "publish:minor": "vsce publish minor --yarn",
     "publish:major": "vsce publish major --yarn",
+    "package": "vsce package --yarn",
     "webpack": "webpack"
   },
   "activationEvents": [
