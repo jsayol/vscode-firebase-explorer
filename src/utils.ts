@@ -6,6 +6,8 @@ import { IncomingMessage } from 'http';
 import { promisify } from 'util';
 import * as yauzl from 'yauzl';
 import * as tmp from 'tmp';
+import * as mkdirp from 'mkdirp';
+import { Readable } from 'stream';
 import * as vscode from 'vscode';
 import { ShaCertificate } from './apps/apps';
 
@@ -50,7 +52,8 @@ export enum ContextValue {
   FunctionsLoaded = 'functions:loaded',
   AppsLoaded = 'apps:loaded',
   FirestoreLoaded = 'firestore:loaded',
-  DatabaseLoaded = 'database:loaded'
+  DatabaseLoaded = 'database:loaded',
+  ModsLoaded = 'mods:loaded'
 }
 
 export function setContextObj(context: vscode.ExtensionContext) {
@@ -234,22 +237,15 @@ export async function unzipToTmpDir(
               return;
             }
 
+            unzipToTmpDir_handleStreams(
+              readStream,
+              tmpDir.path,
+              entry.fileName
+            );
+
             readStream.on('end', () => {
               zipFile.readEntry();
             });
-
-            const writeStream = fs.createWriteStream(
-              path.join(tmpDir.path, entry.fileName)
-            );
-
-            writeStream.on('finish', async () => {
-              writeStream.close();
-            });
-
-            readStream.pipe(
-              writeStream,
-              { end: true }
-            );
           });
         }
       });
@@ -260,6 +256,41 @@ export async function unzipToTmpDir(
 
       zipFile.readEntry();
     });
+  });
+}
+
+function unzipToTmpDir_handleStreams(
+  readStream: Readable,
+  tmpDirPath: string,
+  fileName: string
+) {
+  const filePath = path.join(tmpDirPath, fileName);
+  const writeStream = fs.createWriteStream(filePath);
+
+  writeStream.on('open', () => {
+    readStream.pipe(
+      writeStream,
+      { end: true }
+    );
+  });
+
+  writeStream.on('finish', async () => {
+    writeStream.close();
+  });
+
+  writeStream.on('error', err => {
+    if (err.code === 'ENOENT') {
+      // Creating the writeStream failed because the path to the
+      // file doesn't exists. Let's create it and try again.
+      mkdirp(path.dirname(filePath), (err, made) => {
+        if (err || !made) {
+          throw err || 'Failed creating directory';
+        }
+        unzipToTmpDir_handleStreams(readStream, tmpDirPath, fileName);
+      });
+    } else {
+      throw err;
+    }
   });
 }
 
