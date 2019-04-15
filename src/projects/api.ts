@@ -8,6 +8,8 @@ import { API } from '../api';
 // https://mobilesdk-pa.googleapis.com/v1/projects/[projectNumber]
 
 const instances: { [k: string]: ProjectsAPI } = {};
+const iamPolicies: { [k: string]: IAMPolicy } = {};
+const rolesInfo: { [k: string]: RoleInformation } = {};
 
 export class ProjectsAPI {
   static for(account: AccountInfo): ProjectsAPI {
@@ -112,4 +114,75 @@ export class ProjectsAPI {
       );
     }
   }
+
+  async getIamPolicy(
+    project: FirebaseProject,
+    forceReload = false
+  ): Promise<IAMPolicy> {
+    if (forceReload || !contains(iamPolicies, project.projectId)) {
+      try {
+        const response = await this.request('POST', '', {
+          url: [
+            API.resourceManager.origin,
+            API.resourceManager.version,
+            'projects',
+            project.projectId,
+            ':getIamPolicy'
+          ].join('/')
+        });
+
+        if (!response.body) {
+          throw new Error(response);
+        }
+
+        iamPolicies[project.projectId] = response.body;
+      } catch (err) {
+        throw new Error(
+          `Failed to retrieve the IAM Policy for project ${
+            project.projectId
+          }: ${err}`
+        );
+      }
+    }
+
+    return iamPolicies[project.projectId];
+  }
+
+  async getRoleInfo(role: string): Promise<RoleInformation> {
+    if (!contains(rolesInfo, role)) {
+      try {
+        const response = await this.authedRequest('GET', '', {
+          url: [API.iam.origin, API.iam.version, role].join('/')
+        });
+
+        if (!response.body) {
+          throw new Error(response);
+        }
+
+        const { name, title, description } = response.body;
+        rolesInfo[role] = { name, title, description };
+      } catch (err) {
+        throw new Error(
+          `Failed to retrieve the role information for ${role}: ${err}`
+        );
+      }
+    }
+
+    return rolesInfo[role];
+  }
+}
+
+export interface IAMPolicy {
+  version: number;
+  etag: string;
+  bindings: {
+    role: string;
+    members: string[];
+  }[];
+}
+
+export interface RoleInformation {
+  name: string;
+  title: string;
+  description: string;
 }

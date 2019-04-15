@@ -19,6 +19,8 @@ import { registerProjectsCommands } from './projects/commands';
 import { ProjectsProvider } from './projects/ProjectsProvider';
 import { providerStore, treeViewStore } from './stores';
 import { setContextObj, readFile } from './utils';
+import { ModsProvider } from './mods/ModsProvider';
+import { registerModsCommands } from './mods/commands';
 
 export async function activate(context: vscode.ExtensionContext) {
   setContextObj(context);
@@ -36,6 +38,7 @@ export async function activate(context: vscode.ExtensionContext) {
   registerProvider('projects', new ProjectsProvider(/*context*/));
   registerProvider('firestore', new FirestoreProvider(context));
   registerProvider('database', new DatabaseProvider(context));
+  registerProvider('mods', new ModsProvider(context));
 
   registerHostingCommands(context);
   registerFunctionsCommands(context);
@@ -44,6 +47,7 @@ export async function activate(context: vscode.ExtensionContext) {
   registerProjectsCommands(context);
   registerFirestoreCommands(context);
   registerDatabaseCommands(context);
+  registerModsCommands(context);
 
   // This adds a custom schema to open files as read-only
   vscode.workspace.registerTextDocumentContentProvider(

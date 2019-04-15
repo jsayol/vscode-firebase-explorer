@@ -51,7 +51,9 @@
     "onView:firebase-functions",
     "onView:firebase-apps",
     "onView:firebase-firestore",
-    "onView:firebase-database"
+    "onView:firebase-database",
+    "onView:firebase-hosting",
+    "onView:firebase-mods"
   ],
   "contributes": {
     "viewsContainers": {
@@ -88,6 +90,10 @@
         {
           "id": "firebase-apps",
           "name": "Mobile Apps"
+        },
+        {
+          "id": "firebase-mods",
+          "name": "Mods"
         }
       ]
     },
@@ -301,6 +307,11 @@
         "command": "firebaseExplorer.database.editEntryValue",
         "title": "Edit Value",
         "category": "Database"
+      },
+      {
+        "command": "firebaseExplorer.mods.functions.viewSource",
+        "title": "View Source Code",
+        "category": "Mods"
       }
     ],
     "menus": {
@@ -511,6 +522,11 @@
           "command": "firebaseExplorer.apps.deleteAppCertificate",
           "when": "viewItem == apps.androidApp.fingerprint",
           "group": "apps.fingerprint@2"
+        },
+        {
+          "command": "firebaseExplorer.mods.functions.viewSource",
+          "when": "viewItem =~ /^mods.resources.item.function/",
+          "group": "mods.functionDetails@1"
         }
       ]
     }
@@ -520,6 +536,7 @@
     "@types/clean-webpack-plugin": "^0.1.2",
     "@types/clipboardy": "^1.1.0",
     "@types/iconv-lite": "^0.0.1",
+    "@types/js-yaml": "^3.12.1",
     "@types/jsonwebtoken": "^8.3.0",
     "@types/mime-types": "^2.1.0",
     "@types/mkdirp": "^0.5.2",
@@ -550,6 +567,7 @@
     "chardet": "^0.7.0",
     "directory-tree": "^2.2.0",
     "iconv-lite": "^0.4.24",
+    "js-yaml": "^3.13.1",
     "jsonwebtoken": "^8.4.0",
     "mime-types": "^2.1.21",
     "mkdirp": "^0.5.1",

@@ -313,7 +313,13 @@ async function viewSource(element: CloudFunctionItem): Promise<void> {
         const downloadUrl = await api.getDownloadUrl(element.cloudFunction);
         const tmpZipFile = await downloadToTmpFile(downloadUrl);
         try {
-          const tmpDir = await unzipToTmpDir(tmpZipFile.path);
+          let tmpDir: any;
+          try {
+            tmpDir = await unzipToTmpDir(tmpZipFile.path);
+          } catch (err) {
+            console.log(err);
+            throw err;
+          }
           tmpZipFile.cleanup();
           element.setSourceDir(tmpDir.path);
 

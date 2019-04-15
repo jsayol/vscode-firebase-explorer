@@ -50,6 +50,7 @@ function projectSelection(
   const appsProvider = providerStore.get<AppsProvider>('apps');
   const firestoreProvider = providerStore.get<FirestoreProvider>('firestore');
   const databaseProvider = providerStore.get<DatabaseProvider>('database');
+  const modsProvider = providerStore.get<DatabaseProvider>('mods');
 
   setContext(ContextValue.ProjectSelected, false);
   setContext(ContextValue.HostingLoaded, false);
@@ -57,6 +58,7 @@ function projectSelection(
   setContext(ContextValue.AppsLoaded, false);
   setContext(ContextValue.FirestoreLoaded, false);
   setContext(ContextValue.DatabaseLoaded, false);
+  setContext(ContextValue.ModsLoaded, false);
 
   if (account && project) {
     // Empty selection and refresh to show "Loading..."
@@ -69,6 +71,7 @@ function projectSelection(
   appsProvider.refresh();
   firestoreProvider.refresh();
   databaseProvider.refresh();
+  modsProvider.refresh();
 
   if (account && project) {
     setTimeout(() => {
@@ -81,6 +84,7 @@ function projectSelection(
       appsProvider.refresh();
       firestoreProvider.refresh();
       databaseProvider.refresh();
+      modsProvider.refresh();
 
       setContext(ContextValue.ProjectSelected, !!(account && project));
     }, 250);

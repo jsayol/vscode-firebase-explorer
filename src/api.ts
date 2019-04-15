@@ -18,5 +18,13 @@ export const API = {
   hosting: {
     origin: 'https://firebasehosting.googleapis.com',
     version: 'v1beta1'
+  },
+  resourceManager: {
+    origin: 'https://cloudresourcemanager.googleapis.com',
+    version: 'v1'
+  },
+  iam: {
+    origin: 'https://iam.googleapis.com',
+    version: 'v1'
   }
 };

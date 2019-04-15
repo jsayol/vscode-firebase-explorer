@@ -149,13 +149,22 @@ export class FunctionsAPI {
     return response.body.entries || [];
   }
 
-  async getDownloadUrl(fn: CloudFunction): Promise<string> {
-    const { name, versionId } = fn;
-    const response = await this.request(
-      'POST',
-      `${name}:generateDownloadUrl`,
-      { body: { versionId } }
-    );
+  async getDownloadUrl(fn: CloudFunction | string): Promise<string> {
+    let response: request.FullResponse;
+
+    if (typeof fn === 'string') {
+      response = await this.request('POST', '', {
+        url: `${fn}:generateDownloadUrl`
+      });
+    } else {
+      const { name, versionId } = fn;
+      response = await this.request(
+        'POST',
+        `${name}:generateDownloadUrl`,
+        { body: versionId ? { versionId } : undefined }
+      );
+    }
+
     return response.body.downloadUrl || '';
   }
 }
