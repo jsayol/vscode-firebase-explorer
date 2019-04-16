@@ -2,13 +2,7 @@ import * as request from 'request-promise-native';
 import { contains } from '../utils';
 import { FirebaseProject, ProjectManager } from '../projects/ProjectManager';
 import { AccountInfo } from '../accounts/AccountManager';
-
-const CONFIG = {
-  mobilesdk: {
-    origin: 'https://mobilesdk-pa.googleapis.com',
-    version: 'v1'
-  }
-};
+import { API } from '../api';
 
 const instances: { [k: string]: DatabaseAPI } = {};
 
@@ -27,37 +21,23 @@ export class DatabaseAPI {
     this.projectManager = ProjectManager.for(account, project);
   }
 
-  private async authedRequest(
+  private request(
     method: string,
     url: string,
     options: Partial<request.OptionsWithUrl> = {}
-  ) {
-    const token = await this.projectManager.getAccessToken();
-    const reqOptions: request.OptionsWithUrl = {
-      method,
-      url,
-      resolveWithFullResponse: true,
-      json: true,
-      ...options
-    };
-
-    reqOptions.headers = {
-      Authorization: `Bearer ${token}`,
-      'User-Agent': 'VSCodeFirebaseExtension/' + EXTENSION_VERSION,
-      'X-Client-Version': 'VSCodeFirebaseExtension/' + EXTENSION_VERSION,
-      ...options.headers
-    };
-
-    return request(reqOptions);
+  ): Promise<request.FullResponse> {
+    return this.projectManager.accountManager.request(method, url, options);
   }
 
   async listDatabases(): Promise<DatabaseInstance[]> {
-    const response = await this.authedRequest(
-      'GET',
-      `${CONFIG.mobilesdk.origin}/${CONFIG.mobilesdk.version}/projects/${
-        this.project.projectNumber
-      }/databases`
-    );
+    const url = [
+      API.mobilesdk.origin,
+      API.mobilesdk.version,
+      'projects',
+      this.project.projectNumber,
+      'databases'
+    ].join('/');
+    const response = await this.request('GET', url);
     return response.body.instance || [];
   }
 
@@ -66,7 +46,7 @@ export class DatabaseAPI {
     instance?: string
   ): Promise<DatabaseShallowValue> {
     try {
-      const response = await this.authedRequest(
+      const response = await this.request(
         'GET',
         await this.getURLForPath(path, instance),
         {
@@ -91,9 +71,8 @@ export class DatabaseAPI {
     value: any,
     instance?: string
   ): Promise<request.FullResponse> {
-    return this.authedRequest('PUT', await this.getURLForPath(path, instance), {
-      body: value,
-      resolveWithFullResponse: true
+    return this.request('PUT', await this.getURLForPath(path, instance), {
+      body: value
     });
   }
 

@@ -1,3 +1,5 @@
+import * as request from 'request-promise-native';
+import { Url } from 'url';
 import { contains, extContext } from '../utils';
 import { FirebaseProject } from '../projects/ProjectManager';
 import { ProjectsAPI } from '../projects/api';
@@ -64,6 +66,31 @@ export class AccountManager {
   projects = new ProjectStore();
 
   private constructor(readonly account: AccountInfo) {}
+
+  async request(
+    method: string,
+    url: string | Url,
+    options: Partial<request.OptionsWithUrl> = {}
+  ): Promise<request.FullResponse> {
+    const token = await this.getAccessToken();
+    const reqOptions: request.OptionsWithUrl = {
+      method,
+      url,
+      // url: `${CONFIG.origin}/${CONFIG.version}/${resource}`,
+      resolveWithFullResponse: true, // TODO: change this?
+      json: true,
+      ...options
+    };
+
+    reqOptions.headers = {
+      Authorization: `Bearer ${token}`,
+      'User-Agent': 'VSCodeFirebaseExtension/' + EXTENSION_VERSION,
+      'X-Client-Version': 'VSCodeFirebaseExtension/' + EXTENSION_VERSION,
+      ...options.headers
+    };
+
+    return request(reqOptions);
+  }
 
   getRefreshToken(): string {
     return this.account.tokens.refresh_token;

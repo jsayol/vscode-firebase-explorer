@@ -2,17 +2,9 @@ import * as request from 'request-promise-native';
 import { AccountInfo, AccountManager } from '../accounts/AccountManager';
 import { FirebaseProject } from '../projects/ProjectManager';
 import { contains } from '../utils';
+import { API } from '../api';
 
 // https://developers.google.com/apis-explorer/#search/firebase%20hosting/firebasehosting/v1beta1/
-
-const CONFIG = {
-  version: 'v1beta1',
-  origin: 'https://firebasehosting.googleapis.com',
-  mobilesdk: {
-    version: 'v1',
-    origin: 'https://mobilesdk-pa.googleapis.com'
-  }
-};
 
 const instances: { [k: string]: HostingAPI } = {};
 
@@ -35,48 +27,36 @@ export class HostingAPI {
     this.accountManager = AccountManager.for(account);
   }
 
-  private async authedRequest(
+  private async request(
     method: string,
     resource: string,
     options: Partial<request.OptionsWithUrl> = {}
-  ) {
-    const token = await this.accountManager.getAccessToken();
-    const reqOptions: request.OptionsWithUrl = {
-      method,
-      url: `${CONFIG.origin}/${CONFIG.version}/${resource}`,
-      resolveWithFullResponse: true,
-      json: true,
-      ...options
-    };
-
-    reqOptions.headers = {
-      Authorization: `Bearer ${token}`,
-      'User-Agent': 'VSCodeFirebaseExtension/' + EXTENSION_VERSION,
-      'X-Client-Version': 'VSCodeFirebaseExtension/' + EXTENSION_VERSION,
-      ...options.headers
-    };
-
-    return request(reqOptions);
+  ): Promise<request.FullResponse> {
+    const url = `${API.hosting.origin}/${API.hosting.version}/${resource}`;
+    return this.accountManager.request(method, url, options);
   }
 
   async listSites(): Promise<HostingSite[]> {
-    const response = await this.authedRequest('GET', '', {
-      url: `${CONFIG.mobilesdk.origin}/${CONFIG.mobilesdk.version}/projects/${
-        this.project.projectNumber
-      }/hosting`
-    });
+    const url = [
+      API.mobilesdk.origin,
+      API.mobilesdk.version,
+      'projects',
+      this.project.projectNumber,
+      'hosting'
+    ].join('/');
+    const response = await this.accountManager.request('GET', url);
     return response.body.site || [];
   }
 
   async listReleases(site: string): Promise<HostingRelease[]> {
     const resource = `sites/${site}/releases`;
-    const response = await this.authedRequest('GET', resource);
+    const response = await this.request('GET', resource);
     return response.body.releases || [];
   }
 
   async listDomains(site: string): Promise<HostingDomain[]> {
     const resource = `sites/${site}/domains`;
-    const response = await this.authedRequest('GET', resource);
+    const response = await this.request('GET', resource);
     return response.body.domains || [];
   }
 
@@ -87,7 +67,7 @@ export class HostingAPI {
 
     if (!contains(fileListCache, version)) {
       const resource = `${version}/files`;
-      const response = await this.authedRequest('GET', resource);
+      const response = await this.request('GET', resource);
       fileListCache[version] = response.body.files || [];
     }
 

@@ -2,18 +2,10 @@ import * as request from 'request-promise-native';
 import { AccountInfo, AccountManager } from '../accounts/AccountManager';
 import { contains, caseInsensitiveCompare } from '../utils';
 import { FirebaseProject, ProjectConfig, ProjectInfo } from './ProjectManager';
+import { API } from '../api';
 
 // https://mobilesdk-pa.googleapis.com/v1/projects
 // https://mobilesdk-pa.googleapis.com/v1/projects/[projectNumber]
-
-const CONFIG = {
-  origin: 'https://firebase.googleapis.com',
-  version: 'v1beta1',
-  mobilesdk: {
-    origin: 'https://mobilesdk-pa.googleapis.com',
-    version: 'v1'
-  }
-};
 
 const instances: { [k: string]: ProjectsAPI } = {};
 
@@ -32,28 +24,16 @@ export class ProjectsAPI {
     this.accountManager = AccountManager.for(account);
   }
 
-  private async authedRequest(
+  private request(
     method: string,
     resource: string,
     options: Partial<request.OptionsWithUrl> = {}
-  ) {
-    const token = await this.accountManager.getAccessToken();
-    const reqOptions: request.OptionsWithUrl = {
+  ): Promise<request.FullResponse> {
+    return this.accountManager.request(
       method,
-      url: `${CONFIG.origin}/${CONFIG.version}/${resource}`,
-      resolveWithFullResponse: true,
-      json: true,
-      ...options
-    };
-
-    reqOptions.headers = {
-      Authorization: `Bearer ${token}`,
-      'User-Agent': 'VSCodeFirebaseExtension/' + EXTENSION_VERSION,
-      'X-Client-Version': 'VSCodeFirebaseExtension/' + EXTENSION_VERSION,
-      ...options.headers
-    };
-
-    return request(reqOptions);
+      `${API.firebase.origin}/${API.firebase.version}/${resource}`,
+      options
+    );
   }
 
   /**
@@ -63,8 +43,8 @@ export class ProjectsAPI {
    */
   async listProjects(): Promise<FirebaseProject[]> {
     try {
-      const response = await this.authedRequest('GET', '', {
-        url: `${CONFIG.mobilesdk.origin}/${CONFIG.mobilesdk.version}/projects`
+      const response = await this.request('GET', '', {
+        url: `${API.mobilesdk.origin}/${API.mobilesdk.version}/projects`
       });
       if (response.body && Array.isArray(response.body.project)) {
         return (response.body.project as FirebaseProject[]).sort(
@@ -86,7 +66,7 @@ export class ProjectsAPI {
 
   // async listProjects_missing(): Promise<FirebaseProject[]> {
   //   try {
-  //     const response = await this.authedRequest('GET', 'projects');
+  //     const response = await this.request('GET', 'projects');
   //     if (response.body && response.body.results) {
   //       return response.body.results;
   //     } else {
@@ -101,7 +81,7 @@ export class ProjectsAPI {
 
   async listAvailableProjects(): Promise<ProjectInfo[]> {
     try {
-      const response = await this.authedRequest('GET', 'availableProjects');
+      const response = await this.request('GET', 'availableProjects');
       if (response.body && response.body.projectInfo) {
         return response.body.projectInfo;
       } else {
@@ -116,13 +96,13 @@ export class ProjectsAPI {
 
   async getProjectConfig(project: FirebaseProject): Promise<ProjectConfig> {
     try {
-      const response = await this.authedRequest(
+      const response = await this.request(
         'GET',
         `projects/${project.projectId}/adminSdkConfig`
       );
 
       if (!response.body) {
-        throw new Error(response);
+        throw new Error(response as any);
       }
 
       return response.body;

@@ -5,11 +5,7 @@ import { FirebaseProject } from '../projects/ProjectManager';
 import { AccountManager, AccountInfo } from '../accounts/AccountManager';
 import { waitUntilDone } from '../operations';
 import { IosAppProps, AndroidAppProps, ShaCertificate } from './apps';
-
-const API = {
-  origin: 'https://firebase.googleapis.com',
-  endpointPrefix: '/v1beta1/projects'
-};
+import { API } from '../api';
 
 export function validateAppType(type: string): void | never {
   if (['ios', 'android'].indexOf(type) === -1) {
@@ -34,28 +30,18 @@ export class AppsAPI {
     this.accountManager = AccountManager.for(account);
   }
 
-  private async authedRequest(
+  private request(
     method: string,
     resource: string,
     options: Partial<request.OptionsWithUrl> = {}
-  ) {
-    const token = await this.accountManager.getAccessToken();
-    const reqOptions: request.OptionsWithUrl = {
-      method,
-      url: API.origin + API.endpointPrefix + resource,
-      resolveWithFullResponse: true,
-      json: true,
-      ...options
-    };
-
-    reqOptions.headers = {
-      Authorization: `Bearer ${token}`,
-      'User-Agent': 'VSCodeFirebaseExtension/' + EXTENSION_VERSION,
-      'X-Client-Version': 'VSCodeFirebaseExtension/' + EXTENSION_VERSION,
-      ...options.headers
-    };
-
-    return request(reqOptions);
+  ): Promise<request.FullResponse> {
+    const url = [
+      API.firebase.origin,
+      API.firebase.version,
+      'projects',
+      resource
+    ].join('/');
+    return this.accountManager.request(method, url, options);
   }
 
   async createApp(
@@ -66,9 +52,9 @@ export class AppsAPI {
     validateAppType(type);
 
     try {
-      const response = await this.authedRequest(
+      const response = await this.request(
         'POST',
-        `/${project.projectId}/${type}Apps`,
+        `${project.projectId}/${type}Apps`,
         { body: data }
       );
 
@@ -111,15 +97,11 @@ export class AppsAPI {
   ): Promise<IosAppProps[] | AndroidAppProps[]> {
     validateAppType(type);
     try {
-      const response = await this.authedRequest(
-        'GET',
-        `/${projectId}/${type}Apps`,
-        {
-          qs: {
-            pageSize: 100
-          }
+      const response = await this.request('GET', `${projectId}/${type}Apps`, {
+        qs: {
+          pageSize: 100
         }
-      );
+      });
 
       if (response.statusCode === 200) {
         if (response.body && response.body.apps) {
@@ -144,9 +126,9 @@ export class AppsAPI {
     validateAppType(type);
 
     try {
-      const response = await this.authedRequest(
+      const response = await this.request(
         'GET',
-        `/-/${type}Apps/${appId}/config`
+        `-/${type}Apps/${appId}/config`
       );
 
       if (response.body && response.body.configFileContents) {
@@ -168,10 +150,7 @@ export class AppsAPI {
 
   async getShaCertificates(appId: string): Promise<ShaCertificate[]> {
     try {
-      const response = await this.authedRequest(
-        'GET',
-        `/-/androidApps/${appId}/sha`
-      );
+      const response = await this.request('GET', `-/androidApps/${appId}/sha`);
 
       if (response.statusCode === 200) {
         if (response.body && response.body.certificates) {
@@ -179,36 +158,44 @@ export class AppsAPI {
         } else {
           return [];
         }
+      } else {
+        throw response;
       }
     } catch (err) {
-      console.log('getAppCertificates', { err });
+      console.log('getAppCertificates', err);
+
+      vscode.window.showErrorMessage(
+        `Failed to retrieve the certificates for app ${appId}`
+      );
+
+      return [];
     }
-
-    vscode.window.showErrorMessage(
-      `Failed to retrieve the certificates for app ${appId}`
-    );
-
-    return [];
   }
 
   async addShaCertificate(appId: string, cert: ShaCertificate): Promise<void> {
     try {
-      const response = await this.authedRequest(
+      const response = await this.request(
         'POST',
-        `/-/androidApps/${appId}/sha`,
+        `-/androidApps/${appId}/sha`,
         { body: cert }
       );
 
       if (response.statusCode === 200) {
         return;
+      } else {
+        throw response;
       }
     } catch (err) {
-      console.log('addShaCertificate', { err });
-    }
+      console.log('addShaCertificate', err);
 
-    vscode.window.showErrorMessage(
-      `Failed to add a certificate for app ${appId}`
-    );
+      let errorMsg = `Failed to add a certificate for app ${appId}`;
+
+      if (err && err.error && err.error.error) {
+        errorMsg += ': ' + err.error.error.message;
+      }
+
+      vscode.window.showErrorMessage(errorMsg);
+    }
   }
 
   async deleteShaCertificate(
@@ -224,8 +211,8 @@ export class AppsAPI {
         throw new Error('Not a valid certificate path');
       }
 
-      const resource = cert.name!.replace(/^projects/, '');
-      const response = await this.authedRequest('DELETE', resource);
+      const url = `${API.firebase.origin}/${API.firebase.version}/${cert.name}`;
+      const response = await this.request('DELETE', '', { url });
 
       if (response.statusCode === 200) {
         return;
@@ -247,14 +234,10 @@ export class AppsAPI {
     validateAppType(type);
 
     try {
-      const response = await this.authedRequest(
-        'PATCH',
-        `/-/${type}Apps/${appId}`,
-        {
-          qs: { updateMask: 'display_name' },
-          body: { displayName: newDisplayName }
-        }
-      );
+      const response = await this.request('PATCH', `-/${type}Apps/${appId}`, {
+        qs: { updateMask: 'display_name' },
+        body: { displayName: newDisplayName }
+      });
 
       if (response.statusCode === 200) {
         return response.body;

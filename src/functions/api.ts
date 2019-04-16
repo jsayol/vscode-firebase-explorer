@@ -3,20 +3,12 @@ import { contains } from '../utils';
 import { AccountInfo, AccountManager } from '../accounts/AccountManager';
 import { FirebaseProject } from '../projects/ProjectManager';
 import { getDetailsFromName } from './utils';
+import { API } from '../api';
 
 /*
   Documentation:
   https://cloud.google.com/functions/docs/reference/rest/v1/projects.locations.functions
 */
-
-const CONFIG = {
-  version: 'v1',
-  origin: 'https://cloudfunctions.googleapis.com',
-  logging: {
-    version: 'v2',
-    origin: 'https://logging.googleapis.com'
-  }
-};
 
 const instances: { [k: string]: FunctionsAPI } = {};
 
@@ -37,28 +29,13 @@ export class FunctionsAPI {
     this.accountManager = AccountManager.for(account);
   }
 
-  private async authedRequest(
+  private request(
     method: string,
     resource: string,
     options: Partial<request.OptionsWithUrl> = {}
   ): Promise<request.FullResponse> {
-    const token = await this.accountManager.getAccessToken();
-    const reqOptions: request.OptionsWithUrl = {
-      method,
-      url: `${CONFIG.origin}/${CONFIG.version}/${resource}`,
-      resolveWithFullResponse: true,
-      json: true,
-      ...options
-    };
-
-    reqOptions.headers = {
-      Authorization: `Bearer ${token}`,
-      'User-Agent': 'VSCodeFirebaseExtension/' + EXTENSION_VERSION,
-      'X-Client-Version': 'VSCodeFirebaseExtension/' + EXTENSION_VERSION,
-      ...options.headers
-    };
-
-    return request(reqOptions);
+    const url = `${API.functions.origin}/${API.functions.version}/${resource}`;
+    return this.accountManager.request(method, url, options);
   }
 
   async list(region = '-'): Promise<CloudFunction[] | null> {
@@ -67,7 +44,7 @@ export class FunctionsAPI {
     }/locations/${region}/functions`;
 
     try {
-      const response = await this.authedRequest('GET', resource);
+      const response = await this.request('GET', resource);
       return (response.body.functions || []).map((fn: any) => {
         const nameMatch = fn.name.match(/(.+)\/([^\/]+)/);
         return {
@@ -104,7 +81,7 @@ export class FunctionsAPI {
       }
     } else {
       try {
-        const response = await this.authedRequest('POST', fn.name + ':call');
+        const response = await this.request('POST', fn.name + ':call');
         return response;
       } catch (err) {
         console.log(`Failed to trigger function ${fn.name}`, { err });
@@ -157,14 +134,11 @@ export class FunctionsAPI {
       .replace(/ +/g, ' ')
       .trim();
 
-    const url = `${CONFIG.logging.origin}/${
-      CONFIG.logging.version
-    }/entries:list`;
+    const url = `${API.logging.origin}/${API.logging.version}/entries:list`;
 
-    const response = await this.authedRequest('POST', '', {
+    const response = await this.request('POST', '', {
       url,
       body: {
-        // projectIds: [details.projectId],
         resourceNames: [`projects/${details.projectId}`],
         filter,
         orderBy: 'timestamp ' + options.order,
@@ -177,7 +151,7 @@ export class FunctionsAPI {
 
   async getDownloadUrl(fn: CloudFunction): Promise<string> {
     const { name, versionId } = fn;
-    const response = await this.authedRequest(
+    const response = await this.request(
       'POST',
       `${name}:generateDownloadUrl`,
       { body: { versionId } }
