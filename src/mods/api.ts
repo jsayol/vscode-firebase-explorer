@@ -1,6 +1,9 @@
-import * as request from 'request-promise-native';
 import * as yaml from 'js-yaml';
-import { AccountInfo, AccountManager } from '../accounts/AccountManager';
+import {
+  AccountInfo,
+  AccountManager,
+  RequestOptions
+} from '../accounts/AccountManager';
 import { FirebaseProject } from '../projects/ProjectManager';
 import { contains } from '../utils';
 import { ProjectsAPI, RoleInformation } from '../projects/api';
@@ -30,28 +33,16 @@ export class ModsAPI {
     this.accountManager = AccountManager.for(account);
   }
 
-  private async authedRequest(
+  private async request(
     method: string,
     resource: string,
-    options: Partial<request.OptionsWithUrl> = {}
+    options: RequestOptions = {}
   ) {
-    const token = await this.accountManager.getAccessToken();
-    const reqOptions: request.OptionsWithUrl = {
+    return this.accountManager.request(
       method,
-      url: `${CONFIG.origin}/${CONFIG.version}/${resource}`,
-      resolveWithFullResponse: true,
-      json: true,
-      ...options
-    };
-
-    reqOptions.headers = {
-      Authorization: `Bearer ${token}`,
-      'User-Agent': 'VSCodeFirebaseExtension/' + EXTENSION_VERSION,
-      'X-Client-Version': 'VSCodeFirebaseExtension/' + EXTENSION_VERSION,
-      ...options.headers
-    };
-
-    return request(reqOptions);
+      `${CONFIG.origin}/${CONFIG.version}/${resource}`,
+      options
+    );
   }
 
   async listMods(): Promise<ModDeployment[]> {
@@ -62,7 +53,8 @@ export class ModsAPI {
       'deployments'
     ].join('/');
 
-    const response = await this.authedRequest('GET', resource, {
+    const response = await this.request('GET', resource, {
+      retryOn: [500, 503],
       qs: {
         filter: `name eq ${CONFIG.deploymentPrefix}-.*`
       }
@@ -85,7 +77,9 @@ export class ModsAPI {
       'resources'
     ].join('/');
 
-    const response = await this.authedRequest('GET', resource);
+    const response = await this.request('GET', resource, {
+      retryOn: [500, 503]
+    });
 
     let resources = (response.body.resources || []) as ModResource[];
     return resources.map<ModResource>(resource => {
@@ -126,7 +120,7 @@ export interface ModDeployment {
   name: string;
   nameOriginal: string;
   description: string;
-  operation: { [k: string]: any }; // operations Resource: https://cloud.google.com/deployment-manager/docs/reference/latest/operations#resource
+  operation: { [k: string]: any }; // https://cloud.google.com/deployment-manager/docs/reference/latest/operations#resource
   fingerprint: string; // base64-encoded bytes
   manifest: string;
   update: {
@@ -153,18 +147,6 @@ export interface ModDeployment {
     value: string;
   }[];
   selfLink: string;
-}
-
-export interface ModManifest {
-  selfLink: string;
-  id: string;
-  name: string;
-  config: {
-    content: string; // YAML
-  };
-  expandedConfig: string; // YAML
-  insertTime: string;
-  layout: string; // YAML
 }
 
 export type ModResource =
