@@ -6,6 +6,7 @@ import { ProjectsAPI } from '../projects/api';
 import { AccountsAPI } from './api';
 import { ProjectStore } from '../projects/ProjectStore';
 
+const RETRY_DELAY = 1000; // ms
 const instances: { [k: string]: AccountManager } = {};
 
 export class AccountManager {
@@ -70,14 +71,16 @@ export class AccountManager {
   async request(
     method: string,
     url: string | Url,
-    options: Partial<request.OptionsWithUrl> = {}
+    options: Partial<request.OptionsWithUrl> & { retryOn?: number[] } = {}
   ): Promise<request.FullResponse> {
     const token = await this.getAccessToken();
+    const { retryOn } = options;
+    delete options.retryOn;
+
     const reqOptions: request.OptionsWithUrl = {
       method,
       url,
-      // url: `${CONFIG.origin}/${CONFIG.version}/${resource}`,
-      resolveWithFullResponse: true, // TODO: change this?
+      resolveWithFullResponse: true,
       json: true,
       ...options
     };
@@ -89,7 +92,17 @@ export class AccountManager {
       ...options.headers
     };
 
-    return request(reqOptions);
+    try {
+      return request(reqOptions);
+    } catch (err) {
+      if (Array.isArray(retryOn) && retryOn.includes(err.statusCode)) {
+        return new Promise(resolve => {
+          setTimeout(resolve, RETRY_DELAY);
+        }).then(() => this.request(method, url, { ...options, retryOn }));
+      } else {
+        throw err;
+      }
+    }
   }
 
   getRefreshToken(): string {
