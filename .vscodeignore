@@ -22,3 +22,4 @@ functions/
 firebase.json
 .firebaserc
 stats.json
+.firebase/
