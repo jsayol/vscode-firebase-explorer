@@ -8,3 +8,7 @@ node_modules/
 stuff/
 yarn-error.log
 stats.json
+/firebase.json
+/.firebaserc
+/public
+/.firebase
