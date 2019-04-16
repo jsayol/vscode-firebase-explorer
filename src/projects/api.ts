@@ -132,7 +132,7 @@ export class ProjectsAPI {
         });
 
         if (!response.body) {
-          throw new Error(response);
+          throw new Error(response as any);
         }
 
         iamPolicies[project.projectId] = response.body;
@@ -151,12 +151,12 @@ export class ProjectsAPI {
   async getRoleInfo(role: string): Promise<RoleInformation> {
     if (!contains(rolesInfo, role)) {
       try {
-        const response = await this.authedRequest('GET', '', {
+        const response = await this.request('GET', '', {
           url: [API.iam.origin, API.iam.version, role].join('/')
         });
 
         if (!response.body) {
-          throw new Error(response);
+          throw new Error(response as any);
         }
 
         const { name, title, description } = response.body;
