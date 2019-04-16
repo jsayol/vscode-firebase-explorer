@@ -235,7 +235,9 @@ export class CloudFunctionSourceItem extends vscode.TreeItem {
   ) {
     super(tree.name);
 
-    this.resourceUri = vscode.Uri.file(tree.path);
+    this.resourceUri = vscode.Uri.parse(
+      'firebase-explorer-readonly:' + tree.path
+    );
 
     if (tree.type === 'directory') {
       this.iconPath = vscode.ThemeIcon.Folder;

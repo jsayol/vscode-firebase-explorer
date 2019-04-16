@@ -1,5 +1,7 @@
 import * as semver from 'semver';
 import * as vscode from 'vscode';
+import * as chardet from 'chardet';
+import * as iconv from 'iconv-lite';
 import { AccountManager } from './accounts/AccountManager';
 import { getCliAccount } from './accounts/cli';
 import { registerAccountsCommands } from './accounts/commands';
@@ -16,7 +18,7 @@ import { HostingProvider } from './hosting/HostingProvider';
 import { registerProjectsCommands } from './projects/commands';
 import { ProjectsProvider } from './projects/ProjectsProvider';
 import { providerStore, treeViewStore } from './stores';
-import { setContextObj } from './utils';
+import { setContextObj, readFile } from './utils';
 
 export async function activate(context: vscode.ExtensionContext) {
   setContextObj(context);
@@ -42,6 +44,25 @@ export async function activate(context: vscode.ExtensionContext) {
   registerProjectsCommands(context);
   registerFirestoreCommands(context);
   registerDatabaseCommands(context);
+
+  // This adds a custom schema to open files as read-only
+  vscode.workspace.registerTextDocumentContentProvider(
+    'firebase-explorer-readonly',
+    {
+      async provideTextDocumentContent(uri: vscode.Uri): Promise<string> {
+        try {
+          const buffer = await readFile(uri.path);
+          const charset = chardet.detect(buffer, {
+            returnAllMatches: false
+          }) as string | undefined;
+          return iconv.decode(buffer, charset || 'utf8');
+        } catch (err) {
+          console.log(err);
+          throw err;
+        }
+      }
+    }
+  );
 }
 
 export function deactivate() {

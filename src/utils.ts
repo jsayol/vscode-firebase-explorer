@@ -177,11 +177,28 @@ function createTmpFile(options?: tmp.Options): Promise<FileResult> {
 
 export async function downloadToTmpFile(url: string): Promise<FileResult> {
   const response = await httpsGet(url);
+  return writeToTmpFile(response);
+}
 
+export async function writeToTmpFile(
+  content: string | Readable,
+  options?: tmp.Options
+): Promise<FileResult> {
   return new Promise<FileResult>(async (resolve, reject) => {
-    const tmpFile = await createTmpFile();
+    const tmpFile = await createTmpFile(options);
     const writeStream = fs.createWriteStream(tmpFile.path);
-    response.pipe(
+
+    let readStream;
+
+    if (typeof content === 'string') {
+      readStream = new Readable();
+      readStream.push(content);
+      readStream.push(null);
+    } else {
+      readStream = content;
+    }
+
+    readStream.pipe(
       writeStream,
       { end: true }
     );

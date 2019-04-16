@@ -515,8 +515,10 @@
     }
   },
   "devDependencies": {
+    "@types/chardet": "^0.5.0",
     "@types/clean-webpack-plugin": "^0.1.2",
     "@types/clipboardy": "^1.1.0",
+    "@types/iconv-lite": "^0.0.1",
     "@types/jsonwebtoken": "^8.3.0",
     "@types/mime-types": "^2.1.0",
     "@types/mkdirp": "^0.5.2",
@@ -544,7 +546,9 @@
     "webpack-cli": "^3.1.2"
   },
   "dependencies": {
+    "chardet": "^0.7.0",
     "directory-tree": "^2.2.0",
+    "iconv-lite": "^0.4.24",
     "jsonwebtoken": "^8.4.0",
     "mime-types": "^2.1.21",
     "mkdirp": "^0.5.1",

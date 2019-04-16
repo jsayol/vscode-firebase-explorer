@@ -7,7 +7,7 @@ import {
 } from './AppsProvider';
 import { providerStore } from '../stores';
 import { IosApp, AndroidApp, ShaCertificate } from './apps';
-import { getCertTypeForFingerprint } from '../utils';
+import { getCertTypeForFingerprint, writeToTmpFile } from '../utils';
 import { FirebaseProject } from '../projects/ProjectManager';
 import { AppsAPI } from './api';
 import { AccountInfo } from '../accounts/AccountManager';
@@ -144,11 +144,14 @@ function showAppConfig(element: AppsProviderItem): void {
       }
 
       const config = await element.app.getConfig();
-
-      const textDocument = await vscode.workspace.openTextDocument({
-        language,
-        content: config
+      const tmpFile = await writeToTmpFile(config || '', {
+        prefix: 'appconfig-',
+        postfix: '.' + language
       });
+
+      const textDocument = await vscode.workspace.openTextDocument(
+        vscode.Uri.parse('firebase-explorer-readonly:' + tmpFile.path)
+      );
 
       return vscode.window.showTextDocument(textDocument);
     }
