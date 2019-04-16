@@ -1,6 +1,6 @@
 import * as request from 'request-promise-native';
 import { contains } from '../utils';
-import { AccountInfo, AccountManager } from '../accounts/AccountManager';
+import { AccountInfo, AccountManager, RequestOptions } from '../accounts/AccountManager';
 import { FirebaseProject } from '../projects/ProjectManager';
 import { getDetailsFromName } from './utils';
 import { API } from '../api';
@@ -32,7 +32,7 @@ export class FunctionsAPI {
   private request(
     method: string,
     resource: string,
-    options: Partial<request.OptionsWithUrl> = {}
+    options: RequestOptions = {}
   ): Promise<request.FullResponse> {
     const url = `${API.functions.origin}/${API.functions.version}/${resource}`;
     return this.accountManager.request(method, url, options);

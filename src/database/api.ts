@@ -1,7 +1,7 @@
 import * as request from 'request-promise-native';
 import { contains } from '../utils';
 import { FirebaseProject, ProjectManager } from '../projects/ProjectManager';
-import { AccountInfo } from '../accounts/AccountManager';
+import { AccountInfo, RequestOptions } from '../accounts/AccountManager';
 import { API } from '../api';
 
 const instances: { [k: string]: DatabaseAPI } = {};
@@ -24,7 +24,7 @@ export class DatabaseAPI {
   private request(
     method: string,
     url: string,
-    options: Partial<request.OptionsWithUrl> = {}
+    options: RequestOptions = {}
   ): Promise<request.FullResponse> {
     return this.projectManager.accountManager.request(method, url, options);
   }

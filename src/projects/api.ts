@@ -1,5 +1,5 @@
 import * as request from 'request-promise-native';
-import { AccountInfo, AccountManager } from '../accounts/AccountManager';
+import { AccountInfo, AccountManager, RequestOptions } from '../accounts/AccountManager';
 import { contains, caseInsensitiveCompare } from '../utils';
 import { FirebaseProject, ProjectConfig, ProjectInfo } from './ProjectManager';
 import { API } from '../api';
@@ -27,7 +27,7 @@ export class ProjectsAPI {
   private request(
     method: string,
     resource: string,
-    options: Partial<request.OptionsWithUrl> = {}
+    options: RequestOptions = {}
   ): Promise<request.FullResponse> {
     return this.accountManager.request(
       method,

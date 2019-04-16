@@ -1,5 +1,5 @@
 import * as request from 'request-promise-native';
-import { AccountInfo, AccountManager } from '../accounts/AccountManager';
+import { AccountInfo, AccountManager, RequestOptions } from '../accounts/AccountManager';
 import { FirebaseProject } from '../projects/ProjectManager';
 import { contains } from '../utils';
 import { API } from '../api';
@@ -30,7 +30,7 @@ export class HostingAPI {
   private async request(
     method: string,
     resource: string,
-    options: Partial<request.OptionsWithUrl> = {}
+    options: RequestOptions = {}
   ): Promise<request.FullResponse> {
     const url = `${API.hosting.origin}/${API.hosting.version}/${resource}`;
     return this.accountManager.request(method, url, options);

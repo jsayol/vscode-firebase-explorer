@@ -2,7 +2,7 @@ import * as vscode from 'vscode';
 import * as request from 'request-promise-native';
 import { contains } from '../utils';
 import { FirebaseProject } from '../projects/ProjectManager';
-import { AccountManager, AccountInfo } from '../accounts/AccountManager';
+import { AccountManager, AccountInfo, RequestOptions } from '../accounts/AccountManager';
 import { waitUntilDone } from '../operations';
 import { IosAppProps, AndroidAppProps, ShaCertificate } from './apps';
 import { API } from '../api';
@@ -33,7 +33,7 @@ export class AppsAPI {
   private request(
     method: string,
     resource: string,
-    options: Partial<request.OptionsWithUrl> = {}
+    options: RequestOptions = {}
   ): Promise<request.FullResponse> {
     const url = [
       API.firebase.origin,

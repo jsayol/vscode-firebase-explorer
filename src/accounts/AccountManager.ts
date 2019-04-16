@@ -71,7 +71,7 @@ export class AccountManager {
   async request(
     method: string,
     url: string | Url,
-    options: Partial<request.OptionsWithUrl> & { retryOn?: number[] } = {}
+    options: RequestOptions = {}
   ): Promise<request.FullResponse> {
     const token = await this.getAccessToken();
     const { retryOn } = options;
@@ -185,3 +185,7 @@ export interface AccountTokens {
   token_type: string;
   id_token: string;
 }
+
+export type RequestOptions = Partial<request.OptionsWithUrl> & {
+  retryOn?: number[];
+};
