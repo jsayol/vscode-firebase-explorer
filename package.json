@@ -43,7 +43,8 @@
     "publish:minor": "vsce publish minor --yarn",
     "publish:major": "vsce publish major --yarn",
     "package": "vsce package --yarn",
-    "webpack": "webpack"
+    "webpack": "webpack",
+    "push": "git push -u origin master && git push -u origin --tags"
   },
   "activationEvents": [
     "onView:firebase-projects",
