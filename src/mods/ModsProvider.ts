@@ -340,13 +340,13 @@ export class ModResourceItem extends vscode.TreeItem {
         )
       };
     } else if (isServiceAccountResource(resource)) {
-      this.label = 'Service Account Roles';
-      this.description = resource.properties.accountId;
-      this.tooltip = resource.properties.accountId;
+      this.label = 'Roles';
+      // this.description = resource.properties.accountId;
+      this.tooltip = `Service Account: ${resource.properties.accountId}`;
       this.collapsibleState = vscode.TreeItemCollapsibleState.Collapsed;
       this.iconPath = {
-        light: getFilePath('assets', 'light', 'account.svg'),
-        dark: getFilePath('assets', 'dark', 'account.svg')
+        light: getFilePath('assets', 'light', 'key.svg'),
+        dark: getFilePath('assets', 'dark', 'key.svg')
       };
     } else {
       // For now we don't show any details for other types of resources
@@ -406,7 +406,7 @@ export class ModResourceInfoItem extends vscode.TreeItem {
       this.description = resource.properties.function;
     } else if (field === 'role' && role) {
       this.label = role.title;
-      this.description = `(${role.name})`;
+      this.description = role.name;
       this.tooltip = role.description;
     } else {
       console.error(`[Mods] Unknown resource info field "${field}"`);
@@ -425,7 +425,9 @@ export class ModFunctionSourceItem extends vscode.TreeItem {
   ) {
     super(tree.name);
 
-    this.resourceUri = vscode.Uri.file(tree.path);
+    this.resourceUri = vscode.Uri.parse(
+      'firebase-explorer-readonly:' + tree.path
+    );
 
     if (tree.type === 'directory') {
       this.iconPath = vscode.ThemeIcon.Folder;
