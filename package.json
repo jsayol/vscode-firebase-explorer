@@ -558,6 +558,7 @@
     "webpack-cli": "^3.1.2"
   },
   "dependencies": {
+    "bulma": "^0.7.4",
     "chardet": "^0.7.0",
     "directory-tree": "^2.2.0",
     "iconv-lite": "^0.4.24",

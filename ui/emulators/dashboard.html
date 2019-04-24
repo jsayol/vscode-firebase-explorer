@@ -7,25 +7,102 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Function Log</title>
+  <title>Emulators Dashboard</title>
+  <!-- TODO: use the correct path (webpack?) -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bulma/0.7.4/css/bulma.min.css">
+  <link rel="stylesheet" href="https://unpkg.com/bulma-switch@2.0.0/dist/css/bulma-switch.min.css">
   <style>
+    html,
     body {
-      position: absolute;
-      top: 0;
-      bottom: 0;
-      padding: 0;
-      overflow: hidden;
-      width: 100%;
+      height: 100%;
+      color: var(--vscode-foreground);
+      background-color: var(--vscode-editor-background);
+    }
+
+    .column.controls {
+      flex: none;
+      width: 200px;
     }
   </style>
 </head>
 
 <body>
-  <h2>Hello</h2>
+  <div class="columns">
+    <div class="column controls">
+
+      <div class="container">
+        <p>
+          <a class="button is-info is-outlined">Start</a>
+          <a class="button is-info is-outlined">Stop</a>
+        </p>
+      </div>
+
+      <div class="container">
+        <p>
+          <div class="field">
+            <input type="checkbox" id="switch-emu-all" class="switch is-outlined is-info" checked>
+            <label class="checkbox" for="switch-emu-all">
+              All emulators
+            </label>
+          </div>
+          <div class="field">
+            <input type="checkbox" id="switch-emu-functions" class="switch is-outlined is-info" checked disabled>
+            <label class="checkbox" for="switch-emu-functions">
+              Functions
+            </label>
+          </div>
+          <div class="field">
+            <input type="checkbox" id="switch-emu-firestore" class="switch is-outlined is-info" checked disabled>
+            <label class="checkbox" for="switch-emu-firestore">
+              Firestore
+            </label>
+          </div>
+          <div class="field">
+            <input type="checkbox" id="switch-emu-database" class="switch is-outlined is-info" checked disabled>
+            <label class="checkbox" for="switch-emu-database">
+              Database
+            </label>
+          </div>
+          <div class="field">
+            <input type="checkbox" id="switch-emu-hosting" class="switch is-outlined is-info" checked disabled>
+            <label class="checkbox" for="switch-emu-hosting">
+              Hosting
+            </label>
+          </div>
+        </p>
+      </div>
+
+    </div>
+    <div class="column">
+
+      <nav class="panel">
+        <p class="panel-heading">
+          Emulator logs
+        </p>
+        <div class="panel-block">
+          <p class="control has-icons-left">
+            <input class="input is-small" type="text" placeholder="search">
+            <span class="icon is-small is-left">
+              <i class="fas fa-search" aria-hidden="true"></i>
+            </span>
+          </p>
+        </div>
+        <div class="panel-block">
+          <div>
+            Logs here
+          </div>
+        </div>
+      </nav>
+
+    </div>
+  </div>
+
+
 </body>
 <script>
   // @ts-ignore
   const vscode = acquireVsCodeApi();
+
   window.addEventListener('message', event => {
     switch (event.data.command) {
       case 'initialize':
