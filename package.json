@@ -93,6 +93,16 @@
     },
     "commands": [
       {
+        "command": "firebaseExplorer.emulators.openDashboard",
+        "title": "Open emulators dashboard",
+        "category": "Emulators"
+      },
+      {
+        "command": "firebaseExplorer.emulators.stopServer",
+        "title": "Stop emulators dashboard server",
+        "category": "Emulators"
+      },
+      {
         "command": "firebaseExplorer.functions.refresh",
         "title": "Refresh Functions",
         "category": "Functions"
@@ -530,6 +540,7 @@
     "@types/tmp": "^0.0.33",
     "@types/universal-analytics": "^0.4.2",
     "@types/webpack": "^4.4.20",
+    "@types/ws": "^6.0.1",
     "@types/yauzl": "^2.9.0",
     "clean-webpack-plugin": "^1.0.0",
     "filemanager-webpack-plugin": "^2.0.5",
@@ -559,6 +570,7 @@
     "semver": "^5.6.0",
     "tmp": "^0.0.33",
     "tslib": "^1.9.3",
+    "ws": "^6.2.1",
     "yauzl": "^2.10.0"
   },
   "resolutions": {

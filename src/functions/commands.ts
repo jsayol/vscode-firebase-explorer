@@ -6,7 +6,8 @@ import {
   getFilePath,
   readFile,
   unzipToTmpDir,
-  contains
+  contains,
+  postToPanel
 } from '../utils';
 import { FunctionsAPI } from './api';
 import { CloudFunctionItem, FunctionsProvider } from './FunctionsProvider';
@@ -284,14 +285,6 @@ async function viewLogs(element: CloudFunctionItem): Promise<void> {
     }
   } catch (err) {
     console.log({ err });
-  }
-}
-
-function postToPanel(panel: vscode.WebviewPanel, msg: any) {
-  try {
-    panel.webview.postMessage(msg);
-  } catch (err) {
-    console.log('Failed sending message to WebView panel', err);
   }
 }
 

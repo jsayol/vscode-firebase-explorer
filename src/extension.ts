@@ -19,6 +19,7 @@ import { registerProjectsCommands } from './projects/commands';
 import { ProjectsProvider } from './projects/ProjectsProvider';
 import { providerStore, treeViewStore } from './stores';
 import { setContextObj, readFile } from './utils';
+import { registerEmulatorsCommands } from './emulators/commands';
 
 export async function activate(context: vscode.ExtensionContext) {
   setContextObj(context);
@@ -44,6 +45,7 @@ export async function activate(context: vscode.ExtensionContext) {
   registerProjectsCommands(context);
   registerFirestoreCommands(context);
   registerDatabaseCommands(context);
+  registerEmulatorsCommands(context);
 
   // This adds a custom schema to open files as read-only
   vscode.workspace.registerTextDocumentContentProvider(

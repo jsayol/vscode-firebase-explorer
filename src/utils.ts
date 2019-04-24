@@ -341,11 +341,20 @@ export function dateToString(date: Date | string) {
 
 /**
  * Performs a case-insensitive comparison of two strings
- * @param a
- * @param b
  */
 export function caseInsensitiveCompare(a: string, b: string): number {
   return a.localeCompare(b, 'en', { sensitivity: 'base' });
+}
+
+/**
+ * Post a message toa  webview panel
+ */
+export function postToPanel(panel: vscode.WebviewPanel, msg: any) {
+  try {
+    panel.webview.postMessage(msg);
+  } catch (err) {
+    console.log('Failed sending message to WebView panel', err);
+  }
 }
 
 process.on('unhandledRejection', error => {
