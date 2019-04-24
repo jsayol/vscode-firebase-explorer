@@ -34,6 +34,8 @@ interface WebSocketDebuggerInitData {
   };
 }
 
+type WebSocketMessageType = 'init' | 'stop' | 'error';
+
 export class WebSocketServer {
   private server: WebSocket.Server;
   private pingInterval: any;
@@ -132,7 +134,11 @@ export class WebSocketServer {
     return JSON.stringify(message);
   }
 
-  private sendMessage(socket: MyWebSocket, type: string, payload?: any): void {
+  private sendMessage(
+    socket: MyWebSocket,
+    type: WebSocketMessageType,
+    payload?: any
+  ): void {
     const message = { type, payload };
     log('->', message);
     socket.send(JSON.stringify(message));
