@@ -8,9 +8,13 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Emulators Dashboard</title>
-  <!-- TODO: use the correct path (webpack?) -->
+  <!-- TODO: use internal paths (webpack?) -->
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bulma/0.7.4/css/bulma.min.css">
   <link rel="stylesheet" href="https://unpkg.com/bulma-switch@2.0.0/dist/css/bulma-switch.min.css">
+  <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.8.1/css/solid.css"
+    integrity="sha384-QokYePQSOwpBDuhlHOsX0ymF6R/vLk/UQVz3WHa6wygxI5oGTmDTv8wahFOSspdm" crossorigin="anonymous">
+  <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.8.1/css/fontawesome.css"
+    integrity="sha384-vd1e11sR28tEK9YANUtpIOdjGW14pS87bUBuOIoBILVWLFnS+MCX9T6MMf0VdPGq" crossorigin="anonymous">
   <style>
     html,
     body {
@@ -27,6 +31,27 @@
 </head>
 
 <body>
+  <div class="tabs">
+    <ul>
+      <li class="is-active">
+        <a>
+          <span class="icon is-small"><i class="fas fa-home" aria-hidden="true"></i></span>
+          <span>Dashboard</span>
+        </a>
+      </li>
+      <li>
+        <a>HTTPS Functions</a>
+      </li>
+      <li>
+        <a>Callable Functions</a>
+      </li>
+      <li>
+        <a>Firestore</a>
+      </li>
+    </ul>
+  </div>
+
+
   <div class="columns">
     <div class="column controls">
 

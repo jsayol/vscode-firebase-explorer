@@ -1,5 +1,8 @@
 import * as WebSocket from 'ws';
+import * as vscode from 'vscode';
 import * as portfinder from 'portfinder';
+import { AccountInfo } from '../accounts/AccountManager';
+import { FirebaseProject, ProjectManager } from '../projects/ProjectManager';
 
 const PORT_START = 35000;
 const ALIVE_CHECK_INTERVAL = 5000; // ms
@@ -34,14 +37,22 @@ interface WebSocketDebuggerInitData {
   };
 }
 
-type WebSocketMessageType = 'init' | 'stop' | 'error';
+type SendMessageType = 'init' | 'stop' | 'error';
+type RecvMessageType = 'init' | 'error' | 'stdout' | 'stderr';
 
 export class WebSocketServer {
   private server: WebSocket.Server;
   private pingInterval: any;
+  private account?: AccountInfo;
+  private project?: FirebaseProject | null;
 
-  constructor(public host = 'localhost') {
+  constructor(
+    private context: vscode.ExtensionContext,
+    public host = 'localhost'
+  ) {
     this.server = null as any;
+    this.account = this.context.globalState.get('selectedAccount');
+    this.project = this.context.globalState.get('selectedProject');
   }
 
   start(): Promise<void> {
@@ -71,12 +82,16 @@ export class WebSocketServer {
           log('New connection');
 
           socket.isAlive = true;
+
           socket.on('pong', () => {
             socket.isAlive = true;
           });
 
+          socket.on('close', (code, reason) => {
+            log(`Closed connection (${code}): ${reason}`);
+          });
+
           socket.on('message', async (data: string) => {
-            log('Received: %s', data);
             let message: any;
 
             try {
@@ -91,8 +106,6 @@ export class WebSocketServer {
 
             await this.processMessage(socket, message);
           });
-
-          socket.send('something');
         });
 
         this.pingInterval = setInterval(() => {
@@ -120,12 +133,21 @@ export class WebSocketServer {
 
   private async processMessage(
     socket: MyWebSocket,
-    message: any
+    message: { type: RecvMessageType; payload: any }
   ): Promise<any> {
     switch (message.type) {
       case 'init':
-        socket.fbTools = JSON.parse(message.payload);
-        this.sendInit(socket);
+        socket.fbTools = message.payload;
+        await this.respondInit(socket);
+        break;
+      case 'stdout':
+      case 'stderr':
+        // TODO
+        console.log(message);
+        break;
+      case 'error':
+        // TODO
+        console.error(message);
         break;
       default:
         throw new Error('Unknow message type: ' + message.type);
@@ -136,7 +158,7 @@ export class WebSocketServer {
 
   private sendMessage(
     socket: MyWebSocket,
-    type: WebSocketMessageType,
+    type: SendMessageType,
     payload?: any
   ): void {
     const message = { type, payload };
@@ -144,16 +166,21 @@ export class WebSocketServer {
     socket.send(JSON.stringify(message));
   }
 
-  private sendInit(socket: MyWebSocket): void {
-    const payload: WebSocketDebuggerInitData = {
-      version: EXTENSION_VERSION,
-      projectPath: '', // TODO
-      firebaseConfig: {}, // TODO
-      projectNumber: '', // TODO
-      node: {
-        installIfMissing: false // TODO
-      }
-    };
-    this.sendMessage(socket, 'init', payload);
+  private async respondInit(socket: MyWebSocket): Promise<void> {
+    const folders = vscode.workspace.workspaceFolders;
+
+    if (folders && this.account && this.project) {
+      const projectManager = ProjectManager.for(this.account, this.project);
+      const payload: WebSocketDebuggerInitData = {
+        version: EXTENSION_VERSION,
+        projectPath: folders[0].uri.fsPath,
+        firebaseConfig: await projectManager.getConfig(),
+        projectNumber: this.project.projectNumber,
+        node: {
+          installIfMissing: false // TODO
+        }
+      };
+      this.sendMessage(socket, 'init', payload);
+    }
   }
 }

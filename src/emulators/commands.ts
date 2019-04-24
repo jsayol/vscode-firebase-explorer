@@ -81,7 +81,7 @@ async function openDashboard(): Promise<void> {
       );
 
       if (!server) {
-        server = new WebSocketServer();
+        server = new WebSocketServer(context);
         await server.start();
       }
     }
