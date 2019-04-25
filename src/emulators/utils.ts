@@ -23,10 +23,11 @@ export async function startEmulators(
     }
 
     // TODO: This is only while developing!
+    const devFirebaseTools = '/home/josep/projects/firebase-tools';
     args = [
       '--project',
-      '/home/josep/projects/firebase-tools/tsconfig.json',
-      '/home/josep/projects/firebase-tools/src/bin/firebase.js',
+      devFirebaseTools + '/tsconfig.json',
+      devFirebaseTools + '/src/bin/firebase.js',
       ...args
     ];
 
@@ -34,8 +35,6 @@ export async function startEmulators(
       cwd: folders[0].uri.fsPath,
       windowsHide: true
     };
-
-    console.log(args, spawnOptions);
 
     const childProc = spawn(
       'ts-node' /* TODO: 'firebase' */,

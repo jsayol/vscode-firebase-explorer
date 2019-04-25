@@ -36,11 +36,11 @@ async function openDashboard(): Promise<void> {
   try {
     if (dashboardPanel) {
       if (isDashboardReady) {
-        // setImmediate(() => {
-        //   postToPanel(dashboardPanel, {
-        //     command: 'focus'
-        //   });
-        // });
+        setImmediate(() => {
+          postToPanel(dashboardPanel!, {
+            command: 'focus'
+          });
+        });
       }
       dashboardPanel.reveal();
     } else {
@@ -86,9 +86,13 @@ async function openDashboard(): Promise<void> {
               });
 
               unsubClose = server.on('close', () => {
-                postToPanel(dashboardPanel!, {
-                  command: 'server-closed'
-                });
+                postToPanel(dashboardPanel!, { command: 'server-closed' });
+                unsubStdout!();
+                unsubStderr!();
+                unsubClose!();
+                unsubStdout = undefined;
+                unsubStderr = undefined;
+                unsubClose = undefined;
               });
 
               // TODO:
@@ -109,12 +113,6 @@ async function openDashboard(): Promise<void> {
             break;
           case 'stop':
             if (server) {
-              unsubStdout!();
-              unsubStderr!();
-              unsubClose!();
-              unsubStdout = undefined;
-              unsubStderr = undefined;
-              unsubClose = undefined;
               await stopEmulators(server);
             }
             break;

@@ -4,7 +4,7 @@ import * as portfinder from 'portfinder';
 import { ProjectManager } from '../projects/ProjectManager';
 
 const PORT_START = 35000;
-const ALIVE_CHECK_INTERVAL = 5000; // ms
+const ALIVE_CHECK_INTERVAL = 1000; // ms
 
 function getRandomPort(host: string): Promise<number> {
   return portfinder.getPortPromise({ host, port: PORT_START });
@@ -56,17 +56,20 @@ export class WebSocketServer {
   private server: WebSocket.Server;
   private pingInterval: any;
   private projectManager?: ProjectManager;
-  private clients = new Set<WebSocketClient>();
   private listeners = new Map<ListenerEventType, Set<Function>>();
+  private isStarted = false;
+  private client?: WebSocketClient | null;
 
   constructor(public host = 'localhost') {
     this.server = null as any;
   }
 
   start(): Promise<void> {
-    if (this.server) {
+    if (this.isStarted) {
       return Promise.resolve();
     }
+
+    this.isStarted = true;
 
     return new Promise(
       async (resolve, reject): Promise<void> => {
@@ -88,8 +91,13 @@ export class WebSocketServer {
             await this.stop();
           });
 
-          this.server.on('connection', (client: WebSocketClient) => {
-            this.onConnection(client);
+          this.server.on('connection', (newClient: WebSocketClient) => {
+            if (this.client) {
+              // Refuse the connection if there's already a connected client
+              newClient.close();
+            } else {
+              this.onConnection(newClient);
+            }
           });
 
           this.pingInterval = setInterval(() => {
@@ -110,13 +118,11 @@ export class WebSocketServer {
   }
 
   async stop() {
-    log('Closing server');
+    this.isStarted = false;
     clearInterval(this.pingInterval);
-    const stopClients = [...this.clients.values()].map(client =>
-      this.sendMessage(client, 'stop')
-    );
-    await Promise.all(stopClients);
-    // this.server.close();
+    if (this.client) {
+      await this.sendMessage(this.client, 'stop');
+    }
   }
 
   getAddress(): string {
@@ -148,7 +154,7 @@ export class WebSocketServer {
 
   private onConnection(client: WebSocketClient): void {
     log('New connection');
-    this.clients.add(client);
+    this.client = client;
 
     client.isAlive = true;
 
@@ -156,14 +162,11 @@ export class WebSocketServer {
       client.isAlive = true;
     });
 
-    client.on('close', (code, reason) => {
+    client.on('close', async (code, reason) => {
       log(`Closed connection (${code}): ${reason}`);
-      this.clients.delete(client);
-
-      if (this.clients.size === 0) {
-        // All clients disconnected, shut down the server
-        this.server.close();
-      }
+      this.client = null;
+      await this.stop();
+      this.close();
     });
 
     client.on('message', async (data: string) => {
@@ -205,11 +208,7 @@ export class WebSocketServer {
         throw new Error('Unknow message type: ' + message.type);
     }
 
-    if (this.listeners.has(message.type)) {
-      this.listeners.get(message.type)!.forEach(listener => {
-        listener(message.payload);
-      });
-    }
+    this.broadcastEvent(message.type, message.payload);
 
     return JSON.stringify(message);
   }
@@ -239,6 +238,19 @@ export class WebSocketServer {
         }
       };
       await this.sendMessage(socket, 'init', payload);
+    }
+  }
+
+  private close() {
+    this.server.close();
+    this.broadcastEvent('close');
+  }
+
+  private broadcastEvent(type: ListenerEventType, payload?: any): void {
+    if (this.listeners.has(type)) {
+      this.listeners.get(type)!.forEach(listener => {
+        listener(payload);
+      });
     }
   }
 }

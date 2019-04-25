@@ -268,6 +268,14 @@
       height: 100%;
       border: 1px solid var(--vscode-editorWidget-background);
     }
+
+    .shell-output .item {
+      padding-left: 3px;
+    }
+
+    .shell-output .item-stderr {
+      box-shadow: -2px 0px 0px 0px var(--vscode-editorError-foreground);
+    }
   </style>
 </head>
 
@@ -396,6 +404,7 @@
   const stopButton = document.querySelector('.controls .button.stop');
 
   window.addEventListener('message', ({ data }) => {
+    console.log(data);
     switch (data.command) {
       case 'initialize':
         initialize(data);
@@ -403,12 +412,17 @@
       case 'stdout':
       case 'stderr':
         const shellMessage = document.createElement('div');
-        const type = data.command.toUpperCase();
-        shellMessage.innerHTML = `[${type}] ${data.message}`;
+        shellMessage.classList.add('item', 'item-' + data.command);
+        // const type = data.command.toUpperCase();
+        // shellMessage.innerHTML = `[${type}] ${data.message}`;
+        shellMessage.innerHTML = data.message;
         shellOutput.appendChild(shellMessage);
         break;
       case 'server-closed':
-        stop({ notify: false });
+        stopped();
+        break;
+      case 'focus':
+        // The windowebview got focus.
         break;
       default:
         console.error('Unknown command received:', data)
@@ -426,12 +440,17 @@
     stopButton.removeAttribute('disabled');
   }
 
-  function stop({ notify = true } = {}) {
+  function stop() {
+    // startButton.removeAttribute('disabled');
+    stopButton.classList.add('is-loading');
+    stopButton.setAttribute('disabled', 'disabled');
+    vscode.postMessage({ command: 'stop' });
+  }
+
+  function stopped() {
     startButton.removeAttribute('disabled');
     stopButton.setAttribute('disabled', 'disabled');
-    if (notify) {
-      vscode.postMessage({ command: 'stop' });
-    }
+    stopButton.classList.remove('is-loading');
   }
 
   function postMessage(message) {
