@@ -171,6 +171,14 @@
       background-color: var(--vscode-editor-background);
     }
 
+    body>.container {
+      position: absolute;
+      top: 0;
+      bottom: 0;
+      left: 0;
+      right: 0;
+    }
+
     a {
       color: var(--vscode-textLink-foreground);
     }
@@ -217,6 +225,18 @@
       color: var(--vscode-tab-activeForeground);
     }
 
+    .tab-content {
+      display: none;
+      padding-left: 0.6rem;
+
+      /* TODO: fix this */
+      height: 90%;
+    }
+
+    .tab-content.is-active {
+      display: block;
+    }
+
     .switch[type=checkbox].is-outlined:checked+label:before {
       border-color: var(--vscode-button-background);
     }
@@ -225,20 +245,9 @@
       background: var(--vscode-button-background);
     }
 
-    body>.tabs,
-    body>.tabs:not(:last-child) {
+    .tabs,
+    .tabs:not(:last-child) {
       margin-bottom: 0.75rem;
-    }
-
-    body>.columns.bottom {
-      padding-left: 0.6rem;
-
-      /* TODO: fix this */
-      height: 85%;
-    }
-
-    body>.level {
-      padding-left: 0.6rem;
     }
 
     .box {
@@ -258,6 +267,10 @@
 
     .box:not(:last-child) {
       margin-bottom: 1.2rem;
+    }
+
+    .columns.bottom {
+      height: 95%;
     }
 
     .tabs a,
@@ -330,125 +343,141 @@
 </head>
 
 <body>
-  <div class="tabs">
-    <ul>
-      <li class="is-active">
-        <a>
-          <span class="icon is-small"><i class="fas fa-home" aria-hidden="true"></i></span>
-          <span title="Dashboard">Dashboard</span>
-        </a>
-      </li>
-      <li>
-        <a title="HTTPS Functions">HTTPS Functions</a>
-      </li>
-      <li>
-        <a title="Callable Functions">Callable Functions</a>
-      </li>
-      <li>
-        <a title="Firestore">Firestore</a>
-      </li>
-    </ul>
-  </div>
+  <div class="container">
+    <div class="tabs">
+      <ul>
+        <li class="tab--dashboard is-active" onclick="openTab('dashboard')">
+          <a>
+            <span class="icon is-small"><i class="fas fa-home" aria-hidden="true"></i></span>
+            <span title="Dashboard">Dashboard</span>
+          </a>
+        </li>
+        <li class="tab--https-functions" onclick="openTab('https-functions')">
+          <a title="HTTPS Functions">HTTPS Functions</a>
+        </li>
+        <li class="tab--callable-functions" onclick="openTab('callable-functions')">
+          <a title="Callable Functions">Callable Functions</a>
+        </li>
+        <li class="tab--firestore" onclick="openTab('firestore')">
+          <a title="Firestore">Firestore</a>
+        </li>
+      </ul>
+    </div>
 
-  <div class="level top-controls">
-    <div class="field is-horizontal">
-      <div class="field-body">
-        <div class="field has-addons">
-          <p class="control">
-            <a class="button is-static">
-              Project:
-            </a>
-          </p>
-          <div class="select">
-            <select class="project-selector"></select>
-          </div>
-        </div>
-        <div class="field has-addons workspace-selector-field hidden">
-          <p class="control">
-            <a class="button is-static">
-              Workspace:
-            </a>
-          </p>
-          <p class="control">
-            <div class="select">
-              <select class="workspace-selector"></select>
+    <div class="tab-content tab-content--dashboard is-active">
+      <div class="level top-controls">
+        <div class="field is-horizontal">
+          <div class="field-body">
+            <div class="field has-addons">
+              <p class="control">
+                <a class="button is-static">
+                  Project:
+                </a>
+              </p>
+              <div class="select">
+                <select class="project-selector"></select>
+              </div>
             </div>
-          </p>
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <div class="columns bottom is-mobile is-variable is-2">
-    <div class="column controls">
-
-      <div class="box">
-        <label class="label controls-box-label">
-          Status: <span class="running-status"></span>
-        </label>
-        <div class="columns is-mobile is-variable is-3">
-          <div class="column">
-            <button class="button start" onclick="start()">Start</button>
-          </div>
-          <div class="column">
-            <button class="button stop" onclick="stop()" disabled>Stop</button>
+            <div class="field has-addons workspace-selector-field hidden">
+              <p class="control">
+                <a class="button is-static">
+                  Workspace:
+                </a>
+              </p>
+              <p class="control">
+                <div class="select">
+                  <select class="workspace-selector"></select>
+                </div>
+              </p>
+            </div>
           </div>
         </div>
       </div>
 
-      <div class="box">
-        <label class="label controls-box-label">
-          Enabled Emulators
-        </label>
-        <div class="field">
-          <input type="checkbox" id="switch-emu-all" class="switch is-outlined"
-            onchange="toggleAllEmulatorsSwitch(this.checked)" checked>
-          <label class="checkbox" for="switch-emu-all">
-            All
-          </label>
+      <div class="columns bottom is-mobile is-variable is-2">
+        <div class="column controls">
+
+          <div class="box">
+            <label class="label controls-box-label">
+              Status: <span class="running-status"></span>
+            </label>
+            <div class="columns is-mobile is-variable is-3">
+              <div class="column">
+                <button class="button start" onclick="start()">Start</button>
+              </div>
+              <div class="column">
+                <button class="button stop" onclick="stop()" disabled>Stop</button>
+              </div>
+            </div>
+          </div>
+
+          <div class="box">
+            <label class="label controls-box-label">
+              Enabled Emulators
+            </label>
+            <div class="field">
+              <input type="checkbox" id="switch-emu-all" class="switch is-outlined"
+                onchange="toggleAllEmulatorsSwitch(this.checked)" checked>
+              <label class="checkbox" for="switch-emu-all">
+                All
+              </label>
+            </div>
+            <div class="field">
+              <input type="checkbox" id="switch-emu-functions" class="switch is-outlined" checked disabled>
+              <label class="checkbox" for="switch-emu-functions">
+                Functions
+              </label>
+            </div>
+            <div class="field">
+              <input type="checkbox" id="switch-emu-firestore" class="switch is-outlined" checked disabled>
+              <label class="checkbox" for="switch-emu-firestore">
+                Firestore
+              </label>
+            </div>
+            <div class="field">
+              <input type="checkbox" id="switch-emu-database" class="switch is-outlined" checked disabled>
+              <label class="checkbox" for="switch-emu-database">
+                Database
+              </label>
+            </div>
+            <div class="field">
+              <input type="checkbox" id="switch-emu-hosting" class="switch is-outlined" checked disabled>
+              <label class="checkbox" for="switch-emu-hosting">
+                Hosting
+              </label>
+            </div>
+          </div>
+
         </div>
-        <div class="field">
-          <input type="checkbox" id="switch-emu-functions" class="switch is-outlined" checked disabled>
-          <label class="checkbox" for="switch-emu-functions">
-            Functions
-          </label>
-        </div>
-        <div class="field">
-          <input type="checkbox" id="switch-emu-firestore" class="switch is-outlined" checked disabled>
-          <label class="checkbox" for="switch-emu-firestore">
-            Firestore
-          </label>
-        </div>
-        <div class="field">
-          <input type="checkbox" id="switch-emu-database" class="switch is-outlined" checked disabled>
-          <label class="checkbox" for="switch-emu-database">
-            Database
-          </label>
-        </div>
-        <div class="field">
-          <input type="checkbox" id="switch-emu-hosting" class="switch is-outlined" checked disabled>
-          <label class="checkbox" for="switch-emu-hosting">
-            Hosting
-          </label>
+        <div class="column">
+          <div class="box shell-output-box terminal">
+            <div class="shell-output terminal">
+            </div>
+          </div>
         </div>
       </div>
-
     </div>
-    <div class="column">
 
+    <div class="tab-content tab-content--https-functions">
       <div class="box shell-output-box terminal">
         <div class="shell-output terminal">
         </div>
       </div>
+    </div>
 
+    <div class="tab-content tab-content--callable-functions">
+      callable-functions
+    </div>
+
+    <div class="tab-content tab-content--firestore">
+      firestore
     </div>
   </div>
-
 </body>
 <script>
   // @ts-ignore
   const vscode = acquireVsCodeApi();
-  const shellOutput = document.querySelector('.shell-output');
+  const shellOutput = document.querySelector('.tab-content--dashboard .shell-output');
   const startButton = document.querySelector('.controls .button.start');
   const stopButton = document.querySelector('.controls .button.stop');
   const projectSelector = document.querySelector('.top-controls .project-selector');
@@ -610,6 +639,28 @@
         }
       }
     );
+  }
+
+  function openTab(tabName) {
+    const tabs = document.querySelectorAll(".tabs li");
+    tabs.forEach(tab => {
+      const isSelected = tab.classList.contains('tab--' + tabName);
+      if (isSelected) {
+        tab.classList.add('is-active');
+      } else {
+        tab.classList.remove('is-active');
+      }
+    });
+
+    const contents = document.querySelectorAll(".tab-content");
+    contents.forEach(tabContent => {
+      const isSelected = tabContent.classList.contains('tab-content--' + tabName);
+      if (isSelected) {
+        tabContent.classList.add('is-active');
+      } else {
+        tabContent.classList.remove('is-active');
+      }
+    });
   }
 </script>
 
