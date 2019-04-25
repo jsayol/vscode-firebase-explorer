@@ -16,6 +16,154 @@
   <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.8.1/css/fontawesome.css"
     integrity="sha384-vd1e11sR28tEK9YANUtpIOdjGW14pS87bUBuOIoBILVWLFnS+MCX9T6MMf0VdPGq" crossorigin="anonymous">
   <style>
+    /** Terminal colors **/
+
+    .terminal {
+      color: var(--vscode-terminal-foreground);
+      background-color: var(--vscode-terminal-background);
+      font-family: monospace;
+      font-size: 0.91em;
+    }
+
+    .terminal::selection {
+      background-color: var(--vscode-terminal-selectionBackground);
+    }
+
+
+    .ansi-black-fg {
+      color: var(--vscode-terminal-ansiBlack);
+    }
+
+    .ansi-black-bg {
+      background-color: var(--vscode-terminal-ansiBlack);
+    }
+
+    .ansi-black-fg {
+      color: var(--vscode-terminal-ansiBrightBlack);
+    }
+
+    .ansi-black-bg {
+      background-color: var(--vscode-terminal-ansiBrightBlack);
+    }
+
+    .ansi-red-fg {
+      color: var(--vscode-terminal-ansiRed);
+    }
+
+    .ansi-red-bg {
+      background-color: var(--vscode-terminal-ansiRed);
+    }
+
+    .ansi-red-fg {
+      color: var(--vscode-terminal-ansiBrightRed);
+    }
+
+    .ansi-red-bg {
+      background-color: var(--vscode-terminal-ansiBrightRed);
+    }
+
+    .ansi-green-fg {
+      color: var(--vscode-terminal-ansiGreen);
+    }
+
+    .ansi-green-bg {
+      background-color: var(--vscode-terminal-ansiGreen);
+    }
+
+    .ansi-green-fg {
+      color: var(--vscode-terminal-ansiBrightGreen);
+    }
+
+    .ansi-green-bg {
+      background-color: var(--vscode-terminal-ansiBrightGreen);
+    }
+
+    .ansi-yellow-fg {
+      color: var(--vscode-terminal-ansiYellow);
+    }
+
+    .ansi-yellow-bg {
+      background-color: var(--vscode-terminal-ansiYellow);
+    }
+
+    .ansi-yellow-fg {
+      color: var(--vscode-terminal-ansiBrightYellow);
+    }
+
+    .ansi-yellow-bg {
+      background-color: var(--vscode-terminal-ansiBrightYellow);
+    }
+
+    .ansi-blue-fg {
+      color: var(--vscode-terminal-ansiBlue);
+    }
+
+    .ansi-blue-bg {
+      background-color: var(--vscode-terminal-ansiBlue);
+    }
+
+    .ansi-blue-fg {
+      color: var(--vscode-terminal-ansiBrightBlue);
+    }
+
+    .ansi-blue-bg {
+      background-color: var(--vscode-terminal-ansiBrightBlue);
+    }
+
+    .ansi-magenta-fg {
+      color: var(--vscode-terminal-ansiMagenta);
+    }
+
+    .ansi-magenta-bg {
+      background-color: var(--vscode-terminal-ansiMagenta);
+    }
+
+    .ansi-magenta-fg {
+      color: var(--vscode-terminal-ansiBrightMagenta);
+    }
+
+    .ansi-magenta-bg {
+      background-color: var(--vscode-terminal-ansiBrightMagenta);
+    }
+
+    .ansi-cyan-fg {
+      color: var(--vscode-terminal-ansiCyan);
+    }
+
+    .ansi-cyan-bg {
+      background-color: var(--vscode-terminal-ansiCyan);
+    }
+
+    .ansi-cyan-fg {
+      color: var(--vscode-terminal-ansiBrightCyan);
+    }
+
+    .ansi-cyan-bg {
+      background-color: var(--vscode-terminal-ansiBrightCyan);
+    }
+
+    .ansi-white-fg {
+      color: var(--vscode-terminal-ansiWhite);
+    }
+
+    .ansi-white-bg {
+      background-color: var(--vscode-terminal-ansiWhite);
+    }
+
+    .ansi-white-fg {
+      color: var(--vscode-terminal-ansiBrightWhite);
+    }
+
+    .ansi-white-bg {
+      background-color: var(--vscode-terminal-ansiBrightWhite);
+    }
+  </style>
+  <style>
+    :root {
+      --shell-output-foreground: #AAAAAA;
+      --shell-output-background: #1B1B1B;
+    }
+
     html,
     body {
       height: 100%;
@@ -23,9 +171,102 @@
       background-color: var(--vscode-editor-background);
     }
 
+    a {
+      color: var(--vscode-textLink-foreground);
+    }
+
+    a:hover {
+      color: var(--vscode-textLink-activeForeground);
+      opacity: 0.9;
+    }
+
+    .button,
+    .button[disabled] {
+      background-color: var(--vscode-button-background);
+      border-color: var(--vscode-button-background);
+      color: var(--vscode-button-foreground);
+    }
+
+    .button:not([disabled]):hover {
+      background-color: var(--vscode-button-hoverBackground);
+      border-color: var(--vscode-button-hoverBackground);
+      color: var(--vscode-button-foreground);
+    }
+
+    .tabs ul {
+      border-bottom-color: var(--vscode-editorGroupHeader-tabsBackground);
+    }
+
+    .tabs a {
+      padding: .25em 1em;
+    }
+
+    .tabs li:not(.is-active) a {
+      color: var(--vscode-foreground);
+      background-color: var(--vscode-editorWidget-background);
+      border-bottom-color: var(--vscode-editorGroupHeader-tabsBackground);
+    }
+
+    .tabs li.is-active a {
+      color: var(--vscode-tab-activeForeground);
+      background-color: var(--vscode-tab-activeBackground);
+      border-bottom-color: var(--vscode-editor-background);
+    }
+
+    .tabs li:not(.is-active) a:hover {
+      color: var(--vscode-tab-activeForeground);
+    }
+
+    .switch[type=checkbox].is-outlined:checked+label:before {
+      border-color: var(--vscode-button-background);
+    }
+
+    .switch[type=checkbox].is-outlined:checked+label:after {
+      background: var(--vscode-button-background);
+    }
+
+    body>.tabs,
+    body>.tabs:not(:last-child) {
+      margin-bottom: 0.75rem;
+    }
+
+    body>.columns {
+      padding-left: 0.6rem;
+
+      /* TODO: fix this */
+      height: 93%;
+    }
+
+    .box {
+      padding: 1rem;
+      box-shadow: none;
+    }
+
     .column.controls {
       flex: none;
-      width: 200px;
+    }
+
+    .column.controls .box {
+      background-color: var(--vscode-editorWidget-background);
+      /* box-shadow: inset 0px 0px 0px 1px var(--vscode-editorWidget-border); */
+    }
+
+    .box:not(:last-child) {
+      margin-bottom: 1.2rem;
+    }
+
+    .tabs a,
+    label.checkbox {
+      color: var(--vscode-foreground);
+    }
+
+    label.checkbox:hover {
+      color: var(--vscode-tab-activeForeground);
+    }
+
+    .shell-output-box {
+      height: 100%;
+      border: 1px solid var(--vscode-editorWidget-background);
     }
   </style>
 </head>
@@ -36,71 +277,97 @@
       <li class="is-active">
         <a>
           <span class="icon is-small"><i class="fas fa-home" aria-hidden="true"></i></span>
-          <span>Dashboard</span>
+          <span title="Dashboard">Dashboard</span>
         </a>
       </li>
       <li>
-        <a>HTTPS Functions</a>
+        <a title="HTTPS Functions">HTTPS Functions</a>
       </li>
       <li>
-        <a>Callable Functions</a>
+        <a title="Callable Functions">Callable Functions</a>
       </li>
       <li>
-        <a>Firestore</a>
+        <a title="Firestore">Firestore</a>
       </li>
     </ul>
   </div>
 
 
-  <div class="columns">
+  <div class="columns is-variable is-2">
     <div class="column controls">
 
-      <div class="container">
-        <p>
-          <a class="button is-info is-outlined" onclick="postMessage({command:'start'})">Start</a>
-          <a class="button is-info is-outlined" onclick="postMessage({command:'stop'})">Stop</a>
-        </p>
+      <div class="box">
+        <div class="columns is-variable is-3">
+          <div class="column">
+            <button class="button start" onclick="start()">Start</button>
+          </div>
+          <div class="column">
+            <button class="button stop" onclick="stop()" disabled>Stop</button>
+          </div>
+        </div>
       </div>
 
-      <div class="container">
-        <p>
-          <div class="field">
-            <input type="checkbox" id="switch-emu-all" class="switch is-outlined is-info" checked>
-            <label class="checkbox" for="switch-emu-all">
-              All emulators
-            </label>
+      <!-- <div class="container">
+        <div class="card">
+          <header class="card-header">
+            <p class="card-header-title">
+              Status
+            </p>
+          </header>
+          <div class="card-content">
+            <div class="content">
+              Running
+            </div>
           </div>
-          <div class="field">
-            <input type="checkbox" id="switch-emu-functions" class="switch is-outlined is-info" checked disabled>
-            <label class="checkbox" for="switch-emu-functions">
-              Functions
-            </label>
-          </div>
-          <div class="field">
-            <input type="checkbox" id="switch-emu-firestore" class="switch is-outlined is-info" checked disabled>
-            <label class="checkbox" for="switch-emu-firestore">
-              Firestore
-            </label>
-          </div>
-          <div class="field">
-            <input type="checkbox" id="switch-emu-database" class="switch is-outlined is-info" checked disabled>
-            <label class="checkbox" for="switch-emu-database">
-              Database
-            </label>
-          </div>
-          <div class="field">
-            <input type="checkbox" id="switch-emu-hosting" class="switch is-outlined is-info" checked disabled>
-            <label class="checkbox" for="switch-emu-hosting">
-              Hosting
-            </label>
-          </div>
-        </p>
+          <footer class="card-footer">
+            <a class="card-footer-item button is-outlined start" onclick="start()">Start</a>
+            <a class="card-footer-item button is-outlined stop" onclick="stop()" disabled>Stop</a>
+          </footer>
+        </div>
+      </div> -->
+
+      <div class="box">
+        <div class="field">
+          <input type="checkbox" id="switch-emu-all" class="switch is-outlined" checked>
+          <label class="checkbox" for="switch-emu-all">
+            All emulators
+          </label>
+        </div>
+        <div class="field">
+          <input type="checkbox" id="switch-emu-functions" class="switch is-outlined" checked disabled>
+          <label class="checkbox" for="switch-emu-functions">
+            Functions
+          </label>
+        </div>
+        <div class="field">
+          <input type="checkbox" id="switch-emu-firestore" class="switch is-outlined" checked disabled>
+          <label class="checkbox" for="switch-emu-firestore">
+            Firestore
+          </label>
+        </div>
+        <div class="field">
+          <input type="checkbox" id="switch-emu-database" class="switch is-outlined" checked disabled>
+          <label class="checkbox" for="switch-emu-database">
+            Database
+          </label>
+        </div>
+        <div class="field">
+          <input type="checkbox" id="switch-emu-hosting" class="switch is-outlined" checked disabled>
+          <label class="checkbox" for="switch-emu-hosting">
+            Hosting
+          </label>
+        </div>
       </div>
 
     </div>
     <div class="column">
 
-      <nav class="panel">
+      <div class="box shell-output-box terminal">
+        <div class="shell-output terminal">
+        </div>
+      </div>
+
+      <!-- <nav class="panel">
         <p class="panel-heading">
           Emulator logs
         </p>
@@ -113,10 +380,8 @@
           </p>
         </div>
         <div class="panel-block">
-          <div id="logContainer">
-          </div>
         </div>
-      </nav>
+      </nav> -->
 
     </div>
   </div>
@@ -126,25 +391,48 @@
 <script>
   // @ts-ignore
   const vscode = acquireVsCodeApi();
-  const logContainer = document.querySelector('#logContainer');
+  const shellOutput = document.querySelector('.shell-output');
+  const startButton = document.querySelector('.controls .button.start');
+  const stopButton = document.querySelector('.controls .button.stop');
 
-  window.addEventListener('message', event => {
-    switch (event.data.command) {
+  window.addEventListener('message', ({ data }) => {
+    switch (data.command) {
       case 'initialize':
-        initialize(event.data);
+        initialize(data);
         break;
       case 'stdout':
       case 'stderr':
-        const div = document.createElement('div');
-        div.innerHTML = `[${event.data.command.toUpperCase()}] ${event.data.message}`;
-        logContainer.appendChild(div);
+        const shellMessage = document.createElement('div');
+        const type = data.command.toUpperCase();
+        shellMessage.innerHTML = `[${type}] ${data.message}`;
+        shellOutput.appendChild(shellMessage);
         break;
+      case 'server-closed':
+        stop({ notify: false });
+        break;
+      default:
+        console.error('Unknown command received:', data)
+      // TODO: throw? ignore?
     }
   });
 
   vscode.postMessage({
     command: 'ready'
   });
+
+  function start() {
+    vscode.postMessage({ command: 'start' });
+    startButton.setAttribute('disabled', 'disabled');
+    stopButton.removeAttribute('disabled');
+  }
+
+  function stop({ notify = true } = {}) {
+    startButton.removeAttribute('disabled');
+    stopButton.setAttribute('disabled', 'disabled');
+    if (notify) {
+      vscode.postMessage({ command: 'stop' });
+    }
+  }
 
   function postMessage(message) {
     vscode.postMessage(message);

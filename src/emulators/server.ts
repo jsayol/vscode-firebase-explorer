@@ -50,83 +50,63 @@ interface WebSocketDebuggerInitData {
 type SendMessageType = 'init' | 'stop' | 'error';
 type RecvMessageType = 'init' | 'error' | 'stdout' | 'stderr';
 
+export type ListenerEventType = RecvMessageType | 'close';
+
 export class WebSocketServer {
   private server: WebSocket.Server;
   private pingInterval: any;
   private projectManager?: ProjectManager;
   private clients = new Set<WebSocketClient>();
-  private listeners = new Map<RecvMessageType, Set<Function>>();
+  private listeners = new Map<ListenerEventType, Set<Function>>();
 
   constructor(public host = 'localhost') {
     this.server = null as any;
   }
 
   start(): Promise<void> {
-    return new Promise(async (resolve, reject) => {
-      try {
-        const port = await getRandomPort(this.host);
+    if (this.server) {
+      return Promise.resolve();
+    }
 
-        this.server = new WebSocket.Server({
-          port: port,
-          host: this.host
-        });
+    return new Promise(
+      async (resolve, reject): Promise<void> => {
+        try {
+          const port = await getRandomPort(this.host);
 
-        this.server.on('listening', () => {
-          log(this.getAddress());
-          resolve();
-        });
+          this.server = new WebSocket.Server({
+            port: port,
+            host: this.host
+          });
 
-        this.server.on('error', async err => {
+          this.server.on('listening', () => {
+            log(this.getAddress());
+            resolve();
+          });
+
+          this.server.on('error', async err => {
+            reject(err);
+            await this.stop();
+          });
+
+          this.server.on('connection', (client: WebSocketClient) => {
+            this.onConnection(client);
+          });
+
+          this.pingInterval = setInterval(() => {
+            this.server.clients.forEach((client: WebSocketClient) => {
+              if (client.isAlive === false) {
+                return client.terminate();
+              }
+
+              client.isAlive = false;
+              client.ping(noop);
+            });
+          }, ALIVE_CHECK_INTERVAL);
+        } catch (err) {
           reject(err);
-          await this.stop();
-        });
-
-        this.server.on('connection', (client: WebSocketClient) => {
-          log('New connection');
-          this.clients.add(client);
-
-          client.isAlive = true;
-
-          client.on('pong', () => {
-            client.isAlive = true;
-          });
-
-          client.on('close', (code, reason) => {
-            log(`Closed connection (${code}): ${reason}`);
-            this.clients.delete(client);
-          });
-
-          client.on('message', async (data: string) => {
-            let message: any;
-
-            try {
-              message = JSON.parse(data);
-            } catch (err) {
-              // Couldn't parse the message sent by the client... exTERMINATE!
-              // (You have to read that last part with a Dalek voice or it won't be funny)
-              await this.sendMessage(client, 'error', err.message);
-              client.terminate();
-              return;
-            }
-
-            await this.processMessage(client, message);
-          });
-        });
-
-        this.pingInterval = setInterval(() => {
-          this.server.clients.forEach((socket: WebSocketClient) => {
-            if (socket.isAlive === false) {
-              return socket.terminate();
-            }
-
-            socket.isAlive = false;
-            socket.ping(noop);
-          });
-        }, ALIVE_CHECK_INTERVAL);
-      } catch (err) {
-        reject(err);
+        }
       }
-    });
+    );
   }
 
   async stop() {
@@ -136,7 +116,7 @@ export class WebSocketServer {
       this.sendMessage(client, 'stop')
     );
     await Promise.all(stopClients);
-    this.server.close();
+    // this.server.close();
   }
 
   getAddress(): string {
@@ -153,7 +133,7 @@ export class WebSocketServer {
     this.projectManager = projectManager;
   }
 
-  on(type: RecvMessageType, callback: (payload: any) => void): () => void {
+  on(type: ListenerEventType, callback: (payload: any) => void): () => void {
     if (!this.listeners.has(type)) {
       this.listeners.set(type, new Set<typeof callback>());
     }
@@ -164,6 +144,43 @@ export class WebSocketServer {
     return () => {
       listeners!.delete(callback);
     };
+  }
+
+  private onConnection(client: WebSocketClient): void {
+    log('New connection');
+    this.clients.add(client);
+
+    client.isAlive = true;
+
+    client.on('pong', () => {
+      client.isAlive = true;
+    });
+
+    client.on('close', (code, reason) => {
+      log(`Closed connection (${code}): ${reason}`);
+      this.clients.delete(client);
+
+      if (this.clients.size === 0) {
+        // All clients disconnected, shut down the server
+        this.server.close();
+      }
+    });
+
+    client.on('message', async (data: string) => {
+      let message: any;
+
+      try {
+        message = JSON.parse(data);
+      } catch (err) {
+        // Couldn't parse the message sent by the client... exTERMINATE!
+        // (You have to read that last part with a Dalek voice or it won't be funny)
+        await this.sendMessage(client, 'error', err.message);
+        client.terminate();
+        return;
+      }
+
+      await this.processMessage(client, message);
+    });
   }
 
   private async processMessage(

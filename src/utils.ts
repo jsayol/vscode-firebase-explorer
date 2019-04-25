@@ -9,7 +9,11 @@ import * as tmp from 'tmp';
 import * as mkdirp from 'mkdirp';
 import { Readable } from 'stream';
 import * as vscode from 'vscode';
+import * as AnsiUp from 'ansi_up';
 import { ShaCertificate } from './apps/apps';
+
+const ansiUp: AnsiUp.AnsiUp = new (AnsiUp as any).default();
+ansiUp.use_classes = true;
 
 let _context: vscode.ExtensionContext;
 
@@ -360,3 +364,7 @@ export function postToPanel(panel: vscode.WebviewPanel, msg: any) {
 process.on('unhandledRejection', error => {
   console.log('unhandledRejection', error);
 });
+
+export function ansiToHTML(text: string): string {
+  return ansiUp.ansi_to_html(text);
+}

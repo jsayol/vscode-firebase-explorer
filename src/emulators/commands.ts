@@ -1,18 +1,18 @@
 import * as vscode from 'vscode';
-import { postToPanel, readFile, getFilePath } from '../utils';
+import * as linkify from 'linkify-urls';
+import { postToPanel, readFile, getFilePath, ansiToHTML } from '../utils';
 import { WebSocketServer } from './server';
 import { startEmulators, stopEmulators } from './utils';
 import { FirebaseProject } from '../projects/ProjectManager';
 import { AccountInfo } from '../accounts/AccountManager';
 
-const ansiHTML: (s: string) => string = require('ansi-html');
-
 let context: vscode.ExtensionContext;
 let dashboardPanel: vscode.WebviewPanel | undefined;
 let isDashboardReady = false;
 let server: WebSocketServer | undefined;
-let unsubStdout: Function | undefined;
-let unsubStderr: Function | undefined;
+let unsubStdout: (() => void) | undefined;
+let unsubStderr: (() => void) | undefined;
+let unsubClose: (() => void) | undefined;
 
 export function registerEmulatorsCommands(_context: vscode.ExtensionContext) {
   context = _context;
@@ -69,18 +69,25 @@ async function openDashboard(): Promise<void> {
             });
             break;
           case 'start':
+            console.group('start', server);
             if (server) {
               unsubStdout = server.on('stdout', ({ data }) => {
                 postToPanel(dashboardPanel!, {
                   command: 'stdout',
-                  message: ansiHTML(data)
+                  message: linkify(ansiToHTML(data))
                 });
               });
 
               unsubStderr = server.on('stderr', ({ data }) => {
                 postToPanel(dashboardPanel!, {
                   command: 'stderr',
-                  message: ansiHTML(data)
+                  message: linkify(ansiToHTML(data))
+                });
+              });
+
+              unsubClose = server.on('close', () => {
+                postToPanel(dashboardPanel!, {
+                  command: 'server-closed'
                 });
               });
 
@@ -102,10 +109,12 @@ async function openDashboard(): Promise<void> {
             break;
           case 'stop':
             if (server) {
-              unsubStdout && unsubStdout();
-              unsubStderr && unsubStderr();
+              unsubStdout!();
+              unsubStderr!();
+              unsubClose!();
               unsubStdout = undefined;
               unsubStderr = undefined;
+              unsubClose = undefined;
               await stopEmulators(server);
             }
             break;
