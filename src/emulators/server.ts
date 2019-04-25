@@ -55,6 +55,7 @@ export class WebSocketServer {
   private pingInterval: any;
   private projectManager?: ProjectManager;
   private clients = new Set<WebSocketClient>();
+  private listeners = new Map<RecvMessageType, Set<Function>>();
 
   constructor(public host = 'localhost') {
     this.server = null as any;
@@ -152,6 +153,19 @@ export class WebSocketServer {
     this.projectManager = projectManager;
   }
 
+  on(type: RecvMessageType, callback: (payload: any) => void): () => void {
+    if (!this.listeners.has(type)) {
+      this.listeners.set(type, new Set<typeof callback>());
+    }
+
+    const listeners = this.listeners.get(type);
+    listeners!.add(callback);
+
+    return () => {
+      listeners!.delete(callback);
+    };
+  }
+
   private async processMessage(
     socket: WebSocketClient,
     message: { type: RecvMessageType; payload: any }
@@ -172,6 +186,12 @@ export class WebSocketServer {
         break;
       default:
         throw new Error('Unknow message type: ' + message.type);
+    }
+
+    if (this.listeners.has(message.type)) {
+      this.listeners.get(message.type)!.forEach(listener => {
+        listener(message.payload);
+      });
     }
 
     return JSON.stringify(message);

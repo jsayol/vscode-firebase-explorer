@@ -5,10 +5,14 @@ import { startEmulators, stopEmulators } from './utils';
 import { FirebaseProject } from '../projects/ProjectManager';
 import { AccountInfo } from '../accounts/AccountManager';
 
+const ansiHTML: (s: string) => string = require('ansi-html');
+
 let context: vscode.ExtensionContext;
 let dashboardPanel: vscode.WebviewPanel | undefined;
 let isDashboardReady = false;
 let server: WebSocketServer | undefined;
+let unsubStdout: Function | undefined;
+let unsubStderr: Function | undefined;
 
 export function registerEmulatorsCommands(_context: vscode.ExtensionContext) {
   context = _context;
@@ -66,6 +70,20 @@ async function openDashboard(): Promise<void> {
             break;
           case 'start':
             if (server) {
+              unsubStdout = server.on('stdout', ({ data }) => {
+                postToPanel(dashboardPanel!, {
+                  command: 'stdout',
+                  message: ansiHTML(data)
+                });
+              });
+
+              unsubStderr = server.on('stderr', ({ data }) => {
+                postToPanel(dashboardPanel!, {
+                  command: 'stderr',
+                  message: ansiHTML(data)
+                });
+              });
+
               // TODO:
               // const { project, account, emulators } = data as {
               //   project: FirebaseProject;
@@ -78,12 +96,16 @@ async function openDashboard(): Promise<void> {
               const project = context.globalState.get<FirebaseProject>(
                 'selectedProject'
               );
-              const emulators = 'all';
+              const emulators = ['functions'];
               await startEmulators(server, project, account, emulators);
             }
             break;
           case 'stop':
             if (server) {
+              unsubStdout && unsubStdout();
+              unsubStderr && unsubStderr();
+              unsubStdout = undefined;
+              unsubStderr = undefined;
               await stopEmulators(server);
             }
             break;

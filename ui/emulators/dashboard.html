@@ -113,8 +113,7 @@
           </p>
         </div>
         <div class="panel-block">
-          <div>
-            Logs here
+          <div id="logContainer">
           </div>
         </div>
       </nav>
@@ -127,11 +126,18 @@
 <script>
   // @ts-ignore
   const vscode = acquireVsCodeApi();
+  const logContainer = document.querySelector('#logContainer');
 
   window.addEventListener('message', event => {
     switch (event.data.command) {
       case 'initialize':
         initialize(event.data);
+        break;
+      case 'stdout':
+      case 'stderr':
+        const div = document.createElement('div');
+        div.innerHTML = `[${event.data.command.toUpperCase()}] ${event.data.message}`;
+        logContainer.appendChild(div);
         break;
     }
   });
