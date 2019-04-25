@@ -171,12 +171,13 @@
       background-color: var(--vscode-editor-background);
     }
 
-    body>.container {
+    body>.super-container {
       position: absolute;
       top: 0;
       bottom: 0;
       left: 0;
       right: 0;
+      margin: 0 auto;
     }
 
     a {
@@ -339,11 +340,32 @@
     .workspace-selector-field.hidden {
       visibility: hidden;
     }
+
+    .table.logging-table {
+      color: inherit;
+      font-size: 0.9rem;
+      background-color: inherit;
+    }
+
+    .table.logging-table th,
+    .table.logging-table td {
+      border: none;
+      padding: .2em .4em;
+    }
+
+    .table.logging-table thead th,
+    .table.logging-table thead td {
+      color: inherit;
+    }
+
+    .table.is-hoverable tbody tr:not(.is-selected):hover {
+      background-color: var(--vscode-editorWidget-background);
+    }
   </style>
 </head>
 
 <body>
-  <div class="container">
+  <div class="super-container">
     <div class="tabs">
       <ul>
         <li class="tab--dashboard is-active" onclick="openTab('dashboard')">
@@ -459,10 +481,23 @@
     </div>
 
     <div class="tab-content tab-content--https-functions">
-      <div class="box shell-output-box terminal">
+      <table class="table logging-table is-fullwidth is-hoverable">
+        <thead>
+          <tr>
+            <th>Timestamp</th>
+            <th>Type</th>
+            <th>Level</th>
+            <th>Text</th>
+          </tr>
+        </thead>
+        <tbody>
+        </tbody>
+      </table>
+
+      <!-- <div class="box shell-output-box terminal">
         <div class="shell-output terminal">
         </div>
-      </div>
+      </div> -->
     </div>
 
     <div class="tab-content tab-content--callable-functions">
@@ -492,10 +527,11 @@
       case 'stderr':
         const shellMessage = document.createElement('div');
         shellMessage.classList.add('item', 'item-' + data.command);
-        // const type = data.command.toUpperCase();
-        // shellMessage.innerHTML = `[${type}] ${data.message}`;
         shellMessage.innerHTML = data.message;
         shellOutput.appendChild(shellMessage);
+        break;
+      case 'log':
+        addLogEntry(data.message);
         break;
       case 'server-closed':
         stopped();
@@ -661,6 +697,28 @@
         tabContent.classList.remove('is-active');
       }
     });
+  }
+
+  function addLogEntry(entry) {
+    console.log(entry);
+    const output = document.querySelector('.tab-content--https-functions table tbody');
+    const row = document.createElement('tr');
+
+    row.classList.add(
+      'log-entry',
+      'log-entry-type--' + entry.type,
+      'log-entry-level--' + entry.level
+    );
+
+    ['timestamp', 'type', 'level', 'text'].forEach(field => {
+      const cell = document.createElement('td');
+      cell.classList.add('log-entry-cell', 'log-entry-cell-' + field);
+      cell.innerText = entry[field] || '';
+      row.appendChild(cell);
+    });
+
+    output.appendChild(row);
+
   }
 </script>
 

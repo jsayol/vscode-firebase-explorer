@@ -12,6 +12,7 @@ let isDashboardReady = false;
 let server: WebSocketServer | undefined;
 let unsubStdout: (() => void) | undefined;
 let unsubStderr: (() => void) | undefined;
+let unsubLog: (() => void) | undefined;
 let unsubClose: (() => void) | undefined;
 
 export function registerEmulatorsCommands(_context: vscode.ExtensionContext) {
@@ -97,13 +98,22 @@ async function openDashboard(): Promise<void> {
                 });
               });
 
+              unsubLog = server.on('log', logEntry => {
+                postToPanel(dashboardPanel!, {
+                  command: 'log',
+                  message: logEntry
+                });
+              });
+
               unsubClose = server.on('close', () => {
                 postToPanel(dashboardPanel!, { command: 'server-closed' });
                 unsubStdout!();
                 unsubStderr!();
+                unsubLog!();
                 unsubClose!();
                 unsubStdout = undefined;
                 unsubStderr = undefined;
+                unsubLog = undefined;
                 unsubClose = undefined;
               });
 
