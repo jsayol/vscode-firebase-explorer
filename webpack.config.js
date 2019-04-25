@@ -27,7 +27,8 @@ function getExtensionConfig(env) {
     new webpack.IgnorePlugin(/^spawn-sync$/),
     new webpack.DefinePlugin({
       PRODUCTION: JSON.stringify(env.production),
-      EXTENSION_VERSION: JSON.stringify(extVersion)
+      EXTENSION_VERSION: JSON.stringify(extVersion),
+      EXTENSION_NAME: JSON.stringify('vscode.' + pkg.name)
     })
   ];
 
@@ -59,7 +60,7 @@ function getExtensionConfig(env) {
       ]
     },
     externals: {
-      vscode: 'commonjs vscode',
+      vscode: 'commonjs vscode'
     },
     module: {
       rules: [

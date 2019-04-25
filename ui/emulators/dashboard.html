@@ -57,8 +57,8 @@
 
       <div class="container">
         <p>
-          <a class="button is-info is-outlined">Start</a>
-          <a class="button is-info is-outlined">Stop</a>
+          <a class="button is-info is-outlined" onclick="postMessage({command:'start'})">Start</a>
+          <a class="button is-info is-outlined" onclick="postMessage({command:'stop'})">Stop</a>
         </p>
       </div>
 
@@ -139,6 +139,10 @@
   vscode.postMessage({
     command: 'ready'
   });
+
+  function postMessage(message) {
+    vscode.postMessage(message);
+  }
 
   function initialize(data) {
     //

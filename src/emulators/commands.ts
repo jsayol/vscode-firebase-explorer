@@ -1,6 +1,9 @@
 import * as vscode from 'vscode';
 import { postToPanel, readFile, getFilePath } from '../utils';
 import { WebSocketServer } from './server';
+import { startEmulators, stopEmulators } from './utils';
+import { FirebaseProject } from '../projects/ProjectManager';
+import { AccountInfo } from '../accounts/AccountManager';
 
 let context: vscode.ExtensionContext;
 let dashboardPanel: vscode.WebviewPanel | undefined;
@@ -52,13 +55,37 @@ async function openDashboard(): Promise<void> {
         'utf8'
       );
 
-      dashboardPanel.webview.onDidReceiveMessage(async data => {
+      dashboardPanel.webview.onDidReceiveMessage(async (data: any) => {
         switch (data.command) {
           case 'ready':
             isDashboardReady = true;
             postToPanel(dashboardPanel!, {
               command: 'initialize'
+              // TODO: projects, accounts, etc
             });
+            break;
+          case 'start':
+            if (server) {
+              // TODO:
+              // const { project, account, emulators } = data as {
+              //   project: FirebaseProject;
+              //   account: AccountInfo;
+              //   emulators: 'all' | string[];
+              // };
+              const account = context.globalState.get<AccountInfo>(
+                'selectedAccount'
+              );
+              const project = context.globalState.get<FirebaseProject>(
+                'selectedProject'
+              );
+              const emulators = 'all';
+              await startEmulators(server, project, account, emulators);
+            }
+            break;
+          case 'stop':
+            if (server) {
+              await stopEmulators(server);
+            }
             break;
         }
       });
@@ -81,8 +108,7 @@ async function openDashboard(): Promise<void> {
       );
 
       if (!server) {
-        server = new WebSocketServer(context);
-        await server.start();
+        server = new WebSocketServer();
       }
     }
   } catch (err) {
@@ -90,9 +116,9 @@ async function openDashboard(): Promise<void> {
   }
 }
 
-function stopServer(): void {
+async function stopServer(): Promise<void> {
   if (server) {
-    server.stop();
+    await server.stop();
     server = undefined;
   }
 }

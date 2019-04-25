@@ -1,8 +1,7 @@
 import * as WebSocket from 'ws';
-import * as vscode from 'vscode';
+import * as util from 'util';
 import * as portfinder from 'portfinder';
-import { AccountInfo } from '../accounts/AccountManager';
-import { FirebaseProject, ProjectManager } from '../projects/ProjectManager';
+import { ProjectManager } from '../projects/ProjectManager';
 
 const PORT_START = 35000;
 const ALIVE_CHECK_INTERVAL = 5000; // ms
@@ -11,7 +10,16 @@ function getRandomPort(host: string): Promise<number> {
   return portfinder.getPortPromise({ host, port: PORT_START });
 }
 
+const inspectOpts = {
+  ...util.inspect.defaultOptions,
+  depth: null,
+  colors: true
+};
+
 function log(...args: any[]): void {
+  args = args.map(arg =>
+    typeof arg === 'string' ? arg : util.inspect(arg, inspectOpts)
+  );
   console.log(...args);
 }
 
@@ -19,7 +27,7 @@ function noop(..._: any[]): void {
   // noop
 }
 
-interface MyWebSocket extends WebSocket {
+interface WebSocketClient extends WebSocket {
   isAlive?: boolean;
   fbTools?: {
     version: string;
@@ -27,8 +35,10 @@ interface MyWebSocket extends WebSocket {
 }
 
 interface WebSocketDebuggerInitData {
-  version: string;
-  projectPath: string;
+  client: {
+    name: string;
+    version: string;
+  };
   firebaseConfig: { [k: string]: any };
   projectNumber: string;
   node: {
@@ -43,20 +53,15 @@ type RecvMessageType = 'init' | 'error' | 'stdout' | 'stderr';
 export class WebSocketServer {
   private server: WebSocket.Server;
   private pingInterval: any;
-  private account?: AccountInfo;
-  private project?: FirebaseProject | null;
+  private projectManager?: ProjectManager;
+  private clients = new Set<WebSocketClient>();
 
-  constructor(
-    private context: vscode.ExtensionContext,
-    public host = 'localhost'
-  ) {
+  constructor(public host = 'localhost') {
     this.server = null as any;
-    this.account = this.context.globalState.get('selectedAccount');
-    this.project = this.context.globalState.get('selectedProject');
   }
 
   start(): Promise<void> {
-    return new Promise(async resolve => {
+    return new Promise(async (resolve, reject) => {
       try {
         const port = await getRandomPort(this.host);
 
@@ -66,32 +71,31 @@ export class WebSocketServer {
         });
 
         this.server.on('listening', () => {
-          const serverAddr = this.server.address();
-          let address: string;
-
-          if (typeof serverAddr === 'string') {
-            address = serverAddr;
-          } else {
-            address = `ws://${serverAddr.address}:${serverAddr.port}`;
-          }
-
-          log(address);
+          log(this.getAddress());
+          resolve();
         });
 
-        this.server.on('connection', (socket: MyWebSocket) => {
+        this.server.on('error', async err => {
+          reject(err);
+          await this.stop();
+        });
+
+        this.server.on('connection', (client: WebSocketClient) => {
           log('New connection');
+          this.clients.add(client);
 
-          socket.isAlive = true;
+          client.isAlive = true;
 
-          socket.on('pong', () => {
-            socket.isAlive = true;
+          client.on('pong', () => {
+            client.isAlive = true;
           });
 
-          socket.on('close', (code, reason) => {
+          client.on('close', (code, reason) => {
             log(`Closed connection (${code}): ${reason}`);
+            this.clients.delete(client);
           });
 
-          socket.on('message', async (data: string) => {
+          client.on('message', async (data: string) => {
             let message: any;
 
             try {
@@ -99,17 +103,17 @@ export class WebSocketServer {
             } catch (err) {
               // Couldn't parse the message sent by the client... exTERMINATE!
               // (You have to read that last part with a Dalek voice or it won't be funny)
-              this.sendMessage(socket, 'error', err.message);
-              socket.terminate();
+              await this.sendMessage(client, 'error', err.message);
+              client.terminate();
               return;
             }
 
-            await this.processMessage(socket, message);
+            await this.processMessage(client, message);
           });
         });
 
         this.pingInterval = setInterval(() => {
-          this.server.clients.forEach((socket: MyWebSocket) => {
+          this.server.clients.forEach((socket: WebSocketClient) => {
             if (socket.isAlive === false) {
               return socket.terminate();
             }
@@ -119,20 +123,37 @@ export class WebSocketServer {
           });
         }, ALIVE_CHECK_INTERVAL);
       } catch (err) {
-        log('Something went wrong:', err);
-        resolve();
+        reject(err);
       }
     });
   }
 
-  stop() {
+  async stop() {
     log('Closing server');
     clearInterval(this.pingInterval);
+    const stopClients = [...this.clients.values()].map(client =>
+      this.sendMessage(client, 'stop')
+    );
+    await Promise.all(stopClients);
     this.server.close();
   }
 
+  getAddress(): string {
+    const serverAddr = this.server.address();
+
+    if (typeof serverAddr === 'string') {
+      return serverAddr;
+    } else {
+      return `ws://${serverAddr.address}:${serverAddr.port}`;
+    }
+  }
+
+  useProjectManager(projectManager: ProjectManager): void {
+    this.projectManager = projectManager;
+  }
+
   private async processMessage(
-    socket: MyWebSocket,
+    socket: WebSocketClient,
     message: { type: RecvMessageType; payload: any }
   ): Promise<any> {
     switch (message.type) {
@@ -143,11 +164,11 @@ export class WebSocketServer {
       case 'stdout':
       case 'stderr':
         // TODO
-        console.log(message);
+        log(message);
         break;
       case 'error':
         // TODO
-        console.error(message);
+        log(message);
         break;
       default:
         throw new Error('Unknow message type: ' + message.type);
@@ -157,30 +178,30 @@ export class WebSocketServer {
   }
 
   private sendMessage(
-    socket: MyWebSocket,
+    socket: WebSocketClient,
     type: SendMessageType,
     payload?: any
-  ): void {
-    const message = { type, payload };
-    log('->', message);
-    socket.send(JSON.stringify(message));
+  ): Promise<void> {
+    return new Promise(resolve => {
+      const message = { type, payload };
+      socket.send(JSON.stringify(message), resolve as any);
+    });
   }
 
-  private async respondInit(socket: MyWebSocket): Promise<void> {
-    const folders = vscode.workspace.workspaceFolders;
-
-    if (folders && this.account && this.project) {
-      const projectManager = ProjectManager.for(this.account, this.project);
+  private async respondInit(socket: WebSocketClient): Promise<void> {
+    if (this.projectManager) {
       const payload: WebSocketDebuggerInitData = {
-        version: EXTENSION_VERSION,
-        projectPath: folders[0].uri.fsPath,
-        firebaseConfig: await projectManager.getConfig(),
-        projectNumber: this.project.projectNumber,
+        client: {
+          name: EXTENSION_NAME,
+          version: EXTENSION_VERSION
+        },
+        firebaseConfig: await this.projectManager.getConfig(),
+        projectNumber: this.projectManager.project.projectNumber,
         node: {
           installIfMissing: false // TODO
         }
       };
-      this.sendMessage(socket, 'init', payload);
+      await this.sendMessage(socket, 'init', payload);
     }
   }
 }
