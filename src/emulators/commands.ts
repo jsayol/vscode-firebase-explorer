@@ -82,7 +82,6 @@ async function openDashboard(): Promise<void> {
             });
             break;
           case 'start':
-            console.group('start', server);
             if (server) {
               unsubStdout = server.on('stdout', ({ data }) => {
                 postToPanel(dashboardPanel!, {
@@ -108,7 +107,6 @@ async function openDashboard(): Promise<void> {
                 unsubClose = undefined;
               });
 
-              // TODO:
               const { path, email, projectId, emulators } = data as {
                 path: string;
                 email: string;

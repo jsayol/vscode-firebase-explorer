@@ -19,21 +19,28 @@ export async function startEmulators(
     args = args.concat('--only', emulators.join(','));
   }
 
-  // TODO: This is only while developing!
-  const devFirebaseTools = '/home/josep/projects/firebase-tools';
-  args = [
-    '--project',
-    devFirebaseTools + '/tsconfig.json',
-    devFirebaseTools + '/src/bin/firebase.js',
-    ...args
-  ];
-
   const spawnOptions = {
     cwd: workspacePath,
     windowsHide: true
   };
 
-  const childProc = spawn('ts-node' /* TODO: 'firebase' */, args, spawnOptions);
+  // const childProc = spawn('firebase' */, args, spawnOptions);
+
+  // TODO: This is only while developing!
+  const devFirebaseTools = '/home/josep/projects/firebase-tools';
+  args = [
+    devFirebaseTools + '/lib/bin/firebase.js',
+    ...args
+  ];
+  const childProc = spawn('node' /* TODO: 'firebase' */, args, spawnOptions);
+  // const devFirebaseTools = '/home/josep/projects/firebase-tools';
+  // args = [
+  //   '--project',
+  //   devFirebaseTools + '/tsconfig.json',
+  //   devFirebaseTools + '/src/bin/firebase.js',
+  //   ...args
+  // ];
+  // const childProc = spawn('ts-node' /* TODO: 'firebase' */, args, spawnOptions);
 
   ['message', 'close', 'exit', 'error', 'disconnect'].forEach(event => {
     childProc.on(event, (...eventArgs) => {

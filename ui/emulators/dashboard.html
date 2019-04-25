@@ -243,6 +243,7 @@
 
     .box {
       padding: 1rem;
+      /* padding: 1rem 1rem 1rem 0.5rem; */
       box-shadow: none;
     }
 
@@ -264,7 +265,7 @@
       color: var(--vscode-foreground);
     }
 
-    .running-status-container {
+    .controls-box-label {
       color: var(--vscode-foreground);
       margin-top: -0.5em;
       font-weight: initial;
@@ -272,10 +273,15 @@
 
     .running-status::after {
       content: 'stopped';
+      font-family: monospace;
     }
 
     body.running .running-status::after {
       content: 'running';
+    }
+
+    body.stopping .running-status::after {
+      content: 'stopping';
     }
 
     label.checkbox:hover {
@@ -284,15 +290,20 @@
 
     .shell-output-box {
       height: 100%;
+      padding-left: 0.5rem;
       border: 1px solid var(--vscode-editorWidget-background);
     }
 
     .shell-output .item {
-      padding-left: 3px;
+      padding-left: 0.3rem;
     }
 
     .shell-output .item-stderr {
-      box-shadow: -2px 0px 0px 0px var(--vscode-editorError-foreground);
+      box-shadow: -0.2rem 0 0 0 var(--vscode-editorError-foreground);
+    }
+
+    .top-controls.level {
+      margin-bottom: 1rem !important;
     }
 
     .top-controls .field.has-addons select {
@@ -372,7 +383,7 @@
     <div class="column controls">
 
       <div class="box">
-        <label class="label running-status-container">
+        <label class="label controls-box-label">
           Status: <span class="running-status"></span>
         </label>
         <div class="columns is-mobile is-variable is-3">
@@ -386,10 +397,14 @@
       </div>
 
       <div class="box">
+        <label class="label controls-box-label">
+          Enabled Emulators
+        </label>
         <div class="field">
-          <input type="checkbox" id="switch-emu-all" class="switch is-outlined" checked>
+          <input type="checkbox" id="switch-emu-all" class="switch is-outlined"
+            onchange="toggleAllEmulatorsSwitch(this.checked)" checked>
           <label class="checkbox" for="switch-emu-all">
-            All emulators
+            All
           </label>
         </div>
         <div class="field">
@@ -475,16 +490,38 @@
     // @ts-ignore
     const path = workspaceSelector.options[workspaceSelector.selectedIndex].value;
 
-    vscode.postMessage({ command: 'start', email, projectId, path });
+    let emulators;
+    const allEmulators = isSwitchEnabled('switch-emu-all');
+    if (allEmulators) {
+      emulators = 'all';
+    } else {
+      emulators = [];
+      if (isSwitchEnabled('switch-emu-functions')) {
+        emulators.push('functions');
+      }
+      if (isSwitchEnabled('switch-emu-firestore')) {
+        emulators.push('firestore');
+      }
+      if (isSwitchEnabled('switch-emu-database')) {
+        emulators.push('database');
+      }
+      if (isSwitchEnabled('switch-emu-hosting')) {
+        emulators.push('hosting');
+      }
+    }
+
+
+    vscode.postMessage({ command: 'start', email, projectId, path, emulators });
     startButton.setAttribute('disabled', 'disabled');
     stopButton.removeAttribute('disabled');
     document.body.classList.add('running');
   }
 
   function stop() {
-    // startButton.removeAttribute('disabled');
     stopButton.classList.add('is-loading');
     stopButton.setAttribute('disabled', 'disabled');
+    document.body.classList.remove('running');
+    document.body.classList.add('stopping');
     vscode.postMessage({ command: 'stop' });
   }
 
@@ -493,6 +530,7 @@
     stopButton.setAttribute('disabled', 'disabled');
     stopButton.classList.remove('is-loading');
     document.body.classList.remove('running');
+    document.body.classList.remove('stopping');
   }
 
   function postMessage(message) {
@@ -552,7 +590,26 @@
       const field = document.querySelector('.top-controls .workspace-selector-field');
       field.classList.remove('hidden');
     }
+  }
 
+  function isSwitchEnabled(id) {
+    const elem = document.querySelector('#' + id);
+    // @ts-ignore
+    return elem.checked;
+  }
+
+  function toggleAllEmulatorsSwitch(isChecked) {
+    const disabled = isChecked ? 'disabled' : null;
+    const elements = ['functions', 'firestore', 'database', 'hosting'].forEach(
+      service => {
+        const element = document.querySelector('#switch-emu-' + service);
+        if (isChecked) {
+          element.setAttribute('disabled', 'disabled');
+        } else {
+          element.removeAttribute('disabled');
+        }
+      }
+    );
   }
 </script>
 
