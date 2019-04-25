@@ -361,6 +361,18 @@
     .table.is-hoverable tbody tr:not(.is-selected):hover {
       background-color: var(--vscode-editorWidget-background);
     }
+
+    .tab-content--https-functions td.log-entry-cell-timestamp {
+      min-width: 10rem;
+    }
+
+    .tab-content--https-functions td.log-entry-cell-type {
+      min-width: 7rem;
+    }
+
+    .tab-content--https-functions td.log-entry-cell-level {
+      min-width: 4rem;
+    }
   </style>
 </head>
 
@@ -713,7 +725,22 @@
     ['timestamp', 'type', 'level', 'text'].forEach(field => {
       const cell = document.createElement('td');
       cell.classList.add('log-entry-cell', 'log-entry-cell-' + field);
-      cell.innerText = entry[field] || '';
+
+      let value = entry[field] || '';
+
+      if (value && field === 'timestamp') {
+        const date = new Date(value);
+        value = date.toLocaleDateString(undefined, {
+          month: 'short',
+          day: 'numeric',
+          year: 'numeric',
+          hour: 'numeric',
+          minute: 'numeric',
+          second: 'numeric'
+        });
+      }
+
+      cell.innerText = value;
       row.appendChild(cell);
     });
 
