@@ -230,11 +230,15 @@
       margin-bottom: 0.75rem;
     }
 
-    body>.columns {
+    body>.columns.bottom {
       padding-left: 0.6rem;
 
       /* TODO: fix this */
-      height: 93%;
+      height: 85%;
+    }
+
+    body>.level {
+      padding-left: 0.6rem;
     }
 
     .box {
@@ -260,6 +264,20 @@
       color: var(--vscode-foreground);
     }
 
+    .running-status-container {
+      color: var(--vscode-foreground);
+      margin-top: -0.5em;
+      font-weight: initial;
+    }
+
+    .running-status::after {
+      content: 'stopped';
+    }
+
+    body.running .running-status::after {
+      content: 'running';
+    }
+
     label.checkbox:hover {
       color: var(--vscode-tab-activeForeground);
     }
@@ -275,6 +293,23 @@
 
     .shell-output .item-stderr {
       box-shadow: -2px 0px 0px 0px var(--vscode-editorError-foreground);
+    }
+
+    .top-controls .field.has-addons select {
+      border-top-left-radius: 0;
+      border-bottom-left-radius: 0;
+    }
+
+    .top-controls .field .button,
+    .top-controls .field select {
+      /* font-size: 0.85rem; */
+      color: var(--vscode-foreground);
+      background-color: var(--vscode-editorWidget-background);
+      border-color: var(--vscode-editorWidget-background);
+    }
+
+    .top-controls .select:not(.is-multiple):not(.is-loading)::after {
+      border-color: var(--vscode-button-background);
     }
   </style>
 </head>
@@ -300,12 +335,49 @@
     </ul>
   </div>
 
+  <div class="level top-controls">
+    <div class="field is-horizontal">
+      <div class="field-body">
+        <div class="field has-addons">
+          <p class="control">
+            <a class="button is-static">
+              Project:
+            </a>
+          </p>
+          <div class="select">
+            <select>
+              <option>Select dropdown</option>
+              <option>With options</option>
+            </select>
+          </div>
+        </div>
+        <div class="field has-addons">
+          <p class="control">
+            <a class="button is-static">
+              Workspace:
+            </a>
+          </p>
+          <p class="control">
+            <div class="select">
+              <select>
+                <option>Select dropdown</option>
+                <option>With options</option>
+              </select>
+            </div>
+          </p>
+        </div>
+      </div>
+    </div>
+  </div>
 
-  <div class="columns is-variable is-2">
+  <div class="columns bottom is-mobile is-variable is-2">
     <div class="column controls">
 
       <div class="box">
-        <div class="columns is-variable is-3">
+        <label class="label running-status-container">
+          Status: <span class="running-status"></span>
+        </label>
+        <div class="columns is-mobile is-variable is-3">
           <div class="column">
             <button class="button start" onclick="start()">Start</button>
           </div>
@@ -314,25 +386,6 @@
           </div>
         </div>
       </div>
-
-      <!-- <div class="container">
-        <div class="card">
-          <header class="card-header">
-            <p class="card-header-title">
-              Status
-            </p>
-          </header>
-          <div class="card-content">
-            <div class="content">
-              Running
-            </div>
-          </div>
-          <footer class="card-footer">
-            <a class="card-footer-item button is-outlined start" onclick="start()">Start</a>
-            <a class="card-footer-item button is-outlined stop" onclick="stop()" disabled>Stop</a>
-          </footer>
-        </div>
-      </div> -->
 
       <div class="box">
         <div class="field">
@@ -375,25 +428,8 @@
         </div>
       </div>
 
-      <!-- <nav class="panel">
-        <p class="panel-heading">
-          Emulator logs
-        </p>
-        <div class="panel-block">
-          <p class="control has-icons-left">
-            <input class="input is-small" type="text" placeholder="search">
-            <span class="icon is-small is-left">
-              <i class="fas fa-search" aria-hidden="true"></i>
-            </span>
-          </p>
-        </div>
-        <div class="panel-block">
-        </div>
-      </nav> -->
-
     </div>
   </div>
-
 
 </body>
 <script>
@@ -438,6 +474,7 @@
     vscode.postMessage({ command: 'start' });
     startButton.setAttribute('disabled', 'disabled');
     stopButton.removeAttribute('disabled');
+    document.body.classList.add('running');
   }
 
   function stop() {
@@ -451,6 +488,7 @@
     startButton.removeAttribute('disabled');
     stopButton.setAttribute('disabled', 'disabled');
     stopButton.classList.remove('is-loading');
+    document.body.classList.remove('running');
   }
 
   function postMessage(message) {
