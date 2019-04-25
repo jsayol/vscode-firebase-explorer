@@ -4,7 +4,6 @@ import { contains, extContext } from '../utils';
 import { FirebaseProject } from '../projects/ProjectManager';
 import { ProjectsAPI } from '../projects/api';
 import { AccountsAPI } from './api';
-import { ProjectStore } from '../projects/ProjectStore';
 
 const RETRY_DELAY = 1000; // ms
 const instances: { [k: string]: AccountManager } = {};
@@ -64,7 +63,7 @@ export class AccountManager {
     return AccountManager.setAccounts(accounts);
   }
 
-  projects = new ProjectStore();
+  projectsList: FirebaseProject[] | null = null;
 
   private constructor(readonly account: AccountInfo) {}
 
@@ -137,15 +136,22 @@ export class AccountManager {
     return this.account.user.email;
   }
 
-  async listProjects(): Promise<FirebaseProject[]> {
-    try {
-      const projectsAPI = ProjectsAPI.for(this.account);
-      const list: FirebaseProject[] = await projectsAPI.listProjects();
-      return list;
-    } catch (err) {
-      console.error({ err });
-      return [];
+  async listProjects({ refresh = true } = {}): Promise<FirebaseProject[]> {
+    if (refresh || !this.projectsList) {
+      try {
+        const projectsAPI = ProjectsAPI.for(this.account);
+        this.projectsList = await projectsAPI.listProjects();
+      } catch (err) {
+        console.error({ err });
+        return [];
+      }
     }
+
+    return this.projectsList;
+  }
+
+  listProjectsSync(): FirebaseProject[] | null {
+    return this.projectsList;
   }
 }
 

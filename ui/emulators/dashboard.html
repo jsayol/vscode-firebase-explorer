@@ -311,6 +311,10 @@
     .top-controls .select:not(.is-multiple):not(.is-loading)::after {
       border-color: var(--vscode-button-background);
     }
+
+    .workspace-selector-field.hidden {
+      visibility: hidden;
+    }
   </style>
 </head>
 
@@ -345,13 +349,10 @@
             </a>
           </p>
           <div class="select">
-            <select>
-              <option>Select dropdown</option>
-              <option>With options</option>
-            </select>
+            <select class="project-selector"></select>
           </div>
         </div>
-        <div class="field has-addons">
+        <div class="field has-addons workspace-selector-field hidden">
           <p class="control">
             <a class="button is-static">
               Workspace:
@@ -359,10 +360,7 @@
           </p>
           <p class="control">
             <div class="select">
-              <select>
-                <option>Select dropdown</option>
-                <option>With options</option>
-              </select>
+              <select class="workspace-selector"></select>
             </div>
           </p>
         </div>
@@ -438,9 +436,10 @@
   const shellOutput = document.querySelector('.shell-output');
   const startButton = document.querySelector('.controls .button.start');
   const stopButton = document.querySelector('.controls .button.stop');
+  const projectSelector = document.querySelector('.top-controls .project-selector');
+  const workspaceSelector = document.querySelector('.top-controls .workspace-selector');
 
   window.addEventListener('message', ({ data }) => {
-    console.log(data);
     switch (data.command) {
       case 'initialize':
         initialize(data);
@@ -471,7 +470,12 @@
   });
 
   function start() {
-    vscode.postMessage({ command: 'start' });
+    // @ts-ignore
+    const [email, projectId] = projectSelector.options[projectSelector.selectedIndex].value.split('#');
+    // @ts-ignore
+    const path = workspaceSelector.options[workspaceSelector.selectedIndex].value;
+
+    vscode.postMessage({ command: 'start', email, projectId, path });
     startButton.setAttribute('disabled', 'disabled');
     stopButton.removeAttribute('disabled');
     document.body.classList.add('running');
@@ -496,7 +500,59 @@
   }
 
   function initialize(data) {
-    //
+    const {
+      folders,
+      accountsWithProjects,
+      selectedAccountEmail,
+      selectedProjectId
+    } = data;
+
+    const numAccounts = accountsWithProjects.length;
+
+    accountsWithProjects.forEach(awp => {
+      let parent;
+
+      if (numAccounts > 1) {
+        parent = document.createElement('optgroup');
+        parent.setAttribute('label', awp.email);
+      } else {
+        parent = projectSelector;
+      }
+
+      awp.projects.forEach(project => {
+        const option = document.createElement('option');
+        option.innerText = project.displayName || project.projectId;
+        option.setAttribute('value', awp.email + '#' + project.projectId);
+
+        const isSelected =
+          selectedAccountEmail === awp.email &&
+          selectedProjectId === project.projectId
+
+        if (isSelected) {
+          option.setAttribute('selected', 'selected');
+        }
+
+        parent.appendChild(option);
+      });
+
+      if (numAccounts > 1) {
+        projectSelector.appendChild(parent);
+      }
+    });
+
+
+    folders.forEach(folder => {
+      const option = document.createElement('option');
+      option.innerText = folder.name;
+      option.setAttribute('value', folder.path);
+      workspaceSelector.appendChild(option);
+    });
+
+    if (folders.length > 1) {
+      const field = document.querySelector('.top-controls .workspace-selector-field');
+      field.classList.remove('hidden');
+    }
+
   }
 </script>
 

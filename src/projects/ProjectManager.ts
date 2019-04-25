@@ -7,7 +7,42 @@ import { AppsAPI } from '../apps/api';
 const instances: { [k: string]: ProjectManager } = {};
 
 export class ProjectManager {
-  static for(account: AccountInfo, project: FirebaseProject): ProjectManager {
+  static for(
+    account: AccountInfo | string,
+    project: FirebaseProject | string
+  ): ProjectManager {
+    if (typeof account === 'string') {
+      // "account" is an email, let's find the AccountInfo.
+      const foundAccount = AccountManager.getAccounts().find(
+        _account => _account.user.email === account
+      );
+
+      if (!foundAccount) {
+        throw new Error('Account not found for email ' + account);
+      }
+
+      account = foundAccount;
+    }
+
+    if (typeof project === 'string') {
+      // "project" is the projectId, let's find the FirebaseProject.
+      const projects = AccountManager.for(account).listProjectsSync();
+
+      if (!projects) {
+        throw new Error('No projects found for email ' + account);
+      }
+
+      const foundProject = projects.find(
+        _project => _project.projectId === project
+      );
+
+      if (!foundProject) {
+        throw new Error('Project not found for projectId ' + project);
+      }
+
+      project = foundProject;
+    }
+
     const id = account.user.email + '--' + project.projectId;
     if (!contains(instances, id)) {
       instances[id] = new ProjectManager(account, project);

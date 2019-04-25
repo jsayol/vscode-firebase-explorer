@@ -2,7 +2,7 @@ import * as vscode from 'vscode';
 import * as linkify from 'linkify-urls';
 import { postToPanel, readFile, getFilePath, ansiToHTML } from '../utils';
 import { WebSocketServer } from './server';
-import { startEmulators, stopEmulators } from './utils';
+import { startEmulators, stopEmulators, listAllProjects } from './utils';
 import { FirebaseProject } from '../projects/ProjectManager';
 import { AccountInfo } from '../accounts/AccountManager';
 
@@ -62,10 +62,23 @@ async function openDashboard(): Promise<void> {
       dashboardPanel.webview.onDidReceiveMessage(async (data: any) => {
         switch (data.command) {
           case 'ready':
+            const folders = (vscode.workspace.workspaceFolders || []).map(
+              folder => ({ name: folder.name, path: folder.uri.fsPath })
+            );
+            const selectedAccount = context.globalState.get<AccountInfo>(
+              'selectedAccount'
+            );
+            const selectedProject = context.globalState.get<FirebaseProject>(
+              'selectedProject'
+            );
             isDashboardReady = true;
             postToPanel(dashboardPanel!, {
-              command: 'initialize'
-              // TODO: projects, accounts, etc
+              command: 'initialize',
+              folders,
+              accountsWithProjects: await listAllProjects(),
+              selectedAccountEmail:
+                selectedAccount && selectedAccount.user.email,
+              selectedProjectId: selectedProject && selectedProject.projectId
             });
             break;
           case 'start':
@@ -96,19 +109,13 @@ async function openDashboard(): Promise<void> {
               });
 
               // TODO:
-              // const { project, account, emulators } = data as {
-              //   project: FirebaseProject;
-              //   account: AccountInfo;
-              //   emulators: 'all' | string[];
-              // };
-              const account = context.globalState.get<AccountInfo>(
-                'selectedAccount'
-              );
-              const project = context.globalState.get<FirebaseProject>(
-                'selectedProject'
-              );
-              const emulators = ['functions'];
-              await startEmulators(server, project, account, emulators);
+              const { path, email, projectId, emulators } = data as {
+                path: string;
+                email: string;
+                projectId: string;
+                emulators: 'all' | string[];
+              };
+              await startEmulators(server, path, email, projectId, emulators);
             }
             break;
           case 'stop':
