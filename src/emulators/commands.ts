@@ -85,36 +85,37 @@ async function openDashboard(): Promise<void> {
           case 'start':
             if (server) {
               unsubStdout = server.on('stdout', ({ data }) => {
-                postToPanel(dashboardPanel!, {
-                  command: 'stdout',
-                  message: linkify(ansiToHTML(data))
-                });
+                if (dashboardPanel) {
+                  postToPanel(dashboardPanel, {
+                    command: 'stdout',
+                    message: linkify(ansiToHTML(data))
+                  });
+                }
               });
 
               unsubStderr = server.on('stderr', ({ data }) => {
-                postToPanel(dashboardPanel!, {
-                  command: 'stderr',
-                  message: linkify(ansiToHTML(data))
-                });
+                if (dashboardPanel) {
+                  postToPanel(dashboardPanel, {
+                    command: 'stderr',
+                    message: linkify(ansiToHTML(data))
+                  });
+                }
               });
 
               unsubLog = server.on('log', logEntry => {
-                postToPanel(dashboardPanel!, {
-                  command: 'log',
-                  message: logEntry
-                });
+                if (dashboardPanel) {
+                  postToPanel(dashboardPanel, {
+                    command: 'log',
+                    message: logEntry
+                  });
+                }
               });
 
               unsubClose = server.on('close', () => {
-                postToPanel(dashboardPanel!, { command: 'server-closed' });
-                unsubStdout!();
-                unsubStderr!();
-                unsubLog!();
-                unsubClose!();
-                unsubStdout = undefined;
-                unsubStderr = undefined;
-                unsubLog = undefined;
-                unsubClose = undefined;
+                if (dashboardPanel) {
+                  postToPanel(dashboardPanel, { command: 'server-closed' });
+                }
+                serverCleanup();
               });
 
               const { path, email, projectId, emulators } = data as {
@@ -143,9 +144,12 @@ async function openDashboard(): Promise<void> {
       // );
 
       dashboardPanel.onDidDispose(
-        () => {
+        async () => {
           dashboardPanel = undefined;
           isDashboardReady = false;
+          if (server) {
+            await stopEmulators(server);
+          }
         },
         null,
         context.subscriptions
@@ -165,4 +169,15 @@ async function stopServer(): Promise<void> {
     await server.stop();
     server = undefined;
   }
+}
+
+function serverCleanup() {
+  unsubStdout!();
+  unsubStderr!();
+  unsubLog!();
+  unsubClose!();
+  unsubStdout = undefined;
+  unsubStderr = undefined;
+  unsubLog = undefined;
+  unsubClose = undefined;
 }

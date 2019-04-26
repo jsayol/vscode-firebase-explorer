@@ -51,7 +51,8 @@
     "onView:firebase-functions",
     "onView:firebase-apps",
     "onView:firebase-firestore",
-    "onView:firebase-database"
+    "onView:firebase-database",
+    "onCommand:firebaseExplorer.emulators.openDashboard"
   ],
   "contributes": {
     "viewsContainers": {
@@ -95,11 +96,6 @@
       {
         "command": "firebaseExplorer.emulators.openDashboard",
         "title": "Open emulators dashboard",
-        "category": "Emulators"
-      },
-      {
-        "command": "firebaseExplorer.emulators.stopServer",
-        "title": "Stop emulators dashboard server",
         "category": "Emulators"
       },
       {
