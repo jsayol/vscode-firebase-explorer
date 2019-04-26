@@ -202,12 +202,20 @@
       color: var(--vscode-button-foreground);
     }
 
+    .tabs,
+    .label,
+    .switch[type=checkbox]+label,
+    .button,
+    .select select {
+      font-size: 0.9rem;
+    }
+
     .tabs ul {
       border-bottom-color: var(--vscode-editorGroupHeader-tabsBackground);
     }
 
     .tabs a {
-      padding: .25em 1em;
+      padding: .4em 1em;
     }
 
     .tabs li:not(.is-active) a {
@@ -373,6 +381,10 @@
     .tab-content--https-functions td.log-entry-cell-level {
       min-width: 4rem;
     }
+
+    .modal:not(.is-active) {
+      display: none;
+    }
   </style>
 </head>
 
@@ -493,7 +505,7 @@
     </div>
 
     <div class="tab-content tab-content--https-functions">
-      <table class="table logging-table is-fullwidth is-hoverable">
+      <table class="table logging-table is-fullwidth is-hoverable" onclick="tableClick(event, this)">
         <thead>
           <tr>
             <th>Timestamp</th>
@@ -506,10 +518,22 @@
         </tbody>
       </table>
 
-      <!-- <div class="box shell-output-box terminal">
-        <div class="shell-output terminal">
+      <div class="modal modal-json-viewer">
+        <div class="modal-background"></div>
+        <div class="modal-card">
+          <header class="modal-card-head">
+            <p class="modal-card-title">Log entry data</p>
+            <button class="delete" aria-label="close" onclick="closeModal('.modal-json-viewer')"></button>
+          </header>
+          <section class="modal-card-body">
+            <code class="content"></code>
+          </section>
+          <!-- <footer class="modal-card-foot">
+            <button class="button is-success">Save changes</button>
+            <button class="button">Cancel</button>
+          </footer> -->
         </div>
-      </div> -->
+      </div>
     </div>
 
     <div class="tab-content tab-content--callable-functions">
@@ -529,6 +553,7 @@
   const stopButton = document.querySelector('.controls .button.stop');
   const projectSelector = document.querySelector('.top-controls .project-selector');
   const workspaceSelector = document.querySelector('.top-controls .workspace-selector');
+  let logEntries = [];
 
   window.addEventListener('message', ({ data }) => {
     switch (data.command) {
@@ -667,6 +692,8 @@
       const field = document.querySelector('.top-controls .workspace-selector-field');
       field.classList.remove('hidden');
     }
+
+    logEntries = [];
   }
 
   function isSwitchEnabled(id) {
@@ -712,7 +739,7 @@
   }
 
   function addLogEntry(entry) {
-    console.log(entry);
+    console.log(JSON.stringify(entry.data));
     const output = document.querySelector('.tab-content--https-functions table tbody');
     const row = document.createElement('tr');
 
@@ -721,6 +748,9 @@
       'log-entry-type--' + entry.type,
       'log-entry-level--' + entry.level
     );
+
+    row.dataset.logEntryPos = String(logEntries.length);
+    logEntries.push(entry);
 
     ['timestamp', 'type', 'level', 'text'].forEach(field => {
       const cell = document.createElement('td');
@@ -746,6 +776,31 @@
 
     output.appendChild(row);
 
+  }
+
+  function openModal(selector, content) {
+    const modal = document.querySelector(selector);
+    if (modal) {
+      modal.querySelector('.content').innerText = content;
+      modal.classList.add('is-active');
+      document.querySelector('html').classList.add('is-clipped');
+    }
+  }
+
+  function closeModal(selector) {
+    const modal = document.querySelector(selector);
+    if (modal) {
+      modal.classList.remove('is-active');
+      document.querySelector('html').classList.remove('is-clipped');
+      modal.querySelector('.content').innerText = '';
+    }
+  }
+
+  function tableClick(event, table) {
+    const row = event.target.closest('tr');
+    const logEntryPos = Number(row.dataset.logEntryPos);
+    const entry = logEntries[logEntryPos];
+    openModal('.modal-json-viewer', JSON.stringify(entry.data, null, 2));
   }
 </script>
 
