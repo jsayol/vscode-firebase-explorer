@@ -124,9 +124,9 @@ async function openDashboard(): Promise<void> {
               });
 
               unsubClose = server.on('close', () => {
-                if (dashboardPanel) {
-                  postToPanel(dashboardPanel, { command: 'server-closed' });
-                }
+                // if (dashboardPanel) {
+                //   postToPanel(dashboardPanel, { command: 'server-closed' });
+                // }
                 serverCleanup();
               });
 
@@ -136,7 +136,14 @@ async function openDashboard(): Promise<void> {
                 projectId: string;
                 emulators: 'all' | string[];
               };
+
+              // This promise resolves when the child process exits
               await startEmulators(server, path, email, projectId, emulators);
+              // The CLI has exited
+              if (dashboardPanel) {
+                postToPanel(dashboardPanel, { command: 'server-closed' });
+                serverCleanup();
+              }
             }
             break;
           case 'stop':
@@ -149,7 +156,6 @@ async function openDashboard(): Promise<void> {
 
       dashboardPanel.onDidDispose(
         async () => {
-          console.log('*** CLOSING PANEL ***');
           dashboardPanel = undefined;
           isDashboardReady = false;
           if (server) {

@@ -2600,6 +2600,11 @@ linkify-urls@^3.1.0:
   dependencies:
     create-html-element "^2.1.0"
 
+listening-processes@^1.2.0:
+  version "1.2.0"
+  resolved "https://registry.yarnpkg.com/listening-processes/-/listening-processes-1.2.0.tgz#1caa6731115f6c9eab8082953bb076ed836f71bb"
+  integrity sha512-lOEy4M7ss7hWxcqoRqxR+ykm+O/YmqYd9jH6uPcGjujk1eTrMoFcj4zTHw51jAawf1Q9W5UiMtlv8srl2Q/Yow==
+
 loader-runner@^2.3.0:
   version "2.4.0"
   resolved "https://registry.yarnpkg.com/loader-runner/-/loader-runner-2.4.0.tgz#ed47066bfe534d7e84c4c7b9998c2a75607d9357"

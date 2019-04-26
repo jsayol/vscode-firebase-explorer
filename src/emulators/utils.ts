@@ -5,7 +5,7 @@ import { AccountManager } from '../accounts/AccountManager';
 
 const EMULATORS_START_COMMAND = 'emulators:start';
 
-let cliProcess: ChildProcess;
+let cliProcess: ChildProcess | undefined;
 
 export async function startEmulators(
   server: WebSocketServer,
@@ -17,32 +17,55 @@ export async function startEmulators(
   server.useProjectManager(ProjectManager.for(email, projectId));
   await server.start();
 
-  let args = [EMULATORS_START_COMMAND, '--ws', server.getAddress()];
+  return new Promise(async resolve => {
+    try {
+      let args = [EMULATORS_START_COMMAND, '--ws', server.getAddress()];
 
-  if (Array.isArray(emulators)) {
-    args = args.concat('--only', emulators.join(','));
-  }
+      if (Array.isArray(emulators)) {
+        args = args.concat('--only', emulators.join(','));
+      }
 
-  const spawnOptions = {
-    cwd: workspacePath,
-    windowsHide: true
-  };
+      const spawnOptions = {
+        cwd: workspacePath,
+        windowsHide: true
+      };
 
-  // TODO: This is only while developing!
-  const devFirebaseTools = '/home/josep/projects/firebase-tools';
-  args = [devFirebaseTools + '/lib/bin/firebase.js', ...args];
-  cliProcess = spawn('node' /* TODO: 'firebase' */, args, spawnOptions);
-  // cliProcess = spawn('firebase' */, args, spawnOptions);
+      // TODO: This is only while developing!
+      const devFirebaseTools = '/home/josep/projects/firebase-tools';
+      args = [devFirebaseTools + '/lib/bin/firebase.js', ...args];
+      cliProcess = spawn('node' /* TODO: 'firebase' */, args, spawnOptions);
+      // cliProcess = spawn('firebase' */, args, spawnOptions);
 
-  ['message', 'close', 'exit', 'error', 'disconnect'].forEach(event => {
-    cliProcess.on(event, (...eventArgs) => {
-      console.log(event, ...eventArgs);
-    });
+      cliProcess.once('exit', (code, signal) => {
+        console.log('ChildProcess exit:', code, signal);
+        cliProcess = undefined;
+        resolve();
+      });
+    } catch (err) {
+      console.error('Error while starting the emulators:', err);
+      await stopEmulators(server);
+      resolve();
+    }
   });
 }
 
 export async function stopEmulators(server: WebSocketServer): Promise<void> {
   await server.stop();
+
+  if (cliProcess) {
+    if (cliProcess.killed) {
+      cliProcess = undefined;
+      return;
+    }
+
+    return new Promise(resolve => {
+      cliProcess!.once('exit', () => {
+        cliProcess = undefined;
+        resolve();
+      });
+      cliProcess!.kill('SIGINT');
+    });
+  }
 }
 
 export async function listAllProjects(): Promise<

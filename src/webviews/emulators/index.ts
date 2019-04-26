@@ -28,6 +28,7 @@ window.addEventListener('message', ({ data }) => {
       break;
     case 'stdout':
     case 'stderr':
+    console.log(data);
       showCLIOutput(data);
       break;
     case 'log':
@@ -37,7 +38,7 @@ window.addEventListener('message', ({ data }) => {
       stopped();
       break;
     case 'focus':
-      // The windowebview got focus.
+      // The webview got focus.
       break;
     case 'error':
       // TODO
@@ -105,10 +106,11 @@ function setupDOMListeners() {
         if (distanceFromBottom <= 15) {
           dataset.tailEnabled = 'true';
         }
-        dataset.disableTailOnScroll = 'true';
       } else if (dataset.disableTailOnScroll !== 'false') {
         dataset.tailEnabled = 'false';
       }
+
+      dataset.disableTailOnScroll = 'true';
     });
   });
 }
@@ -257,6 +259,8 @@ function showCLIOutput(data: { command: string; message: string }) {
   shellItem.innerHTML = data.message;
   shellOutput.appendChild(shellItem);
   scrollToBottomIfEnabled(shellOutput.closest('.tailing') as HTMLElement);
+
+  parseSpecialMessages(data);
 }
 
 function isSwitchEnabled(id: string) {
@@ -404,10 +408,15 @@ function addDatabaseLogEntry(entry: { from: any; data: any }) {
   output.appendChild(shellItem);
 }
 
-function openModal(selector: string, content: string) {
+function openModal(selector: string, content: string, isHTML = false) {
   const modal = document.querySelector(selector) as HTMLElement;
   if (modal) {
-    (modal.querySelector('.content') as HTMLElement).innerText = content;
+    const contentElement = modal.querySelector('.content') as HTMLElement;
+    if (isHTML) {
+      contentElement.innerHTML = content;
+    } else {
+      contentElement.innerText = content;
+    }
     modal.classList.add('is-active');
     document.querySelector('html')!.classList.add('is-clipped');
   }
@@ -418,7 +427,7 @@ function closeModal(event: Event) {
   if (modal) {
     modal.classList.remove('is-active');
     document.querySelector('html')!.classList.remove('is-clipped');
-    (modal.querySelector('.content') as HTMLElement).innerText = '';
+    (modal.querySelector('.content') as HTMLElement).innerHTML = '';
   }
 }
 
@@ -456,4 +465,24 @@ function scrollToBottomIfEnabled(element: HTMLElement) {
 function scrollToBottom(element: HTMLElement) {
   element.dataset.disableTailOnScroll = 'false';
   element.scrollTo(0, element.scrollHeight);
+}
+
+function parseSpecialMessages(data: {
+  command: string;
+  message: string;
+}): void {
+  if (
+    data.command === 'stderr' &&
+    /Could not start database emulator, port taken/.test(data.message)
+  ) {
+    // TODO: it would be cool if we could detect what process is occupying
+    // the database port and offered to try to kill it.
+    // Look into netstat, find-process, etc.
+    // const errorMsg = `
+    //   The database emulator couldn't start because the port is
+    //   already taken.<br/>
+    //   Check if there's another instance running and terminate it.
+    // `;
+    // openModal('.modal-notice-warning', errorMsg, true);
+  }
 }

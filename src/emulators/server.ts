@@ -48,7 +48,7 @@ interface WebSocketDebuggerInitData {
 }
 
 type SendMessageType = 'init' | 'stop' | 'error';
-type RecvMessageType = 'init' | 'log' | 'error' | 'stdout' | 'stderr';
+type RecvMessageType = 'init' | 'log' | 'error' | 'stdout' | 'stderr' | 'pid';
 
 export type ListenerEventType = RecvMessageType | 'close';
 
@@ -197,7 +197,6 @@ export class WebSocketServer {
         break;
       case 'stdout':
       case 'stderr':
-        // TODO
         // log(message);
         break;
       case 'error':
@@ -205,8 +204,11 @@ export class WebSocketServer {
         log(message);
         break;
       case 'log':
-        // TODO
         // log(message);
+        break;
+      case 'pid':
+        // TODO
+        log(message);
         break;
       default:
         throw new Error('Unknow message type: ' + message.type);

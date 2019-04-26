@@ -567,6 +567,7 @@
     "iconv-lite": "^0.4.24",
     "jsonwebtoken": "^8.4.0",
     "linkify-urls": "^3.1.0",
+    "listening-processes": "^1.2.0",
     "mime-types": "^2.1.21",
     "mkdirp": "^0.5.1",
     "portfinder": "^1.0.20",
