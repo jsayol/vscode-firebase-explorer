@@ -368,3 +368,14 @@ process.on('unhandledRejection', error => {
 export function ansiToHTML(text: string): string {
   return ansiUp.ansi_to_html(text);
 }
+
+export function replaceResources(content: string): string {
+  const { extensionPath } = extContext();
+
+  return content.replace(/{{ *resource: *([^}]+) *}}/g, (_, resource) => {
+    const filePath = vscode.Uri.file(
+      path.join(extensionPath, resource)
+    );
+    return filePath.with({ scheme: 'vscode-resource' }).toString();
+  });
+}

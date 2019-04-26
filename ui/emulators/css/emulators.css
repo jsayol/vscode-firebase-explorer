@@ -1,0 +1,397 @@
+:root {
+  --shell-output-foreground: #aaaaaa;
+  --shell-output-background: #1b1b1b;
+}
+
+.height-100 {
+  height: 100%;
+}
+
+.width-100 {
+  width: 100%;
+}
+
+html,
+body {
+  height: 100%;
+  color: var(--vscode-foreground);
+  background-color: var(--vscode-editor-background);
+}
+
+body > .super-container {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  margin: 0 auto;
+}
+
+a {
+  color: var(--vscode-textLink-foreground);
+}
+
+a:hover {
+  color: var(--vscode-textLink-activeForeground);
+  opacity: 0.9;
+}
+
+.button,
+.button[disabled] {
+  background-color: var(--vscode-button-background);
+  border-color: var(--vscode-button-background);
+  color: var(--vscode-button-foreground);
+}
+
+.button:not([disabled]):hover {
+  background-color: var(--vscode-button-hoverBackground);
+  border-color: var(--vscode-button-hoverBackground);
+  color: var(--vscode-button-foreground);
+}
+
+.tabs,
+.label,
+.switch[type='checkbox'] + label,
+input[type='checkbox'].is-checkradio + label,
+.button,
+.select select {
+  font-size: 0.9rem;
+}
+
+.tabs ul {
+  border-bottom-color: var(--vscode-editorGroupHeader-tabsBackground);
+}
+
+.tabs .icon {
+  font-size: 1.2rem;
+}
+
+.tabs li:not(.is-active) a {
+  color: var(--vscode-foreground);
+  background-color: var(--vscode-editorWidget-background);
+  border-bottom-color: var(--vscode-editorGroupHeader-tabsBackground);
+}
+
+.tabs li.is-active a {
+  color: var(--vscode-tab-activeForeground);
+  background-color: var(--vscode-tab-activeBackground);
+  border-bottom-color: var(--vscode-editor-background);
+}
+
+.tabs li:not(.is-active) a:hover {
+  color: var(--vscode-tab-activeForeground);
+}
+
+.tab-content {
+  display: none;
+  padding-left: 0.6rem;
+
+  /* TODO: fix this */
+  height: 90%;
+}
+
+.tab-content.is-active {
+  display: block;
+}
+
+.switch[type='checkbox'].is-outlined:checked + label::before {
+  border-color: var(--vscode-button-background);
+}
+
+.switch[type='checkbox'].is-outlined:checked + label::after {
+  background: var(--vscode-button-background);
+}
+
+input[type='checkbox'].is-checkradio + label::before,
+input[type='checkbox'].is-checkradio + label::after {
+  border-color: var(--vscode-foreground);
+}
+
+input[type='checkbox'].is-checkradio:checked + label::before,
+input[type='checkbox'].is-checkradio:checked + label::after {
+  border-color: var(--vscode-button-background);
+}
+
+input[type='checkbox'].is-checkradio:not(:checked):hover + label::before {
+  border-color: var(--vscode-foreground) !important;
+}
+
+input[type='checkbox'].is-checkradio:checked:hover + label::before {
+  border-color: var(--vscode-button-background) !important;
+}
+
+input[type='checkbox'].is-checkradio + label {
+  color: var(--vscode-foreground);
+}
+
+input[type='checkbox'].is-checkradio + label:hover {
+  color: var(--vscode-tab-activeForeground);
+}
+
+.tabs,
+.tabs:not(:last-child) {
+  margin-bottom: 0.75rem;
+}
+
+.box {
+  padding: 1rem;
+  /* padding: 1rem 1rem 1rem 0.5rem; */
+  box-shadow: none;
+}
+
+.column.controls {
+  flex: none;
+}
+
+.column.controls .box {
+  background-color: var(--vscode-editorWidget-background);
+  /* box-shadow: inset 0px 0px 0px 1px var(--vscode-editorWidget-border); */
+}
+
+.box:not(:last-child) {
+  margin-bottom: 1.2rem;
+}
+
+.columns.bottom {
+  height: 95%;
+}
+
+.tabs a,
+label.checkbox {
+  color: var(--vscode-foreground);
+}
+
+.controls-box-label {
+  color: var(--vscode-foreground);
+  margin-top: -0.5em;
+  font-weight: initial;
+}
+
+.running-status::after {
+  content: 'stopped';
+  font-family: monospace;
+}
+
+body.running .running-status::after {
+  content: 'running';
+}
+
+body.stopping .running-status::after {
+  content: 'stopping';
+}
+
+label.checkbox:hover {
+  color: var(--vscode-tab-activeForeground);
+}
+
+.shell-output-box {
+  height: 100%;
+  padding-left: 0.5rem;
+  border: 1px solid var(--vscode-editorWidget-background);
+}
+
+.shell-output .item {
+  padding-left: 0.3rem;
+}
+
+.shell-output .item-stderr {
+  box-shadow: -0.2rem 0 0 0 var(--vscode-editorError-foreground);
+}
+
+.top-controls.level {
+  margin-bottom: 1rem !important;
+}
+
+.top-controls .field.has-addons select {
+  border-top-left-radius: 0;
+  border-bottom-left-radius: 0;
+}
+
+.top-controls .field .button,
+.top-controls .field select {
+  /* font-size: 0.85rem; */
+  color: var(--vscode-foreground);
+  background-color: var(--vscode-editorWidget-background);
+  border-color: var(--vscode-editorWidget-background);
+}
+
+.top-controls .select:not(.is-multiple):not(.is-loading)::after {
+  border-color: var(--vscode-button-background);
+}
+
+.workspace-selector-field.hidden {
+  visibility: hidden;
+}
+
+.table.logging-table {
+  color: inherit;
+  font-size: 0.9rem;
+  background-color: inherit;
+}
+
+.table.logging-table th,
+.table.logging-table td {
+  border: none;
+  padding: 0.2em 0.4em;
+}
+
+.table.logging-table thead th,
+.table.logging-table thead td {
+  color: inherit;
+}
+
+.table.is-hoverable tbody tr:not(.is-selected):hover {
+  background-color: var(--vscode-editorWidget-background);
+}
+
+.tab-content--https-functions td.log-entry-cell-timestamp,
+.tab-content--callable-functions td.log-entry-cell-timestamp {
+  min-width: 10rem;
+}
+
+.tab-content--https-functions td.log-entry-cell-type,
+.tab-content--callable-functions td.log-entry-cell-type {
+  min-width: 7rem;
+}
+
+.tab-content--https-functions td.log-entry-cell-level,
+.tab-content--callable-functions td.log-entry-cell-level {
+  min-width: 4rem;
+}
+
+.tab-content--https-functions table tbody tr,
+.tab-content--callable-functions table tbody tr {
+  display: none;
+}
+
+.tab-content--https-functions table.log-level--user tr.log-level--user,
+.tab-content--callable-functions table.log-level--user tr.log-level--user {
+  display: table-row;
+}
+
+.tab-content--https-functions table.log-level--info tr.log-level--info,
+.tab-content--callable-functions table.log-level--info tr.log-level--info {
+  display: table-row;
+}
+
+.tab-content--https-functions table.log-level--debug tr.log-level--debug,
+.tab-content--callable-functions table.log-level--debug tr.log-level--debug {
+  display: table-row;
+}
+
+.tab-content--https-functions table.log-level--error tr.log-level--error,
+.tab-content--callable-functions table.log-level--error tr.log-level--error {
+  display: table-row;
+}
+
+.tab-content--https-functions table.log-level--system tr.log-level--system,
+.tab-content--callable-functions table.log-level--system tr.log-level--system {
+  display: table-row;
+}
+
+.tab-content--https-functions tr.log-level--error td.log-entry-cell-level,
+.tab-content--callable-functions tr.log-level--error td.log-entry-cell-level {
+  color: var(--vscode-terminal-ansiRed);
+}
+
+.modal:not(.is-active) {
+  display: none;
+}
+
+.modal .modal-card-head {
+  padding: 0.6rem 1rem;
+  background-color: var(--vscode-editorWidget-background);
+  border-bottom-color: var(--vscode-editorWidget-background);
+}
+
+.modal .modal-card-head button.delete {
+  background-color: var(--vscode-button-background);
+}
+
+.modal .modal-card-head button.delete::before,
+.modal .modal-card-head button.delete::after {
+  background-color: var(--vscode-button-foreground);
+}
+
+.modal .modal-card-title {
+  color: var(--vscode-foreground);
+}
+
+.modal .modal-card-body,
+.modal .modal-card-body pre {
+  color: var(--vscode-foreground);
+  background-color: var(--vscode-editor-background);
+}
+
+.modal .modal-card-body pre {
+  padding: 0;
+}
+
+.dropdown .dropdown-trigger .button {
+  color: var(--vscode-foreground);
+  background-color: var(--vscode-editorWidget-background);
+  border-color: var(--vscode-editorWidget-background);
+}
+
+.dropdown .dropdown-trigger .button:not([disabled]):hover {
+  color: var(--vscode-tab-activeForeground);
+  background-color: inherit;
+  border-color: var(--vscode-editorWidget-background);
+}
+
+.dropdown .dropdown-menu {
+  min-width: 0;
+}
+
+.dropdown .dropdown-content {
+  background-color: var(--vscode-editorWidget-background);
+}
+
+.dropdown .dropdown-content .dropdown-item {
+  font-size: 0.8rem;
+  line-height: 1.1;
+  padding: 0.3rem 0.4rem;
+  color: var(--vscode-foreground);
+  background-color: var(--vscode-editorWidget-background);
+}
+
+.tab-content--firestore .shell-output-box {
+  padding-left: 1rem;
+}
+
+.with-dropdown-arrow::after {
+  border: 3px solid transparent;
+  border-radius: 2px;
+  border-right: 0;
+  border-top: 0;
+  content: ' ';
+  display: block;
+  height: 0.625em;
+  margin-top: -0.4375em;
+  pointer-events: none;
+  top: 50%;
+  transform: rotate(-45deg);
+  transform-origin: center;
+  width: 0.625em;
+  border-color: var(--vscode-button-background);
+  z-index: 4;
+  margin-left: 1rem;
+}
+
+.tab-content--firestore .shell-output .log-from--stderr,
+.tab-content--database .shell-output .log-from--stderr {
+  color: var(--vscode-terminal-ansiRed);
+}
+
+.shell-output .is-divider {
+  margin: 1.2rem 0;
+  border-top-color: var(--vscode-editorWidget-background);
+}
+
+.shell-output .is-divider::after {
+  border-radius: 4px;
+  padding: 0.2rem 0.8rem;
+  transform: translateY(-0.9rem);
+  color: var(--vscode-foreground);
+  background: var(--vscode-editorWidget-background);
+}

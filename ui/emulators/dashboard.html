@@ -1,521 +1,52 @@
 <!DOCTYPE html>
 <html lang="en">
-<script>
-    // @ts-check
-</script>
 
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Emulators Dashboard</title>
-  <!-- TODO: use internal paths (webpack?) -->
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bulma/0.7.4/css/bulma.min.css">
-  <link rel="stylesheet" href="https://unpkg.com/bulma-switch@2.0.0/dist/css/bulma-switch.min.css">
-  <link rel="stylesheet" href="https://unpkg.com/bulma-checkradio@2.1.0/dist/css/bulma-checkradio.min.css">
-  <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.8.1/css/solid.css"
-    integrity="sha384-QokYePQSOwpBDuhlHOsX0ymF6R/vLk/UQVz3WHa6wygxI5oGTmDTv8wahFOSspdm" crossorigin="anonymous">
-  <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.8.1/css/fontawesome.css"
-    integrity="sha384-vd1e11sR28tEK9YANUtpIOdjGW14pS87bUBuOIoBILVWLFnS+MCX9T6MMf0VdPGq" crossorigin="anonymous">
-  <style>
-    /** Terminal colors **/
-
-    .terminal {
-      color: var(--vscode-terminal-foreground);
-      background-color: var(--vscode-terminal-background);
-      font-family: monospace;
-      font-size: 0.91em;
-    }
-
-    .terminal::selection,
-    .terminal *::selection {
-      background-color: var(--vscode-terminal-selectionBackground);
-    }
-
-
-    .ansi-black-fg {
-      color: var(--vscode-terminal-ansiBlack);
-    }
-
-    .ansi-black-bg {
-      background-color: var(--vscode-terminal-ansiBlack);
-    }
-
-    .ansi-black-fg {
-      color: var(--vscode-terminal-ansiBrightBlack);
-    }
-
-    .ansi-black-bg {
-      background-color: var(--vscode-terminal-ansiBrightBlack);
-    }
-
-    .ansi-red-fg {
-      color: var(--vscode-terminal-ansiRed);
-    }
-
-    .ansi-red-bg {
-      background-color: var(--vscode-terminal-ansiRed);
-    }
-
-    .ansi-red-fg {
-      color: var(--vscode-terminal-ansiBrightRed);
-    }
-
-    .ansi-red-bg {
-      background-color: var(--vscode-terminal-ansiBrightRed);
-    }
-
-    .ansi-green-fg {
-      color: var(--vscode-terminal-ansiGreen);
-    }
-
-    .ansi-green-bg {
-      background-color: var(--vscode-terminal-ansiGreen);
-    }
-
-    .ansi-green-fg {
-      color: var(--vscode-terminal-ansiBrightGreen);
-    }
-
-    .ansi-green-bg {
-      background-color: var(--vscode-terminal-ansiBrightGreen);
-    }
-
-    .ansi-yellow-fg {
-      color: var(--vscode-terminal-ansiYellow);
-    }
-
-    .ansi-yellow-bg {
-      background-color: var(--vscode-terminal-ansiYellow);
-    }
-
-    .ansi-yellow-fg {
-      color: var(--vscode-terminal-ansiBrightYellow);
-    }
-
-    .ansi-yellow-bg {
-      background-color: var(--vscode-terminal-ansiBrightYellow);
-    }
-
-    .ansi-blue-fg {
-      color: var(--vscode-terminal-ansiBlue);
-    }
-
-    .ansi-blue-bg {
-      background-color: var(--vscode-terminal-ansiBlue);
-    }
-
-    .ansi-blue-fg {
-      color: var(--vscode-terminal-ansiBrightBlue);
-    }
-
-    .ansi-blue-bg {
-      background-color: var(--vscode-terminal-ansiBrightBlue);
-    }
-
-    .ansi-magenta-fg {
-      color: var(--vscode-terminal-ansiMagenta);
-    }
-
-    .ansi-magenta-bg {
-      background-color: var(--vscode-terminal-ansiMagenta);
-    }
-
-    .ansi-magenta-fg {
-      color: var(--vscode-terminal-ansiBrightMagenta);
-    }
-
-    .ansi-magenta-bg {
-      background-color: var(--vscode-terminal-ansiBrightMagenta);
-    }
-
-    .ansi-cyan-fg {
-      color: var(--vscode-terminal-ansiCyan);
-    }
-
-    .ansi-cyan-bg {
-      background-color: var(--vscode-terminal-ansiCyan);
-    }
-
-    .ansi-cyan-fg {
-      color: var(--vscode-terminal-ansiBrightCyan);
-    }
-
-    .ansi-cyan-bg {
-      background-color: var(--vscode-terminal-ansiBrightCyan);
-    }
-
-    .ansi-white-fg {
-      color: var(--vscode-terminal-ansiWhite);
-    }
-
-    .ansi-white-bg {
-      background-color: var(--vscode-terminal-ansiWhite);
-    }
-
-    .ansi-white-fg {
-      color: var(--vscode-terminal-ansiBrightWhite);
-    }
-
-    .ansi-white-bg {
-      background-color: var(--vscode-terminal-ansiBrightWhite);
-    }
-  </style>
-  <style>
-    :root {
-      --shell-output-foreground: #AAAAAA;
-      --shell-output-background: #1B1B1B;
-    }
-
-    html,
-    body {
-      height: 100%;
-      color: var(--vscode-foreground);
-      background-color: var(--vscode-editor-background);
-    }
-
-    body>.super-container {
-      position: absolute;
-      top: 0;
-      bottom: 0;
-      left: 0;
-      right: 0;
-      margin: 0 auto;
-    }
-
-    a {
-      color: var(--vscode-textLink-foreground);
-    }
-
-    a:hover {
-      color: var(--vscode-textLink-activeForeground);
-      opacity: 0.9;
-    }
-
-    .button,
-    .button[disabled] {
-      background-color: var(--vscode-button-background);
-      border-color: var(--vscode-button-background);
-      color: var(--vscode-button-foreground);
-    }
-
-    .button:not([disabled]):hover {
-      background-color: var(--vscode-button-hoverBackground);
-      border-color: var(--vscode-button-hoverBackground);
-      color: var(--vscode-button-foreground);
-    }
-
-    .tabs,
-    .label,
-    .switch[type=checkbox]+label,
-    input[type=checkbox].is-checkradio+label,
-    .button,
-    .select select {
-      font-size: 0.9rem;
-    }
-
-    .tabs ul {
-      border-bottom-color: var(--vscode-editorGroupHeader-tabsBackground);
-    }
-
-    .tabs a {
-      padding: .4em 1em;
-    }
-
-    .tabs li:not(.is-active) a {
-      color: var(--vscode-foreground);
-      background-color: var(--vscode-editorWidget-background);
-      border-bottom-color: var(--vscode-editorGroupHeader-tabsBackground);
-    }
-
-    .tabs li.is-active a {
-      color: var(--vscode-tab-activeForeground);
-      background-color: var(--vscode-tab-activeBackground);
-      border-bottom-color: var(--vscode-editor-background);
-    }
-
-    .tabs li:not(.is-active) a:hover {
-      color: var(--vscode-tab-activeForeground);
-    }
-
-    .tab-content {
-      display: none;
-      padding-left: 0.6rem;
-
-      /* TODO: fix this */
-      height: 90%;
-    }
-
-    .tab-content.is-active {
-      display: block;
-    }
-
-    .switch[type=checkbox].is-outlined:checked+label::before {
-      border-color: var(--vscode-button-background);
-    }
-
-    .switch[type=checkbox].is-outlined:checked+label::after {
-      background: var(--vscode-button-background);
-    }
-
-    input[type=checkbox].is-checkradio+label::before,
-    input[type=checkbox].is-checkradio+label::after {
-      border-color: var(--vscode-foreground);
-    }
-
-    input[type=checkbox].is-checkradio:checked+label::before,
-    input[type=checkbox].is-checkradio:checked+label::after {
-      border-color: var(--vscode-button-background);
-    }
-
-    input[type=checkbox].is-checkradio:not(:checked):hover+label::before {
-      border-color: var(--vscode-foreground) !important;
-    }
-
-    input[type=checkbox].is-checkradio:checked:hover+label::before {
-      border-color: var(--vscode-button-background) !important;
-    }
-
-    input[type=checkbox].is-checkradio+label {
-      color: var(--vscode-foreground);
-    }
-
-    input[type=checkbox].is-checkradio+label:hover {
-      color: var(--vscode-tab-activeForeground);
-    }
-
-    .tabs,
-    .tabs:not(:last-child) {
-      margin-bottom: 0.75rem;
-    }
-
-    .box {
-      padding: 1rem;
-      /* padding: 1rem 1rem 1rem 0.5rem; */
-      box-shadow: none;
-    }
-
-    .column.controls {
-      flex: none;
-    }
-
-    .column.controls .box {
-      background-color: var(--vscode-editorWidget-background);
-      /* box-shadow: inset 0px 0px 0px 1px var(--vscode-editorWidget-border); */
-    }
-
-    .box:not(:last-child) {
-      margin-bottom: 1.2rem;
-    }
-
-    .columns.bottom {
-      height: 95%;
-    }
-
-    .tabs a,
-    label.checkbox {
-      color: var(--vscode-foreground);
-    }
-
-    .controls-box-label {
-      color: var(--vscode-foreground);
-      margin-top: -0.5em;
-      font-weight: initial;
-    }
-
-    .running-status::after {
-      content: 'stopped';
-      font-family: monospace;
-    }
-
-    body.running .running-status::after {
-      content: 'running';
-    }
-
-    body.stopping .running-status::after {
-      content: 'stopping';
-    }
-
-    label.checkbox:hover {
-      color: var(--vscode-tab-activeForeground);
-    }
-
-    .shell-output-box {
-      height: 100%;
-      padding-left: 0.5rem;
-      border: 1px solid var(--vscode-editorWidget-background);
-    }
-
-    .shell-output .item {
-      padding-left: 0.3rem;
-    }
-
-    .shell-output .item-stderr {
-      box-shadow: -0.2rem 0 0 0 var(--vscode-editorError-foreground);
-    }
-
-    .top-controls.level {
-      margin-bottom: 1rem !important;
-    }
-
-    .top-controls .field.has-addons select {
-      border-top-left-radius: 0;
-      border-bottom-left-radius: 0;
-    }
-
-    .top-controls .field .button,
-    .top-controls .field select {
-      /* font-size: 0.85rem; */
-      color: var(--vscode-foreground);
-      background-color: var(--vscode-editorWidget-background);
-      border-color: var(--vscode-editorWidget-background);
-    }
-
-    .top-controls .select:not(.is-multiple):not(.is-loading)::after {
-      border-color: var(--vscode-button-background);
-    }
-
-    .workspace-selector-field.hidden {
-      visibility: hidden;
-    }
-
-    .table.logging-table {
-      color: inherit;
-      font-size: 0.9rem;
-      background-color: inherit;
-    }
-
-    .table.logging-table th,
-    .table.logging-table td {
-      border: none;
-      padding: .2em .4em;
-    }
-
-    .table.logging-table thead th,
-    .table.logging-table thead td {
-      color: inherit;
-    }
-
-    .table.is-hoverable tbody tr:not(.is-selected):hover {
-      background-color: var(--vscode-editorWidget-background);
-    }
-
-    .tab-content--https-functions td.log-entry-cell-timestamp {
-      min-width: 10rem;
-    }
-
-    .tab-content--https-functions td.log-entry-cell-type {
-      min-width: 7rem;
-    }
-
-    .tab-content--https-functions td.log-entry-cell-level {
-      min-width: 4rem;
-    }
-
-    .tab-content--https-functions table tbody tr {
-      display: none;
-    }
-
-    .tab-content--https-functions table.log-level--user tr.log-level--user {
-      display: table-row;
-    }
-
-    .tab-content--https-functions table.log-level--info tr.log-level--info {
-      display: table-row;
-    }
-
-    .tab-content--https-functions table.log-level--debug tr.log-level--debug {
-      display: table-row;
-    }
-
-    .tab-content--https-functions table.log-level--error tr.log-level--error {
-      display: table-row;
-    }
-
-    .tab-content--https-functions table.log-level--system tr.log-level--system {
-      display: table-row;
-    }
-
-    .modal:not(.is-active) {
-      display: none;
-    }
-
-    .modal .modal-card-head {
-      padding: 0.6rem 1rem;
-      background-color: var(--vscode-editorWidget-background);
-      border-bottom-color: var(--vscode-editorWidget-background);
-    }
-
-    .modal .modal-card-head button.delete {
-      background-color: var(--vscode-button-background);
-    }
-
-    .modal .modal-card-head button.delete::before,
-    .modal .modal-card-head button.delete::after {
-      background-color: var(--vscode-button-foreground);
-    }
-
-    .modal .modal-card-title {
-      color: var(--vscode-foreground);
-    }
-
-    .modal .modal-card-body,
-    .modal .modal-card-body pre {
-      color: var(--vscode-foreground);
-      background-color: var(--vscode-editor-background);
-    }
-
-    .modal .modal-card-body pre {
-      padding: 0;
-    }
-
-    .dropdown .dropdown-trigger .button {
-      color: var(--vscode-foreground);
-      background-color: var(--vscode-editorWidget-background);
-      border-color: var(--vscode-editorWidget-background);
-    }
-
-    .dropdown .dropdown-trigger .button:not([disabled]):hover {
-      color: var(--vscode-tab-activeForeground);
-      background-color: inherit;
-      border-color: var(--vscode-editorWidget-background);
-    }
-
-    .dropdown .dropdown-menu {
-      min-width: 0;
-    }
-
-    .dropdown .dropdown-content {
-      background-color: var(--vscode-editorWidget-background);
-    }
-
-    .dropdown .dropdown-content .dropdown-item {
-      font-size: .8rem;
-      line-height: 1.1;
-      padding: .3rem .4rem;
-      color: var(--vscode-foreground);
-      background-color: var(--vscode-editorWidget-background);
-    }
-  </style>
+  <title>Firebase Emulators</title>
+  <link rel="stylesheet" href="{{resource:dist/css/bulma.min.css}}">
+  <link rel="stylesheet" href="{{resource:/dist/css/bulma-switch.min.css}}">
+  <link rel="stylesheet" href="{{resource:/dist/css/bulma-divider.min.css}}">
+  <link rel="stylesheet" href="{{resource:dist/css/bulma-checkradio.min.css}}">
+  <link rel="stylesheet" href="{{resource:dist/css/materialdesignicons.min.css}}">
+  <link rel="stylesheet" href="{{resource:ui/emulators/css/emulators.css}}">
+  <link rel="stylesheet" href="{{resource:ui/emulators/css/terminal.css}}">
 </head>
 
 <body>
   <div class="super-container">
-    <div class="tabs">
+    <div class="tabs main-navigation">
       <ul>
-        <li class="tab--dashboard is-active" onclick="openTab('dashboard')">
+        <li class="tab--dashboard is-active" data-tabname="dashboard">
           <a>
-            <span class="icon is-small"><i class="fas fa-home" aria-hidden="true"></i></span>
+            <span class="icon is-small"><i class="mdi mdi-monitor-dashboard" aria-hidden="true"></i></span>
             <span title="Dashboard">Dashboard</span>
           </a>
         </li>
-        <li class="tab--https-functions" onclick="openTab('https-functions')">
-          <a title="HTTPS Functions">HTTPS Functions</a>
+        <li class="tab--https-functions" data-tabname="https-functions">
+          <a>
+            <span class="icon is-small"><i class="mdi mdi-web" aria-hidden="true"></i></span>
+            <span title="HTTPS Functions">HTTPS Functions</span>
+          </a>
         </li>
-        <li class="tab--callable-functions" onclick="openTab('callable-functions')">
-          <a title="Callable Functions">Callable Functions</a>
+        <li class="tab--callable-functions" data-tabname="callable-functions">
+          <a>
+            <span class="icon is-small"><i class="mdi mdi-cloud-braces" aria-hidden="true"></i></span>
+            <span title="Callable Functions">Callable Functions</span>
+          </a>
         </li>
-        <li class="tab--firestore" onclick="openTab('firestore')">
-          <a title="Firestore">Firestore</a>
+        <li class="tab--firestore" data-tabname="firestore">
+          <a>
+            <span class="icon is-small"><i class="mdi mdi-fire" aria-hidden="true"></i></span>
+            <span title="Firestore">Firestore</span>
+          </a>
+        </li>
+        <li class="tab--database" data-tabname="database">
+          <a>
+            <span class="icon is-small"><i class="mdi mdi-database" aria-hidden="true"></i></span>
+            <span title="Database">Database</span>
+          </a>
         </li>
       </ul>
     </div>
@@ -559,10 +90,10 @@
             </label>
             <div class="columns is-mobile is-variable is-3">
               <div class="column">
-                <button class="button start" onclick="start()">Start</button>
+                <button class="button start">Start</button>
               </div>
               <div class="column">
-                <button class="button stop" onclick="stop()" disabled>Stop</button>
+                <button class="button stop" disabled>Stop</button>
               </div>
             </div>
           </div>
@@ -572,8 +103,7 @@
               Enabled Emulators
             </label>
             <div class="field">
-              <input type="checkbox" id="switch-emu-all" class="switch is-outlined"
-                onchange="toggleAllEmulatorsSwitch(this.checked)" checked>
+              <input type="checkbox" id="switch-emu-all" class="switch is-outlined" checked>
               <label class="checkbox" for="switch-emu-all">
                 All
               </label>
@@ -596,17 +126,11 @@
                 Database
               </label>
             </div>
-            <div class="field">
-              <input type="checkbox" id="switch-emu-hosting" class="switch is-outlined" checked disabled>
-              <label class="checkbox" for="switch-emu-hosting">
-                Hosting
-              </label>
-            </div>
           </div>
 
         </div>
         <div class="column">
-          <div class="box shell-output-box terminal">
+          <div class="box shell-output-box terminal tailing">
             <div class="shell-output terminal">
             </div>
           </div>
@@ -616,45 +140,42 @@
 
     <div class="tab-content tab-content--https-functions">
       <div class="level">
-        <div class="dropdown is-hoverable">
+        <div class="dropdown is-hoverable log-level-selection">
           <div class="dropdown-trigger">
-            <button class="button" aria-haspopup="true" aria-controls="dropdown-menu4">
+            <button class="button with-dropdown-arrow" aria-haspopup="true"
+              aria-controls="log-level-selection--https-functions">
               <span>Log level</span>
-              <span class="icon is-small">
-                <i class="fas fa-angle-down" aria-hidden="true"></i>
-              </span>
             </button>
           </div>
-          <div class="dropdown-menu" role="menu">
+          <div class="dropdown-menu" id="log-level-selection--https-functions" role="menu">
             <div class="dropdown-content">
 
               <div class="dropdown-item field">
-                <input class="is-checkradio" onchange="applyHttpsFuncLogLevel()"
-                  id="tab-content--https-functions--log-level--user" type="checkbox" checked="checked">
+                <input class="is-checkradio" id="tab-content--https-functions--log-level--user" type="checkbox"
+                  checked="checked">
                 <label for="tab-content--https-functions--log-level--user">User</label>
               </div>
 
               <div class="dropdown-item field">
-                <input class="is-checkradio" onchange="applyHttpsFuncLogLevel()"
-                  id="tab-content--https-functions--log-level--info" type="checkbox" checked="checked">
+                <input class="is-checkradio" id="tab-content--https-functions--log-level--info" type="checkbox"
+                  checked="checked">
                 <label for="tab-content--https-functions--log-level--info">Info</label>
               </div>
 
               <div class="dropdown-item field">
-                <input class="is-checkradio" onchange="applyHttpsFuncLogLevel()"
-                  id="tab-content--https-functions--log-level--debug" type="checkbox" checked="checked">
+                <input class="is-checkradio" id="tab-content--https-functions--log-level--debug" type="checkbox"
+                  checked="checked">
                 <label for="tab-content--https-functions--log-level--debug">Debug</label>
               </div>
 
               <div class="dropdown-item field">
-                <input class="is-checkradio" onchange="applyHttpsFuncLogLevel()"
-                  id="tab-content--https-functions--log-level--error" type="checkbox" checked="checked">
+                <input class="is-checkradio" id="tab-content--https-functions--log-level--error" type="checkbox"
+                  checked="checked">
                 <label for="tab-content--https-functions--log-level--error">Error</label>
               </div>
 
               <div class="dropdown-item field">
-                <input class="is-checkradio" onchange="applyHttpsFuncLogLevel()"
-                  id="tab-content--https-functions--log-level--system" type="checkbox">
+                <input class="is-checkradio" id="tab-content--https-functions--log-level--system" type="checkbox">
                 <label for="tab-content--https-functions--log-level--system">System</label>
               </div>
 
@@ -663,7 +184,7 @@
         </div>
       </div>
       <div class="level">
-        <table class="table logging-table is-fullwidth is-hoverable" onclick="tableClick(event, this)">
+        <table class="table logging-table is-fullwidth is-hoverable">
           <thead>
             <tr>
               <th>Timestamp</th>
@@ -678,307 +199,112 @@
       </div>
 
       <div class="modal modal-json-viewer">
-        <div class="modal-background" onclick="closeModal('.modal-json-viewer')"></div>
+        <div class="modal-background"></div>
         <div class="modal-card">
           <header class="modal-card-head">
             <p class="modal-card-title">Log entry data</p>
-            <button class="delete" aria-label="close" onclick="closeModal('.modal-json-viewer')"></button>
+            <button class="delete" aria-label="close"></button>
           </header>
           <section class="modal-card-body">
             <pre><code class="content"></code></pre>
           </section>
-          <!-- <footer class="modal-card-foot">
-            <button class="button is-success">Save changes</button>
-            <button class="button">Cancel</button>
-          </footer> -->
         </div>
       </div>
     </div>
 
     <div class="tab-content tab-content--callable-functions">
-      callable-functions
+      <div class="level">
+        <div class="dropdown is-hoverable log-level-selection">
+          <div class="dropdown-trigger">
+            <button class="button with-dropdown-arrow" aria-haspopup="true"
+              aria-controls="log-level-selection--callable-functions">
+              <span>Log level</span>
+            </button>
+          </div>
+          <div class="dropdown-menu" id="log-level-selection--callable-functions" role="menu">
+            <div class="dropdown-content">
+
+              <div class="dropdown-item field">
+                <input class="is-checkradio" id="tab-content--callable-functions--log-level--user" type="checkbox"
+                  checked="checked">
+                <label for="tab-content--callable-functions--log-level--user">User</label>
+              </div>
+
+              <div class="dropdown-item field">
+                <input class="is-checkradio" id="tab-content--callable-functions--log-level--info" type="checkbox"
+                  checked="checked">
+                <label for="tab-content--callable-functions--log-level--info">Info</label>
+              </div>
+
+              <div class="dropdown-item field">
+                <input class="is-checkradio" id="tab-content--callable-functions--log-level--debug" type="checkbox"
+                  checked="checked">
+                <label for="tab-content--callable-functions--log-level--debug">Debug</label>
+              </div>
+
+              <div class="dropdown-item field">
+                <input class="is-checkradio" id="tab-content--callable-functions--log-level--error" type="checkbox"
+                  checked="checked">
+                <label for="tab-content--callable-functions--log-level--error">Error</label>
+              </div>
+
+              <div class="dropdown-item field">
+                <input class="is-checkradio" id="tab-content--callable-functions--log-level--system" type="checkbox">
+                <label for="tab-content--callable-functions--log-level--system">System</label>
+              </div>
+
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="level">
+        <table class="table logging-table is-fullwidth is-hoverable">
+          <thead>
+            <tr>
+              <th>Timestamp</th>
+              <th>Type</th>
+              <th>Level</th>
+              <th>Text</th>
+            </tr>
+          </thead>
+          <tbody>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="modal modal-json-viewer">
+        <div class="modal-background"></div>
+        <div class="modal-card">
+          <header class="modal-card-head">
+            <p class="modal-card-title">Log entry data</p>
+            <button class="delete" aria-label="close"></button>
+          </header>
+          <section class="modal-card-body">
+            <pre><code class="content"></code></pre>
+          </section>
+        </div>
+      </div>
     </div>
 
     <div class="tab-content tab-content--firestore">
-      firestore
+      <div class="level height-100">
+        <div class="box shell-output-box terminal width-100 tailing">
+          <div class="shell-output terminal">
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="tab-content tab-content--database">
+      <div class="level height-100">
+        <div class="box shell-output-box terminal width-100 tailing">
+          <div class="shell-output terminal">
+          </div>
+        </div>
+      </div>
     </div>
   </div>
+  <script src="{{resource:dist/webviews/emulators.js}}"></script>
 </body>
-<script>
-  // @ts-ignore
-  const vscode = acquireVsCodeApi();
-  const shellOutput = document.querySelector('.tab-content--dashboard .shell-output');
-  const startButton = document.querySelector('.controls .button.start');
-  const stopButton = document.querySelector('.controls .button.stop');
-  const projectSelector = document.querySelector('.top-controls .project-selector');
-  const workspaceSelector = document.querySelector('.top-controls .workspace-selector');
-  let logEntries = [];
-
-  window.addEventListener('message', ({ data }) => {
-    switch (data.command) {
-      case 'initialize':
-        initialize(data);
-        break;
-      case 'stdout':
-      case 'stderr':
-        const shellMessage = document.createElement('div');
-        shellMessage.classList.add('item', 'item-' + data.command);
-        shellMessage.innerHTML = data.message;
-        shellOutput.appendChild(shellMessage);
-        break;
-      case 'log':
-        addLogEntry(data.message);
-        break;
-      case 'server-closed':
-        stopped();
-        break;
-      case 'focus':
-        // The windowebview got focus.
-        break;
-      default:
-        console.error('Unknown command received:', data)
-      // TODO: throw? ignore?
-    }
-  });
-
-  vscode.postMessage({
-    command: 'ready'
-  });
-
-  function start() {
-    // @ts-ignore
-    const [email, projectId] = projectSelector.options[projectSelector.selectedIndex].value.split('#');
-    // @ts-ignore
-    const path = workspaceSelector.options[workspaceSelector.selectedIndex].value;
-
-    let emulators;
-    const allEmulators = isSwitchEnabled('switch-emu-all');
-    if (allEmulators) {
-      emulators = 'all';
-    } else {
-      emulators = [];
-      if (isSwitchEnabled('switch-emu-functions')) {
-        emulators.push('functions');
-      }
-      if (isSwitchEnabled('switch-emu-firestore')) {
-        emulators.push('firestore');
-      }
-      if (isSwitchEnabled('switch-emu-database')) {
-        emulators.push('database');
-      }
-      if (isSwitchEnabled('switch-emu-hosting')) {
-        emulators.push('hosting');
-      }
-    }
-
-
-    vscode.postMessage({ command: 'start', email, projectId, path, emulators });
-    startButton.setAttribute('disabled', 'disabled');
-    stopButton.removeAttribute('disabled');
-    document.body.classList.add('running');
-  }
-
-  function stop() {
-    stopButton.classList.add('is-loading');
-    stopButton.setAttribute('disabled', 'disabled');
-    document.body.classList.remove('running');
-    document.body.classList.add('stopping');
-    vscode.postMessage({ command: 'stop' });
-  }
-
-  function stopped() {
-    startButton.removeAttribute('disabled');
-    stopButton.setAttribute('disabled', 'disabled');
-    stopButton.classList.remove('is-loading');
-    document.body.classList.remove('running');
-    document.body.classList.remove('stopping');
-  }
-
-  function postMessage(message) {
-    vscode.postMessage(message);
-  }
-
-  function initialize(data) {
-    const {
-      folders,
-      accountsWithProjects,
-      selectedAccountEmail,
-      selectedProjectId
-    } = data;
-
-    const numAccounts = accountsWithProjects.length;
-
-    accountsWithProjects.forEach(awp => {
-      let parent;
-
-      if (numAccounts > 1) {
-        parent = document.createElement('optgroup');
-        parent.setAttribute('label', awp.email);
-      } else {
-        parent = projectSelector;
-      }
-
-      awp.projects.forEach(project => {
-        const option = document.createElement('option');
-        option.innerText = project.displayName || project.projectId;
-        option.setAttribute('value', awp.email + '#' + project.projectId);
-
-        const isSelected =
-          selectedAccountEmail === awp.email &&
-          selectedProjectId === project.projectId
-
-        if (isSelected) {
-          option.setAttribute('selected', 'selected');
-        }
-
-        parent.appendChild(option);
-      });
-
-      if (numAccounts > 1) {
-        projectSelector.appendChild(parent);
-      }
-    });
-
-    folders.forEach(folder => {
-      const option = document.createElement('option');
-      option.innerText = folder.name;
-      option.setAttribute('value', folder.path);
-      workspaceSelector.appendChild(option);
-    });
-
-    if (folders.length > 1) {
-      const field = document.querySelector('.top-controls .workspace-selector-field');
-      field.classList.remove('hidden');
-    }
-
-    logEntries = [];
-  
-    applyHttpsFuncLogLevel()
-  }
-
-  function isSwitchEnabled(id) {
-    const elem = document.querySelector('#' + id);
-    // @ts-ignore
-    return elem.checked;
-  }
-
-  function toggleAllEmulatorsSwitch(isChecked) {
-    const disabled = isChecked ? 'disabled' : null;
-    const elements = ['functions', 'firestore', 'database', 'hosting'].forEach(
-      service => {
-        const element = document.querySelector('#switch-emu-' + service);
-        if (isChecked) {
-          element.setAttribute('disabled', 'disabled');
-        } else {
-          element.removeAttribute('disabled');
-        }
-      }
-    );
-  }
-
-  function openTab(tabName) {
-    const tabs = document.querySelectorAll(".tabs li");
-    tabs.forEach(tab => {
-      const isSelected = tab.classList.contains('tab--' + tabName);
-      if (isSelected) {
-        tab.classList.add('is-active');
-      } else {
-        tab.classList.remove('is-active');
-      }
-    });
-
-    const contents = document.querySelectorAll(".tab-content");
-    contents.forEach(tabContent => {
-      const isSelected = tabContent.classList.contains('tab-content--' + tabName);
-      if (isSelected) {
-        tabContent.classList.add('is-active');
-      } else {
-        tabContent.classList.remove('is-active');
-      }
-    });
-  }
-
-  function addLogEntry(entry) {
-    console.log(JSON.stringify(entry.data));
-    const output = document.querySelector('.tab-content--https-functions table tbody');
-    const row = document.createElement('tr');
-
-    row.classList.add(
-      'log-entry',
-      'log-type--' + (entry.type || 'unknown').toLowerCase(),
-      'log-level--' + (entry.level || 'unknown').toLowerCase()
-    );
-
-    row.dataset.logEntryPos = String(logEntries.length);
-    logEntries.push(entry);
-
-    ['timestamp', 'type', 'level', 'text'].forEach(field => {
-      let value = entry[field] || '';
-      const cell = document.createElement('td');
-      cell.classList.add('log-entry-cell', 'log-entry-cell-' + field);
-      cell.setAttribute('title', value);
-
-      if (value && field === 'timestamp') {
-        const date = new Date(value);
-        value = date.toLocaleDateString(undefined, {
-          month: 'short',
-          day: 'numeric',
-          year: 'numeric',
-          hour: 'numeric',
-          minute: 'numeric',
-          second: 'numeric'
-        });
-      }
-
-      cell.innerText = value;
-      row.appendChild(cell);
-    });
-
-    output.appendChild(row);
-
-  }
-
-  function openModal(selector, content) {
-    const modal = document.querySelector(selector);
-    if (modal) {
-      modal.querySelector('.content').innerText = content;
-      modal.classList.add('is-active');
-      document.querySelector('html').classList.add('is-clipped');
-    }
-  }
-
-  function closeModal(selector) {
-    const modal = document.querySelector(selector);
-    if (modal) {
-      modal.classList.remove('is-active');
-      document.querySelector('html').classList.remove('is-clipped');
-      modal.querySelector('.content').innerText = '';
-    }
-  }
-
-  function tableClick(event, table) {
-    const row = event.target.closest('tr');
-    const logEntryPos = Number(row.dataset.logEntryPos);
-    const entry = logEntries[logEntryPos];
-    openModal('.modal-json-viewer', JSON.stringify(entry.data, null, 2));
-  }
-
-  function applyHttpsFuncLogLevel() {
-    const table = document.querySelector('.tab-content--https-functions table');
-
-    ['user', 'info', 'debug', 'error', 'system'].forEach(level => {
-      const checkbox = document.querySelector(
-        '#tab-content--https-functions--log-level--' + level
-      );
-
-      // @ts-ignore
-      if (checkbox.checked) {
-        table.classList.add('log-level--' + level);
-      } else {
-        table.classList.remove('log-level--' + level);
-      }
-    });
-  }
-</script>
 
 </html>

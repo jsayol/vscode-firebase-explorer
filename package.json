@@ -540,6 +540,7 @@
     "@types/ws": "^6.0.1",
     "@types/yauzl": "^2.9.0",
     "clean-webpack-plugin": "^1.0.0",
+    "copy-webpack-plugin": "^5.0.3",
     "filemanager-webpack-plugin": "^2.0.5",
     "prettier": "^1.15.3",
     "terser-webpack-plugin": "^1.1.0",
@@ -555,8 +556,12 @@
     "webpack-cli": "^3.1.2"
   },
   "dependencies": {
+    "@mdi/font": "^3.6.95",
     "ansi_up": "^4.0.3",
     "bulma": "^0.7.4",
+    "bulma-checkradio": "^2.1.0",
+    "bulma-divider": "^0.2.0",
+    "bulma-switch": "^2.0.0",
     "chardet": "^0.7.0",
     "directory-tree": "^2.2.0",
     "iconv-lite": "^0.4.24",

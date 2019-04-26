@@ -1,19 +1,115 @@
 // // @ts-check
 'use strict';
 
+const path = require('path');
 const semver = require('semver');
 const webpack = require('webpack');
+const CopyPlugin = require('copy-webpack-plugin');
 const CleanPlugin = require('clean-webpack-plugin');
 const TerserPlugin = require('terser-webpack-plugin');
 
 // @ts-ignore
 const pkg = require('./package.json');
 
-module.exports = function(env, argv) {
-  env = env || {};
-  env.production = Boolean(env.production);
-  return [getExtensionConfig(env)];
-};
+const copyPluginConfig = [
+  {
+    from: 'node_modules/bulma/css/bulma.min.css',
+    to: 'css'
+  },
+  {
+    from: 'node_modules/bulma-switch/dist/css/bulma-switch.min.css',
+    to: 'css'
+  },
+  {
+    from: 'node_modules/bulma-divider/dist/css/bulma-divider.min.css',
+    to: 'css'
+  },
+  {
+    from: 'node_modules/bulma-checkradio/dist/css/bulma-checkradio.min.css',
+    to: 'css'
+  },
+  {
+    from: 'node_modules/@mdi/font/css/materialdesignicons.min.css',
+    to: 'css'
+  },
+  {
+    from: 'node_modules/@mdi/font/fonts/materialdesignicons-webfont.woff2',
+    to: 'fonts'
+  }
+];
+
+function getWebviewConfig(env) {
+  const moduleRules = [
+    {
+      test: /\.tsx?$/,
+      use: {
+        loader: 'ts-loader',
+        options: {
+          configFile: 'webviews.tsconfig.json'
+        }
+      },
+      exclude: /node_modules|\.d\.ts$/
+    }
+  ];
+
+  if (env.production) {
+    moduleRules.push({
+      test: /\.ts$/,
+      enforce: 'pre',
+      use: {
+        loader: 'tslint-loader',
+        options: {
+          typeCheck: true,
+          tsConfigFile: 'webviews.tsconfig.json'
+        }
+      },
+      exclude: /node_modules/
+    });
+  }
+
+  return {
+    name: 'webviews',
+    context: path.resolve(__dirname, 'src/webviews'),
+    entry: {
+      emulators: ['./emulators/index.ts']
+    },
+    mode: env.production ? 'production' : 'development',
+    devtool: env.production ? undefined : 'eval-source-map',
+    output: {
+      libraryTarget: 'global',
+      filename: '[name].js',
+      path: path.resolve(__dirname, 'dist/webviews'),
+      // publicPath: '{{root}}/dist/webviews/'
+    },
+    module: {
+      rules: [
+        {
+          test: /\.tsx?$/,
+          use: {
+            loader: 'ts-loader',
+            options: {
+              configFile: 'webviews.tsconfig.json'
+            }
+          },
+          exclude: /node_modules|\.d\.ts$/
+        }
+      ]
+    },
+    resolve: {
+      extensions: ['.ts', '.tsx', '.js', '.jsx', '.json'],
+      modules: [path.resolve(__dirname, 'src/webviews'), 'node_modules']
+    },
+    stats: {
+      all: false,
+      assets: true,
+      builtAt: true,
+      env: true,
+      errors: true,
+      timings: true,
+      warnings: true
+    }
+  };
+}
 
 function getExtensionConfig(env) {
   const clean = ['dist'];
@@ -29,8 +125,36 @@ function getExtensionConfig(env) {
       PRODUCTION: JSON.stringify(env.production),
       EXTENSION_VERSION: JSON.stringify(extVersion),
       EXTENSION_NAME: JSON.stringify('vscode.' + pkg.name)
-    })
+    }),
+    new CopyPlugin(copyPluginConfig)
   ];
+
+  const moduleRules = [
+    {
+      test: /\.tsx?$/,
+      use: {
+        loader: 'ts-loader',
+        options: {
+          onlyCompileBundledFiles: true
+        }
+      },
+      exclude: /node_modules|\.d\.ts$/
+    }
+  ];
+
+  if (env.production) {
+    moduleRules.push({
+      test: /\.ts$/,
+      enforce: 'pre',
+      use: {
+        loader: 'tslint-loader',
+        options: {
+          typeCheck: true
+        }
+      },
+      exclude: /node_modules/
+    });
+  }
 
   return {
     name: 'extension',
@@ -40,7 +164,7 @@ function getExtensionConfig(env) {
     node: {
       __dirname: false
     },
-    devtool: 'source-map',
+    devtool: env.production ? 'source-map' : 'cheap-module-eval-source-map',
     output: {
       libraryTarget: 'commonjs2',
       filename: 'extension.js',
@@ -63,29 +187,10 @@ function getExtensionConfig(env) {
       vscode: 'commonjs vscode'
     },
     module: {
-      rules: [
-        {
-          test: /\.ts$/,
-          enforce: 'pre',
-          use: [
-            {
-              loader: 'tslint-loader',
-              options: {
-                typeCheck: true
-              }
-            }
-          ],
-          exclude: /node_modules/
-        },
-        {
-          test: /\.tsx?$/,
-          use: 'ts-loader',
-          exclude: /node_modules|\.d\.ts$/
-        }
-      ]
+      rules: moduleRules
     },
     resolve: {
-      extensions: ['.ts', '.tsx', '.js', '.jsx']
+      extensions: ['.ts', '.js']
     },
     plugins: plugins,
     stats: {
@@ -99,3 +204,12 @@ function getExtensionConfig(env) {
     }
   };
 }
+
+module.exports = function(env, argv) {
+  env = env || {};
+  env.production = Boolean(env.production);
+  return [
+    getExtensionConfig(env),
+    getWebviewConfig(env)
+  ];
+};

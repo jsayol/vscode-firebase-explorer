@@ -1,7 +1,11 @@
-import { spawn } from 'child_process';
+import { spawn, ChildProcess } from 'child_process';
 import { WebSocketServer } from './server';
 import { ProjectManager, FirebaseProject } from '../projects/ProjectManager';
 import { AccountManager } from '../accounts/AccountManager';
+
+const EMULATORS_START_COMMAND = 'emulators:start';
+
+let cliProcess: ChildProcess;
 
 export async function startEmulators(
   server: WebSocketServer,
@@ -13,7 +17,7 @@ export async function startEmulators(
   server.useProjectManager(ProjectManager.for(email, projectId));
   await server.start();
 
-  let args = ['emulators:start', '--ws', server.getAddress()];
+  let args = [EMULATORS_START_COMMAND, '--ws', server.getAddress()];
 
   if (Array.isArray(emulators)) {
     args = args.concat('--only', emulators.join(','));
@@ -24,26 +28,14 @@ export async function startEmulators(
     windowsHide: true
   };
 
-  // const childProc = spawn('firebase' */, args, spawnOptions);
-
   // TODO: This is only while developing!
   const devFirebaseTools = '/home/josep/projects/firebase-tools';
-  args = [
-    devFirebaseTools + '/lib/bin/firebase.js',
-    ...args
-  ];
-  const childProc = spawn('node' /* TODO: 'firebase' */, args, spawnOptions);
-  // const devFirebaseTools = '/home/josep/projects/firebase-tools';
-  // args = [
-  //   '--project',
-  //   devFirebaseTools + '/tsconfig.json',
-  //   devFirebaseTools + '/src/bin/firebase.js',
-  //   ...args
-  // ];
-  // const childProc = spawn('ts-node' /* TODO: 'firebase' */, args, spawnOptions);
+  args = [devFirebaseTools + '/lib/bin/firebase.js', ...args];
+  cliProcess = spawn('node' /* TODO: 'firebase' */, args, spawnOptions);
+  // cliProcess = spawn('firebase' */, args, spawnOptions);
 
   ['message', 'close', 'exit', 'error', 'disconnect'].forEach(event => {
-    childProc.on(event, (...eventArgs) => {
+    cliProcess.on(event, (...eventArgs) => {
       console.log(event, ...eventArgs);
     });
   });

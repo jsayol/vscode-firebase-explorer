@@ -1,6 +1,12 @@
 import * as vscode from 'vscode';
 import * as linkify from 'linkify-urls';
-import { postToPanel, readFile, getFilePath, ansiToHTML } from '../utils';
+import {
+  postToPanel,
+  readFile,
+  getFilePath,
+  ansiToHTML,
+  replaceResources
+} from '../utils';
 import { WebSocketServer } from './server';
 import { startEmulators, stopEmulators, listAllProjects } from './utils';
 import { FirebaseProject } from '../projects/ProjectManager';
@@ -47,18 +53,24 @@ async function openDashboard(): Promise<void> {
     } else {
       dashboardPanel = vscode.window.createWebviewPanel(
         'emulators.dashboard',
-        'Emulators',
+        'Firebase Emulators',
         vscode.ViewColumn.One,
         {
           enableScripts: true,
+          enableFindWidget: true,
           retainContextWhenHidden: true
         }
       );
 
-      dashboardPanel.webview.html = await readFile(
+      dashboardPanel.iconPath = vscode.Uri.file(
+        getFilePath('assets/firebase-color-small.svg')
+      );
+
+      let content = await readFile(
         getFilePath('ui', 'emulators', 'dashboard.html'),
         'utf8'
       );
+      dashboardPanel.webview.html = replaceResources(content);
 
       dashboardPanel.webview.onDidReceiveMessage(async (data: any) => {
         switch (data.command) {
@@ -135,19 +147,13 @@ async function openDashboard(): Promise<void> {
         }
       });
 
-      // panel.onDidChangeViewState(
-      //   _event => {
-      //     const panel = _event.webviewPanel;
-      //   },
-      //   null,
-      //   context.subscriptions
-      // );
-
       dashboardPanel.onDidDispose(
         async () => {
+          console.log('*** CLOSING PANEL ***');
           dashboardPanel = undefined;
           isDashboardReady = false;
           if (server) {
+            serverCleanup();
             await stopEmulators(server);
           }
         },
@@ -172,10 +178,18 @@ async function stopServer(): Promise<void> {
 }
 
 function serverCleanup() {
-  unsubStdout!();
-  unsubStderr!();
-  unsubLog!();
-  unsubClose!();
+  if (unsubStdout) {
+    unsubStdout();
+  }
+  if (unsubStderr) {
+    unsubStderr();
+  }
+  if (unsubLog) {
+    unsubLog();
+  }
+  if (unsubClose) {
+    unsubClose();
+  }
   unsubStdout = undefined;
   unsubStderr = undefined;
   unsubLog = undefined;
