@@ -62,7 +62,7 @@ window.addEventListener('message', ({ data }) => {
       showDivider(
         shellOutput,
         (data.success ? 'Terminated' : 'Failed to terminate') +
-          ' program using port ' +
+          ' program at port ' +
           portBlockingProcessInfo.port
       );
       portBlockingProcessInfo = undefined;
@@ -175,14 +175,6 @@ function start() {
   startButton.setAttribute('disabled', 'disabled');
   stopButton.removeAttribute('disabled');
   document.body.classList.add('running');
-
-  const shellOutput = document.querySelector(
-    '.tab-content--dashboard .shell-output'
-  );
-
-  if (shellOutput.children.length > 0) {
-    showDivider(shellOutput, 'START');
-  }
 }
 
 function stop() {
@@ -199,6 +191,11 @@ function stopped() {
   stopButton.classList.remove('is-loading');
   document.body.classList.remove('running');
   document.body.classList.remove('stopping');
+
+  const shellOutput = document.querySelector(
+    '.tab-content--dashboard .shell-output'
+  );
+  showDivider(shellOutput, 'DONE');
 }
 
 function initialize(data: {
