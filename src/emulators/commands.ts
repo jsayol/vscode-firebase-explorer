@@ -154,6 +154,7 @@ async function openDashboard(): Promise<void> {
             }
             break;
           case 'who-has-port':
+            // TODO: check if this works on windows & mac
             const portToFind = Number(data.port);
             const procs = processes();
             for (const [, value] of Object.entries(procs)) {
