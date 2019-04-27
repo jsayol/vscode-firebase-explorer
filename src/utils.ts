@@ -373,9 +373,11 @@ export function replaceResources(content: string): string {
   const { extensionPath } = extContext();
 
   return content.replace(/{{ *resource: *([^}]+) *}}/g, (_, resource) => {
-    const filePath = vscode.Uri.file(
-      path.join(extensionPath, resource)
-    );
+    const filePath = vscode.Uri.file(path.join(extensionPath, resource));
     return filePath.with({ scheme: 'vscode-resource' }).toString();
   });
 }
+
+export const webviewPanels: {
+  [k: string]: vscode.WebviewPanel | undefined;
+} = {};

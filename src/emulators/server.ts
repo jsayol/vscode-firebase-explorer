@@ -48,7 +48,14 @@ interface WebSocketDebuggerInitData {
 }
 
 type SendMessageType = 'init' | 'stop' | 'error';
-type RecvMessageType = 'init' | 'log' | 'error' | 'stdout' | 'stderr' | 'pid';
+type RecvMessageType =
+  | 'init'
+  | 'log'
+  | 'error'
+  | 'stdout'
+  | 'stderr'
+  | 'pid'
+  | 'emulator-port-taken';
 
 export type ListenerEventType = RecvMessageType | 'close';
 
@@ -152,6 +159,10 @@ export class WebSocketServer {
     };
   }
 
+  clearListeners(): void {
+    this.listeners.clear();
+  }
+
   private onConnection(client: WebSocketClient): void {
     log('New connection');
     this.client = client;
@@ -209,6 +220,8 @@ export class WebSocketServer {
       case 'pid':
         // TODO
         log(message);
+        break;
+      case 'emulator-port-taken':
         break;
       default:
         throw new Error('Unknow message type: ' + message.type);

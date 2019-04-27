@@ -384,7 +384,8 @@ label.checkbox:hover {
 }
 
 .shell-output .is-divider {
-  margin: 1.2rem 0;
+  /* margin: 1.2rem 0; */
+  height: 0;
   border-top-color: var(--vscode-editorWidget-background);
 }
 

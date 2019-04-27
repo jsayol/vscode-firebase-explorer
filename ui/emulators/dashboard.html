@@ -90,7 +90,7 @@
             </label>
             <div class="columns is-mobile is-variable is-3">
               <div class="column">
-                <button class="button start">Start</button>
+                <button class="button start" disabled>Start</button>
               </div>
               <div class="column">
                 <button class="button stop" disabled>Stop</button>
@@ -309,7 +309,7 @@
       <div class="modal-content">
         <article class="message is-danger">
           <div class="message-header">
-            <p>Other emulator running</p>
+            <p class="modal-title"></p>
             <button class="delete" aria-label="delete"></button>
           </div>
           <div class="message-body">
@@ -318,10 +318,9 @@
                 <div class="content"></div>
               </div>
               <footer class="card-footer">
-                <a data-option="terminate" class="card-footer-item modal-button">
-                  Terminate other instance
+                <a data-option="action" class="card-footer-item modal-button modal-button-action">
                 </a>
-                <a data-option="cancel" class="card-footer-item modal-button">
+                <a data-option="cancel" class="card-footer-item modal-button modal-button-cancel">
                   Cancel
                 </a>
               </footer>

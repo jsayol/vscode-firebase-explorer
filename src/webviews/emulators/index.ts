@@ -6,16 +6,16 @@ declare const acquireVsCodeApi: () => {
 
 const vscode = acquireVsCodeApi();
 
-const startButton = document.querySelector('.controls .button.start')!;
-const stopButton = document.querySelector('.controls .button.stop')!;
+const startButton = document.querySelector('.controls .button.start');
+const stopButton = document.querySelector('.controls .button.stop');
 
-const projectSelector = document.querySelector(
+const projectSelector = document.querySelector<HTMLSelectElement>(
   '.top-controls .project-selector'
-) as HTMLSelectElement;
+);
 
 const workspaceSelector = document.querySelector(
   '.top-controls .workspace-selector'
-)!;
+);
 
 let logEntries: any[] = [];
 
@@ -30,13 +30,12 @@ window.addEventListener('message', ({ data }) => {
       break;
     case 'stdout':
     case 'stderr':
-      console.log(data);
       showCLIOutput(data);
       break;
     case 'log':
       addLogEntry(data.message);
       break;
-    case 'server-closed':
+    case 'stopped':
       stopped();
       break;
     case 'focus':
@@ -46,20 +45,24 @@ window.addEventListener('message', ({ data }) => {
       // TODO
       console.log(data);
       break;
-    case 'who-has-port-response':
-      // TODO: detect if it's an emulator or some other program. Show a message accordingly.
-      portBlockingProcessInfo = data.processInfo;
-      const errorMsg = `
-      The ${data.module} emulator couldn't start because the port is
-      already taken.<br/>
-      <br/>
-      Do you want to try to terminate it?
-    `;
-      openModal('.modal-prompt-terminate-other-instance', errorMsg, true);
+    case 'emulator-port-taken':
+      openTerminateInstanceModal(data);
       break;
     case 'kill-process-result':
-      portBlockingProcessInfo = undefined;
       // TODO: show success/fail?
+      const shellOutput = document.querySelector(
+        '.tab-content--dashboard .shell-output'
+      );
+      showDivider(
+        shellOutput,
+        (data.success ? 'Terminated' : 'Failed to terminate') +
+          ' program at port ' +
+          portBlockingProcessInfo.port
+      );
+      portBlockingProcessInfo = undefined;
+      if (data.success) {
+        start();
+      }
       break;
     default:
       console.error('Unknown command received:', data);
@@ -73,21 +76,21 @@ vscode.postMessage({
 
 window.addEventListener('DOMContentLoaded', () => {
   document
-    .querySelector('.tabs.main-navigation')!
+    .querySelector('.tabs.main-navigation')
     .addEventListener('click', openTab);
 });
 
 function setupDOMListeners() {
   document
-    .querySelector('.tab-content--dashboard .controls .button.start')!
+    .querySelector('.tab-content--dashboard .controls .button.start')
     .addEventListener('click', start);
 
   document
-    .querySelector('.tab-content--dashboard .controls .button.stop')!
+    .querySelector('.tab-content--dashboard .controls .button.stop')
     .addEventListener('click', stop);
 
   document
-    .querySelector('#switch-emu-all')!
+    .querySelector('#switch-emu-all')
     .addEventListener('change', toggleAllEmulatorsSwitch);
 
   document
@@ -99,7 +102,7 @@ function setupDOMListeners() {
     });
 
   document
-    .querySelector('.tab-content--https-functions .logging-table')!
+    .querySelector('.tab-content--https-functions .logging-table')
     .addEventListener('click', tableClick);
 
   document.body.addEventListener('click', (event: Event) => {
@@ -116,19 +119,7 @@ function setupDOMListeners() {
       '.modal-prompt-terminate-other-instance .modal-button'
     ) as HTMLElement;
     if (modalButton) {
-      if (modalButton.dataset.option === 'cancel') {
-        portBlockingProcessInfo = undefined;
-        closeModal(event);
-      } else if (modalButton.dataset.option === 'terminate') {
-        console.log('Trying to terminate', portBlockingProcessInfo);
-        if (portBlockingProcessInfo) {
-          vscode.postMessage({
-            command: 'kill-process',
-            pid: portBlockingProcessInfo.pid
-          });
-        }
-        closeModal(event);
-      }
+      handleTerminateInstanceModal(event, modalButton);
       return;
     }
   });
@@ -185,13 +176,10 @@ function start() {
 
   const shellOutput = document.querySelector(
     '.tab-content--dashboard .shell-output'
-  ) as HTMLElement;
+  );
 
   if (shellOutput.children.length > 0) {
-    const divider = document.createElement('div');
-    divider.classList.add('is-divider');
-    divider.dataset.content = 'START';
-    shellOutput.appendChild(divider);
+    showDivider(shellOutput, 'START');
   }
 }
 
@@ -274,31 +262,30 @@ function initialize(data: {
   if (folders.length > 1) {
     const field = document.querySelector(
       '.top-controls .workspace-selector-field'
-    )!;
+    );
     field.classList.remove('hidden');
   }
 
   logEntries = [];
 
+  startButton.removeAttribute('disabled');
   applyHttpsFuncLogLevel();
 }
 
 function showCLIOutput(data: { command: string; message: string }) {
   const shellOutput = document.querySelector(
     '.tab-content--dashboard .shell-output'
-  ) as HTMLElement;
+  );
 
   const shellItem = document.createElement('div');
   shellItem.classList.add('item', 'item-' + data.command);
   shellItem.innerHTML = data.message;
   shellOutput.appendChild(shellItem);
   scrollToBottomIfEnabled(shellOutput.closest('.tailing') as HTMLElement);
-
-  parseSpecialMessages(data);
 }
 
 function isSwitchEnabled(id: string) {
-  const elem = document.querySelector<HTMLInputElement>('#' + id)!;
+  const elem = document.querySelector<HTMLInputElement>('#' + id);
   return elem.checked;
 }
 
@@ -383,7 +370,7 @@ function addFunctionsLogEntry(entry: { mode: string; log: any }) {
 
   const output = document.querySelector(
     `.tab-content--${functionType}-functions table tbody`
-  )!;
+  );
   const row = document.createElement('tr');
 
   row.classList.add(
@@ -423,7 +410,7 @@ function addFunctionsLogEntry(entry: { mode: string; log: any }) {
 function addFirestoreLogEntry(entry: { from: string; data: any }) {
   const output = document.querySelector(
     '.tab-content--firestore .shell-output'
-  )!;
+  );
   const shellItem = document.createElement('span');
   shellItem.classList.add('log-from--' + entry.from);
   shellItem.innerText = entry.data;
@@ -431,9 +418,7 @@ function addFirestoreLogEntry(entry: { from: string; data: any }) {
 }
 
 function addDatabaseLogEntry(entry: { from: any; data: any }) {
-  const output = document.querySelector(
-    '.tab-content--database .shell-output'
-  )!;
+  const output = document.querySelector('.tab-content--database .shell-output');
   const shellItem = document.createElement('span');
   shellItem.classList.add(
     'log-from--' + (entry.from || 'unknown').toLowerCase()
@@ -442,17 +427,40 @@ function addDatabaseLogEntry(entry: { from: any; data: any }) {
   output.appendChild(shellItem);
 }
 
-function openModal(selector: string, content: string, isHTML = false) {
-  const modal = document.querySelector(selector) as HTMLElement;
+function openModal(
+  selector: string,
+  options:
+    | string
+    | {
+        content: string;
+        title: string;
+        actionButton: string;
+        isHTML?: boolean;
+      }
+) {
+  const modal = document.querySelector(selector);
+
   if (modal) {
-    const contentElement = modal.querySelector('.content') as HTMLElement;
-    if (isHTML) {
-      contentElement.innerHTML = content;
+    const contentElement = modal.querySelector<HTMLElement>('.content');
+
+    if (typeof options === 'string') {
+      contentElement.innerText = options;
     } else {
-      contentElement.innerText = content;
+      if (options.isHTML) {
+        contentElement.innerHTML = options.content;
+      } else {
+        contentElement.innerText = options.content;
+      }
+
+      modal.querySelector<HTMLElement>('.modal-title').innerText =
+        options.title;
+
+      modal.querySelector<HTMLElement>('.modal-button-action').innerText =
+        options.actionButton;
     }
+
     modal.classList.add('is-active');
-    document.querySelector('html')!.classList.add('is-clipped');
+    document.querySelector('html').classList.add('is-clipped');
   }
 }
 
@@ -460,13 +468,13 @@ function closeModal(event: Event) {
   const modal = (event.target as HTMLElement).closest('.modal');
   if (modal) {
     modal.classList.remove('is-active');
-    document.querySelector('html')!.classList.remove('is-clipped');
-    (modal.querySelector('.content') as HTMLElement).innerHTML = '';
+    document.querySelector('html').classList.remove('is-clipped');
+    modal.querySelector('.content').innerHTML = '';
   }
 }
 
 function tableClick(event: Event) {
-  const row = (event.target as HTMLElement).closest('tr')!;
+  const row = (event.target as HTMLElement).closest('tr');
   const logEntryPos = Number(row.dataset.logEntryPos);
   const entry = logEntries[logEntryPos];
   openModal('.modal-json-viewer', JSON.stringify(entry.data, null, 2));
@@ -475,12 +483,12 @@ function tableClick(event: Event) {
 function applyHttpsFuncLogLevel() {
   const table = document.querySelector<HTMLTableElement>(
     '.tab-content--https-functions table'
-  )!;
+  );
 
   ['user', 'info', 'debug', 'error', 'system'].forEach(level => {
     const checkbox = document.querySelector<HTMLInputElement>(
       '#tab-content--https-functions--log-level--' + level
-    )!;
+    );
 
     if (checkbox.checked) {
       table.classList.add('log-level--' + level);
@@ -501,37 +509,52 @@ function scrollToBottom(element: HTMLElement) {
   element.scrollTo(0, element.scrollHeight);
 }
 
-function parseSpecialMessages(data: {
-  command: string;
-  message: string;
-}): void {
-  // TODO: put some order in this mess
-  if (
-    data.command === 'stderr' &&
-    /Could not start database emulator, port taken/.test(data.message)
-  ) {
-    vscode.postMessage({
-      command: 'who-has-port',
-      port: 9000, // TODO: take this from the "pid" message we get from the CLI
-      module: 'Database'
-    });
-  } else if (
-    data.command === 'stderr' &&
-    /Could not start firestore emulator, port taken/.test(data.message)
-  ) {
-    vscode.postMessage({
-      command: 'who-has-port',
-      port: 8080, // TODO: take this from the "pid" message we get from the CLI
-      module: 'Firestore'
-    });
-  } else if (
-    data.command === 'stderr' &&
-    /Could not start functions emulator, port taken/.test(data.message)
-  ) {
-    vscode.postMessage({
-      command: 'who-has-port',
-      port: 8088, // TODO: take this from the "pid" message we get from the CLI
-      module: 'Functions'
-    });
+function openTerminateInstanceModal(data: any): void {
+  // TODO: detect if it's an emulator or some other program. Show a message accordingly.
+  portBlockingProcessInfo = data.processInfo;
+
+  const errorMsg = `
+      <h3>Failed to start <i>${data.emulator.name}</i> emulator.</h3>
+      The ${data.emulator.name} emulator couldn't start because the port
+      ${data.emulator.addr.port} is already taken by another program:<br/>
+      <pre><code>${JSON.stringify(data.processInfo, null, 2)}</code></pre>
+      <br/>
+      Do you want to try to <b>terminate the other program</b> to free the port?
+    `;
+
+  openModal('.modal-prompt-terminate-other-instance', {
+    isHTML: true,
+    content: errorMsg,
+    title: 'Warning',
+    actionButton: 'Terminate program'
+  });
+}
+
+function handleTerminateInstanceModal(
+  event: Event,
+  modalButton: HTMLElement
+): void {
+  if (modalButton.dataset.option === 'cancel') {
+    portBlockingProcessInfo = undefined;
+    closeModal(event);
+  } else if (modalButton.dataset.option === 'action') {
+    console.log('Trying to terminate', portBlockingProcessInfo);
+    if (portBlockingProcessInfo) {
+      vscode.postMessage({
+        command: 'kill-process',
+        pid: portBlockingProcessInfo.pid
+      });
+    }
+    closeModal(event);
   }
+}
+
+function showDivider(shellOutput: Element, text: string): void {
+  const divider = document.createElement('div');
+  divider.classList.add('is-divider');
+  divider.dataset.content = text.toUpperCase();
+  shellOutput.appendChild(divider);
+  setInterval(() => {
+    scrollToBottomIfEnabled(shellOutput.closest('.tailing') as HTMLElement);
+  }, 0);
 }

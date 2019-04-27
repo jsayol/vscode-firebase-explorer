@@ -1,27 +1,25 @@
 import * as vscode from 'vscode';
-import * as linkify from 'linkify-urls';
 import {
-  postToPanel,
   readFile,
   getFilePath,
-  ansiToHTML,
-  replaceResources
+  replaceResources,
+  postToPanel,
+  webviewPanels
 } from '../utils';
 import { WebSocketServer } from './server';
-import { startEmulators, stopEmulators, listAllProjects } from './utils';
+import {
+  stopEmulators,
+  listAllProjects,
+  findWhoHasPort,
+  killProcess,
+  prepareServerStart
+} from './utils';
 import { FirebaseProject } from '../projects/ProjectManager';
 import { AccountInfo } from '../accounts/AccountManager';
 
-const processes = require('listening-processes');
-
 let context: vscode.ExtensionContext;
-let dashboardPanel: vscode.WebviewPanel | undefined;
 let isDashboardReady = false;
 let server: WebSocketServer | undefined;
-let unsubStdout: (() => void) | undefined;
-let unsubStderr: (() => void) | undefined;
-let unsubLog: (() => void) | undefined;
-let unsubClose: (() => void) | undefined;
 
 export function registerEmulatorsCommands(_context: vscode.ExtensionContext) {
   context = _context;
@@ -43,17 +41,17 @@ export function registerEmulatorsCommands(_context: vscode.ExtensionContext) {
 
 async function openDashboard(): Promise<void> {
   try {
-    if (dashboardPanel) {
+    if (webviewPanels.emulators) {
       if (isDashboardReady) {
         setImmediate(() => {
-          postToPanel(dashboardPanel!, {
+          postToPanel(webviewPanels.emulators!, {
             command: 'focus'
           });
         });
       }
-      dashboardPanel.reveal();
+      webviewPanels.emulators.reveal();
     } else {
-      dashboardPanel = vscode.window.createWebviewPanel(
+      webviewPanels.emulators = vscode.window.createWebviewPanel(
         'emulators.dashboard',
         'Firebase Emulators',
         vscode.ViewColumn.One,
@@ -64,7 +62,7 @@ async function openDashboard(): Promise<void> {
         }
       );
 
-      dashboardPanel.iconPath = vscode.Uri.file(
+      webviewPanels.emulators.iconPath = vscode.Uri.file(
         getFilePath('assets/firebase-color-small.svg')
       );
 
@@ -72,9 +70,9 @@ async function openDashboard(): Promise<void> {
         getFilePath('ui', 'emulators', 'dashboard.html'),
         'utf8'
       );
-      dashboardPanel.webview.html = replaceResources(content);
+      webviewPanels.emulators.webview.html = replaceResources(content);
 
-      dashboardPanel.webview.onDidReceiveMessage(async (data: any) => {
+      webviewPanels.emulators.webview.onDidReceiveMessage(async (data: any) => {
         switch (data.command) {
           case 'ready':
             const folders = (vscode.workspace.workspaceFolders || []).map(
@@ -87,7 +85,7 @@ async function openDashboard(): Promise<void> {
               'selectedProject'
             );
             isDashboardReady = true;
-            postToPanel(dashboardPanel!, {
+            postToPanel(webviewPanels.emulators!, {
               command: 'initialize',
               folders,
               accountsWithProjects: await listAllProjects(),
@@ -97,100 +95,28 @@ async function openDashboard(): Promise<void> {
             });
             break;
           case 'start':
-            if (server) {
-              unsubStdout = server.on('stdout', ({ data }) => {
-                if (dashboardPanel) {
-                  postToPanel(dashboardPanel, {
-                    command: 'stdout',
-                    message: linkify(ansiToHTML(data))
-                  });
-                }
-              });
-
-              unsubStderr = server.on('stderr', ({ data }) => {
-                if (dashboardPanel) {
-                  postToPanel(dashboardPanel, {
-                    command: 'stderr',
-                    message: linkify(ansiToHTML(data))
-                  });
-                }
-              });
-
-              unsubLog = server.on('log', logEntry => {
-                if (dashboardPanel) {
-                  postToPanel(dashboardPanel, {
-                    command: 'log',
-                    message: logEntry
-                  });
-                }
-              });
-
-              unsubClose = server.on('close', () => {
-                // if (dashboardPanel) {
-                //   postToPanel(dashboardPanel, { command: 'server-closed' });
-                // }
-                serverCleanup();
-              });
-
-              const { path, email, projectId, emulators } = data as {
-                path: string;
-                email: string;
-                projectId: string;
-                emulators: 'all' | string[];
-              };
-
-              // This promise resolves when the child process exits
-              await startEmulators(server, path, email, projectId, emulators);
-              // The CLI has exited
-              if (dashboardPanel) {
-                postToPanel(dashboardPanel, { command: 'server-closed' });
-                serverCleanup();
-              }
-            }
+            await prepareServerStart(server!, data);
             break;
           case 'stop':
-            if (server) {
-              await stopEmulators(server);
-            }
-            break;
-          case 'who-has-port':
-            // TODO: check if this works on windows & mac
-            const portToFind = Number(data.port);
-            const procs = processes();
-            for (const [, value] of Object.entries(procs)) {
-              const proc = (value as any[]).find(
-                proc => Number(proc.port) === portToFind
-              );
-              if (proc) {
-                postToPanel(dashboardPanel!, {
-                  ...data,
-                  command: 'who-has-port-response',
-                  processInfo: proc
-                });
-                break; // for-loop
-              }
-            }
+            await stopEmulators(server!);
             break;
           case 'kill-process':
-            // TODO: processes.kill() sends a SIGKILL, which is quite brute force.
-            // Maybe find a way to send a SIGINT first? If the process is still
-            // running after a certain timeout has passsed, then try with SIGKILL.
-            const { success } = processes.kill(data.pid);
-            postToPanel(dashboardPanel!, {
+            const success = killProcess(data.pid);
+            postToPanel(webviewPanels.emulators!, {
               command: 'kill-process-result',
               pid: data.pid,
-              success: (success as number[]).includes(data.pid)
+              success
             });
             break;
         }
       });
 
-      dashboardPanel.onDidDispose(
+      webviewPanels.emulators.onDidDispose(
         async () => {
-          dashboardPanel = undefined;
+          webviewPanels.emulators = undefined;
           isDashboardReady = false;
           if (server) {
-            serverCleanup();
+            server.clearListeners();
             await stopEmulators(server);
           }
         },
@@ -201,6 +127,8 @@ async function openDashboard(): Promise<void> {
       if (!server) {
         server = new WebSocketServer();
       }
+
+      server.clearListeners();
     }
   } catch (err) {
     console.log(err);
@@ -212,23 +140,4 @@ async function stopServer(): Promise<void> {
     await server.stop();
     server = undefined;
   }
-}
-
-function serverCleanup() {
-  if (unsubStdout) {
-    unsubStdout();
-  }
-  if (unsubStderr) {
-    unsubStderr();
-  }
-  if (unsubLog) {
-    unsubLog();
-  }
-  if (unsubClose) {
-    unsubClose();
-  }
-  unsubStdout = undefined;
-  unsubStderr = undefined;
-  unsubLog = undefined;
-  unsubClose = undefined;
 }

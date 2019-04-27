@@ -1,7 +1,11 @@
+import * as linkify from 'linkify-urls';
 import { spawn, ChildProcess } from 'child_process';
 import { WebSocketServer } from './server';
 import { ProjectManager, FirebaseProject } from '../projects/ProjectManager';
 import { AccountManager } from '../accounts/AccountManager';
+import { webviewPanels, postToPanel, ansiToHTML } from '../utils';
+
+const listeningProcesses = require('listening-processes');
 
 const EMULATORS_START_COMMAND = 'emulators:start';
 
@@ -90,4 +94,98 @@ export async function listAllProjects(): Promise<
   );
 
   return accountsWithProjects;
+}
+
+export async function prepareServerStart(
+  server: WebSocketServer,
+  data: {
+    path: string;
+    email: string;
+    projectId: string;
+    emulators: 'all' | string[];
+  }
+): Promise<void> {
+  server.on('stdout', ({ data }) => {
+    if (webviewPanels.emulators) {
+      postToPanel(webviewPanels.emulators, {
+        command: 'stdout',
+        message: linkify(ansiToHTML(data))
+      });
+    }
+  });
+
+  server.on('stderr', ({ data }) => {
+    if (webviewPanels.emulators) {
+      postToPanel(webviewPanels.emulators, {
+        command: 'stderr',
+        message: linkify(ansiToHTML(data))
+      });
+    }
+  });
+
+  server.on('log', logEntry => {
+    if (webviewPanels.emulators) {
+      postToPanel(webviewPanels.emulators, {
+        command: 'log',
+        message: logEntry
+      });
+    }
+  });
+
+  server.on('close', () => {
+    server.clearListeners();
+  });
+
+  server.on('emulator-port-taken', emulator => {
+    let processInfo = findWhoHasPort(emulator.addr.port);
+    postToPanel(webviewPanels.emulators!, {
+      command: 'emulator-port-taken',
+      emulator,
+      processInfo
+    });
+  });
+
+  const { path, email, projectId, emulators } = data;
+
+  // This promise resolves when the child process exits
+  await startEmulators(server, path, email, projectId, emulators);
+  // The CLI has exited
+
+  if (webviewPanels.emulators) {
+    postToPanel(webviewPanels.emulators, { command: 'stopped' });
+    server.clearListeners();
+  }
+}
+
+export function findWhoHasPort(port: number | string): any {
+  let processInfo: any = null;
+
+  try {
+    // TODO: check if this works on windows & mac
+    const procs = listeningProcesses();
+    const portToFind = Number(port);
+
+    for (const [, value] of Object.entries(procs)) {
+      const proc = (value as any[]).find(
+        proc => Number(proc.port) === portToFind
+      );
+      if (proc) {
+        processInfo = proc;
+        break; // for-loop
+      }
+    }
+  } catch (err) {
+    // Something went wrong while listing processes with open ports
+  }
+
+  return processInfo;
+}
+
+export async function killProcess(pid: number | string): Promise<boolean> {
+  // TODO: listeningProcesses.kill() sends a SIGKILL, which is quite brute force.
+  // Maybe find a way to send a SIGINT first? If the process is still
+  // running after a certain timeout has passsed, then try with SIGKILL.
+  pid = Number(pid);
+  const { success } = listeningProcesses.kill(pid);
+  return (success as number[]).includes(pid);
 }
