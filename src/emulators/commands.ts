@@ -10,7 +10,6 @@ import { WebSocketServer } from './server';
 import {
   stopEmulators,
   listAllProjects,
-  findWhoHasPort,
   killProcess,
   prepareServerStart
 } from './utils';
@@ -98,7 +97,7 @@ async function openDashboard(): Promise<void> {
             await prepareServerStart(server!, data);
             break;
           case 'stop':
-            await stopEmulators(server!);
+            await stopEmulators();
             break;
           case 'kill-process':
             const success = killProcess(data.pid);
@@ -117,7 +116,7 @@ async function openDashboard(): Promise<void> {
           isDashboardReady = false;
           if (server) {
             server.clearListeners();
-            await stopEmulators(server);
+            await stopEmulators();
           }
         },
         null,

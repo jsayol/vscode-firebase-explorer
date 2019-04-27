@@ -4,11 +4,31 @@
 }
 
 .height-100 {
-  height: 100%;
+  height: 100% !important;
+}
+
+.height-almost-100 {
+  height: calc(100% - 30px) !important;
 }
 
 .width-100 {
-  width: 100%;
+  width: 100% !important;
+}
+
+.no-margin-bottom {
+  margin-bottom: 0 !important;
+}
+
+.no-padding {
+  padding: 0 !important;
+}
+
+.no-padding-top {
+  padding-top: 0 !important;
+}
+
+.no-padding-bottom {
+  padding-bottom: 0 !important;
 }
 
 html,
@@ -56,6 +76,12 @@ input[type='checkbox'].is-checkradio + label,
 .button,
 .select select {
   font-size: 0.9rem;
+}
+
+.tabs {
+  position: sticky;
+  z-index: 10;
+  top: 0;
 }
 
 .tabs ul {
@@ -198,7 +224,7 @@ label.checkbox:hover {
   box-shadow: -0.2rem 0 0 0 var(--vscode-editorError-foreground);
 }
 
-.top-controls.level {
+.level {
   margin-bottom: 1rem !important;
 }
 
@@ -402,5 +428,12 @@ label.checkbox:hover {
 }
 
 .modal-prompt-terminate-other-instance pre {
-  background-color: #E9E9E9;
+  background-color: #e9e9e9;
+}
+
+.table.logging-table thead tr th {
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  background-color: var(--vscode-editorWidget-background);
 }

@@ -135,17 +135,13 @@ function setupDOMListeners() {
       const element = container as HTMLElement;
       const dataset = element.dataset;
 
-      if (dataset.tailEnabled === 'false') {
+      if (dataset.disableTailOnScroll !== 'false') {
         const distanceFromBottom =
           element.scrollHeight - element.scrollTop - element.offsetHeight;
-        if (distanceFromBottom <= 15) {
-          dataset.tailEnabled = 'true';
-        }
-      } else if (dataset.disableTailOnScroll !== 'false') {
-        dataset.tailEnabled = 'false';
+        dataset.tailEnabled = distanceFromBottom <= 15 ? 'true' : 'false';
+      } else {
+        dataset.disableTailOnScroll = 'true';
       }
-
-      dataset.disableTailOnScroll = 'true';
     });
   });
 }
@@ -332,6 +328,9 @@ function openTab(event: Event) {
       );
       if (isSelected) {
         tabContent.classList.add('is-active');
+        tabContent.querySelectorAll('.tailing').forEach(element => {
+          scrollToBottomIfEnabled(element as HTMLElement);
+        });
       } else {
         tabContent.classList.remove('is-active');
       }
@@ -411,6 +410,7 @@ function addFunctionsLogEntry(entry: { mode: string; log: any }) {
   });
 
   output.appendChild(row);
+  scrollToBottomIfEnabled(output.closest('.tailing') as HTMLElement);
 }
 
 function addFirestoreLogEntry(entry: { from: string; data: any }) {
@@ -421,6 +421,7 @@ function addFirestoreLogEntry(entry: { from: string; data: any }) {
   shellItem.classList.add('log-from--' + entry.from);
   shellItem.innerText = entry.data;
   output.appendChild(shellItem);
+  scrollToBottomIfEnabled(output.closest('.tailing') as HTMLElement);
 }
 
 function addDatabaseLogEntry(entry: { from: any; data: any }) {
@@ -431,6 +432,7 @@ function addDatabaseLogEntry(entry: { from: any; data: any }) {
   );
   shellItem.innerText = entry.data;
   output.appendChild(shellItem);
+  scrollToBottomIfEnabled(output.closest('.tailing') as HTMLElement);
 }
 
 function openModal(
@@ -540,7 +542,9 @@ function openTerminateInstanceModal(data: any): void {
     `;
   } else {
     errorMsg += `
-    The port ${data.emulator.addr.port} is already taken by another unknown program:<br/>
+    The port ${
+      data.emulator.addr.port
+    } is already taken by another unknown program:<br/>
     <pre><code>${JSON.stringify(data.processInfo, null, 2)}</code></pre>
     <b>Do you want to terminate the other program to free the port?</b>
     <br/><br/>
