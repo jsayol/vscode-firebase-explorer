@@ -1,5 +1,5 @@
 {
-  "name": "firebase-explorer",
+  "name": "firebase-explorer-emulators",
   "displayName": "Firebase Explorer",
   "description": "Visual Studio Code extension to explore and manage your Firebase projects",
   "version": "0.3.3",

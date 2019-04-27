@@ -23,3 +23,4 @@ firebase.json
 .firebaserc
 stats.json
 .firebase/
+/public
