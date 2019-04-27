@@ -19,6 +19,8 @@ const workspaceSelector = document.querySelector(
 
 let logEntries: any[] = [];
 
+let portBlockingProcessInfo: any;
+
 setupDOMListeners();
 
 window.addEventListener('message', ({ data }) => {
@@ -28,7 +30,7 @@ window.addEventListener('message', ({ data }) => {
       break;
     case 'stdout':
     case 'stderr':
-    console.log(data);
+      console.log(data);
       showCLIOutput(data);
       break;
     case 'log':
@@ -43,6 +45,21 @@ window.addEventListener('message', ({ data }) => {
     case 'error':
       // TODO
       console.log(data);
+      break;
+    case 'who-has-port-response':
+      // TODO: detect if it's an emulator or some other program. Show a message accordingly.
+      portBlockingProcessInfo = data.processInfo;
+      const errorMsg = `
+      The ${data.module} emulator couldn't start because the port is
+      already taken.<br/>
+      <br/>
+      Do you want to try to terminate it?
+    `;
+      openModal('.modal-prompt-terminate-other-instance', errorMsg, true);
+      break;
+    case 'kill-process-result':
+      portBlockingProcessInfo = undefined;
+      // TODO: show success/fail?
       break;
     default:
       console.error('Unknown command received:', data);
@@ -92,6 +109,27 @@ function setupDOMListeners() {
       target.closest('.modal .delete')
     ) {
       closeModal(event);
+      return;
+    }
+
+    const modalButton = target.closest(
+      '.modal-prompt-terminate-other-instance .modal-button'
+    ) as HTMLElement;
+    if (modalButton) {
+      if (modalButton.dataset.option === 'cancel') {
+        portBlockingProcessInfo = undefined;
+        closeModal(event);
+      } else if (modalButton.dataset.option === 'terminate') {
+        console.log('Trying to terminate', portBlockingProcessInfo);
+        if (portBlockingProcessInfo) {
+          vscode.postMessage({
+            command: 'kill-process',
+            pid: portBlockingProcessInfo.pid
+          });
+        }
+        closeModal(event);
+      }
+      return;
     }
   });
 
@@ -171,10 +209,6 @@ function stopped() {
   stopButton.classList.remove('is-loading');
   document.body.classList.remove('running');
   document.body.classList.remove('stopping');
-}
-
-function postMessage(message: any) {
-  vscode.postMessage(message);
 }
 
 function initialize(data: {
@@ -471,18 +505,33 @@ function parseSpecialMessages(data: {
   command: string;
   message: string;
 }): void {
+  // TODO: put some order in this mess
   if (
     data.command === 'stderr' &&
     /Could not start database emulator, port taken/.test(data.message)
   ) {
-    // TODO: it would be cool if we could detect what process is occupying
-    // the database port and offered to try to kill it.
-    // Look into netstat, find-process, etc.
-    // const errorMsg = `
-    //   The database emulator couldn't start because the port is
-    //   already taken.<br/>
-    //   Check if there's another instance running and terminate it.
-    // `;
-    // openModal('.modal-notice-warning', errorMsg, true);
+    vscode.postMessage({
+      command: 'who-has-port',
+      port: 9000, // TODO: take this from the "pid" message we get from the CLI
+      module: 'Database'
+    });
+  } else if (
+    data.command === 'stderr' &&
+    /Could not start firestore emulator, port taken/.test(data.message)
+  ) {
+    vscode.postMessage({
+      command: 'who-has-port',
+      port: 8080, // TODO: take this from the "pid" message we get from the CLI
+      module: 'Firestore'
+    });
+  } else if (
+    data.command === 'stderr' &&
+    /Could not start functions emulator, port taken/.test(data.message)
+  ) {
+    vscode.postMessage({
+      command: 'who-has-port',
+      port: 8088, // TODO: take this from the "pid" message we get from the CLI
+      module: 'Functions'
+    });
   }
 }

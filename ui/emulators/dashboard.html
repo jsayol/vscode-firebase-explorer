@@ -304,23 +304,35 @@
       </div>
     </div>
 
-
-    <div class="modal modal-notice-warning">
+    <div class="modal modal-prompt-terminate-other-instance">
       <div class="modal-background"></div>
       <div class="modal-content">
         <article class="message is-danger">
           <div class="message-header">
-            <p>Warning</p>
+            <p>Other emulator running</p>
             <button class="delete" aria-label="delete"></button>
           </div>
-          <div class="message-body content"></div>
+          <div class="message-body">
+            <div class="card">
+              <div class="card-content">
+                <div class="content"></div>
+              </div>
+              <footer class="card-footer">
+                <a data-option="terminate" class="card-footer-item modal-button">
+                  Terminate other instance
+                </a>
+                <a data-option="cancel" class="card-footer-item modal-button">
+                  Cancel
+                </a>
+              </footer>
+            </div>
+          </div>
         </article>
       </div>
-
     </div>
-  </div>
 
   </div>
+
   <script src="{{resource:dist/webviews/emulators.js}}"></script>
 </body>
 

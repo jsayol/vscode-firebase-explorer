@@ -12,6 +12,8 @@ import { startEmulators, stopEmulators, listAllProjects } from './utils';
 import { FirebaseProject } from '../projects/ProjectManager';
 import { AccountInfo } from '../accounts/AccountManager';
 
+const processes = require('listening-processes');
+
 let context: vscode.ExtensionContext;
 let dashboardPanel: vscode.WebviewPanel | undefined;
 let isDashboardReady = false;
@@ -150,6 +152,34 @@ async function openDashboard(): Promise<void> {
             if (server) {
               await stopEmulators(server);
             }
+            break;
+          case 'who-has-port':
+            const portToFind = Number(data.port);
+            const procs = processes();
+            for (const [, value] of Object.entries(procs)) {
+              const proc = (value as any[]).find(
+                proc => Number(proc.port) === portToFind
+              );
+              if (proc) {
+                postToPanel(dashboardPanel!, {
+                  ...data,
+                  command: 'who-has-port-response',
+                  processInfo: proc
+                });
+                break; // for-loop
+              }
+            }
+            break;
+          case 'kill-process':
+            // TODO: processes.kill() sends a SIGKILL, which is quite brute force.
+            // Maybe find a way to send a SIGINT first? If the process is still
+            // running after a certain timeout has passsed, then try with SIGKILL.
+            const { success } = processes.kill(data.pid);
+            postToPanel(dashboardPanel!, {
+              command: 'kill-process-result',
+              pid: data.pid,
+              success: (success as number[]).includes(data.pid)
+            });
             break;
         }
       });
