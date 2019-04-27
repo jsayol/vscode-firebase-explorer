@@ -400,3 +400,7 @@ label.checkbox:hover {
 .modal-prompt-terminate-other-instance .message .message-body {
   padding: 0;
 }
+
+.modal-prompt-terminate-other-instance pre {
+  background-color: #E9E9E9;
+}

@@ -47,15 +47,13 @@ export async function startEmulators(
       });
     } catch (err) {
       console.error('Error while starting the emulators:', err);
-      await stopEmulators(server);
+      await stopEmulators();
       resolve();
     }
   });
 }
 
-export async function stopEmulators(server: WebSocketServer): Promise<void> {
-  await server.stop();
-
+export async function stopEmulators(): Promise<void> {
   if (cliProcess) {
     if (cliProcess.killed) {
       cliProcess = undefined;

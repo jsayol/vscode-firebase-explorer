@@ -4,6 +4,13 @@ declare const acquireVsCodeApi: () => {
   getState: () => any;
 };
 
+interface ProcessInfo {
+  command?: string;
+  invokingCommand?: string;
+  pid?: string;
+  port?: string;
+}
+
 const vscode = acquireVsCodeApi();
 
 const startButton = document.querySelector('.controls .button.start');
@@ -19,7 +26,7 @@ const workspaceSelector = document.querySelector(
 
 let logEntries: any[] = [];
 
-let portBlockingProcessInfo: any;
+let portBlockingProcessInfo: ProcessInfo;
 
 setupDOMListeners();
 
@@ -49,14 +56,13 @@ window.addEventListener('message', ({ data }) => {
       openTerminateInstanceModal(data);
       break;
     case 'kill-process-result':
-      // TODO: show success/fail?
       const shellOutput = document.querySelector(
         '.tab-content--dashboard .shell-output'
       );
       showDivider(
         shellOutput,
         (data.success ? 'Terminated' : 'Failed to terminate') +
-          ' program at port ' +
+          ' program using port ' +
           portBlockingProcessInfo.port
       );
       portBlockingProcessInfo = undefined;
@@ -510,17 +516,37 @@ function scrollToBottom(element: HTMLElement) {
 }
 
 function openTerminateInstanceModal(data: any): void {
-  // TODO: detect if it's an emulator or some other program. Show a message accordingly.
+  let isInstanceOf: 'database' | 'firestore' | 'functions' | undefined;
+  let errorMsg = `<h3>Failed to start the <i>${
+    data.emulator.name
+  }</i> emulator.</h3>`;
+
   portBlockingProcessInfo = data.processInfo;
 
-  const errorMsg = `
-      <h3>Failed to start <i>${data.emulator.name}</i> emulator.</h3>
-      The ${data.emulator.name} emulator couldn't start because the port
-      ${data.emulator.addr.port} is already taken by another program:<br/>
-      <pre><code>${JSON.stringify(data.processInfo, null, 2)}</code></pre>
-      <br/>
-      Do you want to try to <b>terminate the other program</b> to free the port?
+  if (isDatabaseEmulatorInstance(data.processInfo)) {
+    isInstanceOf = 'database';
+  } else if (isFirestoreEmulatorInstance(data.processInfo)) {
+    isInstanceOf = 'firestore';
+  } else if (isFunctionsEmulatorInstance(data.processInfo)) {
+    isInstanceOf = 'functions';
+  }
+
+  if (typeof isInstanceOf === 'string') {
+    errorMsg += `
+    There's another instance of the ${data.emulator.name} emulator running
+    in port ${data.emulator.addr.port}.
+    <br/><br/>
+    <b>Do you want to terminate it to free the port?</b>
     `;
+  } else {
+    errorMsg += `
+    The port ${data.emulator.addr.port} is already taken by another unknown program:<br/>
+    <pre><code>${JSON.stringify(data.processInfo, null, 2)}</code></pre>
+    <b>Do you want to terminate the other program to free the port?</b>
+    <br/><br/>
+    <i><b>Warning:</b> You might lose data if you terminate it unexpectedly.</i>
+    `;
+  }
 
   openModal('.modal-prompt-terminate-other-instance', {
     isHTML: true,
@@ -538,7 +564,6 @@ function handleTerminateInstanceModal(
     portBlockingProcessInfo = undefined;
     closeModal(event);
   } else if (modalButton.dataset.option === 'action') {
-    console.log('Trying to terminate', portBlockingProcessInfo);
     if (portBlockingProcessInfo) {
       vscode.postMessage({
         command: 'kill-process',
@@ -549,12 +574,33 @@ function handleTerminateInstanceModal(
   }
 }
 
+function isDatabaseEmulatorInstance(info: ProcessInfo): boolean {
+  return (
+    info.command === 'java' &&
+    /firebase-database-emulator(.+)\.jar/.test(info.invokingCommand)
+  );
+}
+
+function isFirestoreEmulatorInstance(info: ProcessInfo): boolean {
+  return (
+    info.command === 'java' &&
+    /cloud-firestore-emulator(.+)\.jar/.test(info.invokingCommand)
+  );
+}
+
+function isFunctionsEmulatorInstance(info: ProcessInfo): boolean {
+  return (
+    info.command === 'node' &&
+    /firebase(.+)emulators:start/.test(info.invokingCommand)
+  );
+}
+
 function showDivider(shellOutput: Element, text: string): void {
   const divider = document.createElement('div');
   divider.classList.add('is-divider');
   divider.dataset.content = text.toUpperCase();
   shellOutput.appendChild(divider);
-  setInterval(() => {
+  setTimeout(() => {
     scrollToBottomIfEnabled(shellOutput.closest('.tailing') as HTMLElement);
   }, 0);
 }
