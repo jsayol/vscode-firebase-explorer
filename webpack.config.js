@@ -42,12 +42,14 @@ function getWebviewConfig(env) {
   const moduleRules = [
     {
       test: /\.tsx?$/,
-      use: {
-        loader: 'ts-loader',
-        options: {
-          configFile: 'webviews.tsconfig.json'
+      use: [
+        {
+          loader: 'ts-loader',
+          options: {
+            configFile: 'src/webviews/tsconfig.json'
+          }
         }
-      },
+      ],
       exclude: /node_modules|\.d\.ts$/
     }
   ];
@@ -56,13 +58,15 @@ function getWebviewConfig(env) {
     moduleRules.push({
       test: /\.ts$/,
       enforce: 'pre',
-      use: {
-        loader: 'tslint-loader',
-        options: {
-          typeCheck: true,
-          tsConfigFile: 'webviews.tsconfig.json'
+      use: [
+        {
+          loader: 'tslint-loader',
+          options: {
+            typeCheck: true,
+            tsConfigFile: 'src/webviews/tsconfig.json'
+          }
         }
-      },
+      ],
       exclude: /node_modules/
     });
   }
@@ -78,26 +82,15 @@ function getWebviewConfig(env) {
     output: {
       libraryTarget: 'global',
       filename: '[name].js',
-      path: path.resolve(__dirname, 'dist/webviews'),
+      path: path.resolve(__dirname, 'dist/webviews')
       // publicPath: '{{root}}/dist/webviews/'
     },
     module: {
-      rules: [
-        {
-          test: /\.tsx?$/,
-          use: {
-            loader: 'ts-loader',
-            options: {
-              configFile: 'webviews.tsconfig.json'
-            }
-          },
-          exclude: /node_modules|\.d\.ts$/
-        }
-      ]
+      rules: moduleRules
     },
     resolve: {
-      extensions: ['.ts', '.tsx', '.js', '.jsx', '.json'],
-      modules: [path.resolve(__dirname, 'src/webviews'), 'node_modules']
+      extensions: ['.ts', '.js']
+      // modules: [path.resolve(__dirname, 'src/webviews'), 'node_modules']
     },
     stats: {
       all: false,
@@ -135,7 +128,8 @@ function getExtensionConfig(env) {
       use: {
         loader: 'ts-loader',
         options: {
-          onlyCompileBundledFiles: true
+          onlyCompileBundledFiles: true,
+          configFile: 'tsconfig.json'
         }
       },
       exclude: /node_modules|\.d\.ts$/
@@ -149,6 +143,7 @@ function getExtensionConfig(env) {
       use: {
         loader: 'tslint-loader',
         options: {
+          tsConfigFile: 'tsconfig.json',
           typeCheck: true
         }
       },
@@ -184,7 +179,9 @@ function getExtensionConfig(env) {
       ]
     },
     externals: {
-      vscode: 'commonjs vscode'
+      vscode: 'commonjs vscode',
+      bufferutil: 'undefined',
+      'utf-8-validate': 'undefined'
     },
     module: {
       rules: moduleRules
@@ -208,8 +205,5 @@ function getExtensionConfig(env) {
 module.exports = function(env, argv) {
   env = env || {};
   env.production = Boolean(env.production);
-  return [
-    getExtensionConfig(env),
-    getWebviewConfig(env)
-  ];
+  return [getExtensionConfig(env), getWebviewConfig(env)];
 };

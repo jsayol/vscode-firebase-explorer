@@ -13,20 +13,18 @@ interface ProcessInfo {
 
 const vscode = acquireVsCodeApi();
 
-const startButton = document.querySelector('.controls .button.start');
-const stopButton = document.querySelector('.controls .button.stop');
+const startButton = getElement('.controls .button.start');
+const stopButton = getElement('.controls .button.stop');
 
-const projectSelector = document.querySelector<HTMLSelectElement>(
+const projectSelector = getElement<HTMLSelectElement>(
   '.top-controls .project-selector'
 );
 
-const workspaceSelector = document.querySelector(
-  '.top-controls .workspace-selector'
-);
+const workspaceSelector = getElement('.top-controls .workspace-selector');
 
 let logEntries: any[] = [];
 
-let portBlockingProcessInfo: ProcessInfo;
+let portBlockingProcessInfo: ProcessInfo | undefined;
 
 setupDOMListeners();
 
@@ -56,16 +54,16 @@ window.addEventListener('message', ({ data }) => {
       openTerminateInstanceModal(data);
       break;
     case 'kill-process-result':
-      const shellOutput = document.querySelector(
-        '.tab-content--dashboard .shell-output'
-      );
-      showDivider(
-        shellOutput,
-        (data.success ? 'Terminated' : 'Failed to terminate') +
-          ' program at port ' +
-          portBlockingProcessInfo.port
-      );
-      portBlockingProcessInfo = undefined;
+      if (portBlockingProcessInfo) {
+        const shellOutput = getElement('.tab-content--dashboard .shell-output');
+        showDivider(
+          shellOutput,
+          (data.success ? 'Terminated' : 'Failed to terminate') +
+            ' program at port ' +
+            portBlockingProcessInfo.port
+        );
+        portBlockingProcessInfo = undefined;
+      }
       if (data.success) {
         start();
       }
@@ -81,35 +79,34 @@ vscode.postMessage({
 });
 
 window.addEventListener('DOMContentLoaded', () => {
-  document
-    .querySelector('.tabs.main-navigation')
-    .addEventListener('click', openTab);
+  getElement('.tabs.main-navigation').addEventListener('click', openTab);
 });
 
 function setupDOMListeners() {
-  document
-    .querySelector('.tab-content--dashboard .controls .button.start')
-    .addEventListener('click', start);
+  getElement(
+    '.tab-content--dashboard .controls .button.start'
+  ).addEventListener('click', start);
 
-  document
-    .querySelector('.tab-content--dashboard .controls .button.stop')
-    .addEventListener('click', stop);
+  getElement('.tab-content--dashboard .controls .button.stop').addEventListener(
+    'click',
+    stop
+  );
 
-  document
-    .querySelector('#switch-emu-all')
-    .addEventListener('change', toggleAllEmulatorsSwitch);
+  getElement('#switch-emu-all').addEventListener(
+    'change',
+    toggleAllEmulatorsSwitch
+  );
 
-  document
-    .querySelectorAll(
-      '.tab-content--https-functions .log-level-selection input.is-checkradio'
-    )
-    .forEach(input => {
-      input.addEventListener('change', applyHttpsFuncLogLevel);
-    });
+  getElements(
+    '.tab-content--https-functions .log-level-selection input.is-checkradio'
+  ).forEach(input => {
+    input.addEventListener('change', applyHttpsFuncLogLevel);
+  });
 
-  document
-    .querySelector('.tab-content--https-functions .logging-table')
-    .addEventListener('click', tableClick);
+  getElement('.tab-content--https-functions .logging-table').addEventListener(
+    'click',
+    tableClick
+  );
 
   document.body.addEventListener('click', (event: Event) => {
     const target = event.target as HTMLElement;
@@ -130,9 +127,8 @@ function setupDOMListeners() {
     }
   });
 
-  document.querySelectorAll('.tailing').forEach(container => {
-    container.addEventListener('scroll', () => {
-      const element = container as HTMLElement;
+  getElements('.tailing').forEach(element => {
+    element.addEventListener('scroll', () => {
       const dataset = element.dataset;
 
       if (dataset.disableTailOnScroll !== 'false') {
@@ -192,9 +188,7 @@ function stopped() {
   document.body.classList.remove('running');
   document.body.classList.remove('stopping');
 
-  const shellOutput = document.querySelector(
-    '.tab-content--dashboard .shell-output'
-  );
+  const shellOutput = getElement('.tab-content--dashboard .shell-output');
   showDivider(shellOutput, 'DONE');
 }
 
@@ -259,9 +253,7 @@ function initialize(data: {
   });
 
   if (folders.length > 1) {
-    const field = document.querySelector(
-      '.top-controls .workspace-selector-field'
-    );
+    const field = getElement('.top-controls .workspace-selector-field');
     field.classList.remove('hidden');
   }
 
@@ -272,9 +264,7 @@ function initialize(data: {
 }
 
 function showCLIOutput(data: { command: string; message: string }) {
-  const shellOutput = document.querySelector(
-    '.tab-content--dashboard .shell-output'
-  );
+  const shellOutput = getElement('.tab-content--dashboard .shell-output');
 
   const shellItem = document.createElement('div');
   shellItem.classList.add('item', 'item-' + data.command);
@@ -284,14 +274,14 @@ function showCLIOutput(data: { command: string; message: string }) {
 }
 
 function isSwitchEnabled(id: string) {
-  const elem = document.querySelector<HTMLInputElement>('#' + id);
+  const elem = getElement<HTMLInputElement>('#' + id);
   return elem.checked;
 }
 
 function toggleAllEmulatorsSwitch(event: Event) {
   const isChecked = (event.currentTarget as HTMLInputElement).checked;
   ['functions', 'firestore', 'database'].forEach(service => {
-    const element = document.querySelector('#switch-emu-' + service);
+    const element = getElement('#switch-emu-' + service);
     if (element) {
       if (isChecked) {
         element.setAttribute('disabled', 'disabled');
@@ -308,7 +298,7 @@ function openTab(event: Event) {
   if (tab) {
     const tabName = tab.dataset.tabname;
 
-    const tabs = document.querySelectorAll('.tabs li');
+    const tabs = getElements('.tabs li');
     tabs.forEach(tab => {
       const isSelected = tab.classList.contains('tab--' + tabName);
       if (isSelected) {
@@ -318,15 +308,15 @@ function openTab(event: Event) {
       }
     });
 
-    const contents = document.querySelectorAll('.tab-content');
+    const contents = getElements('.tab-content');
     contents.forEach(tabContent => {
       const isSelected = tabContent.classList.contains(
         'tab-content--' + tabName
       );
       if (isSelected) {
         tabContent.classList.add('is-active');
-        tabContent.querySelectorAll('.tailing').forEach(element => {
-          scrollToBottomIfEnabled(element as HTMLElement);
+        getElements(tabContent, '.tailing').forEach(element => {
+          scrollToBottomIfEnabled(element);
         });
       } else {
         tabContent.classList.remove('is-active');
@@ -370,7 +360,7 @@ function addFunctionsLogEntry(entry: { mode: string; log: any }) {
     return;
   }
 
-  const output = document.querySelector(
+  const output = getElement(
     `.tab-content--${functionType}-functions table tbody`
   );
   const row = document.createElement('tr');
@@ -411,9 +401,7 @@ function addFunctionsLogEntry(entry: { mode: string; log: any }) {
 }
 
 function addFirestoreLogEntry(entry: { from: string; data: any }) {
-  const output = document.querySelector(
-    '.tab-content--firestore .shell-output'
-  );
+  const output = getElement('.tab-content--firestore .shell-output');
   const shellItem = document.createElement('span');
   shellItem.classList.add('log-from--' + entry.from);
   shellItem.innerText = entry.data;
@@ -422,7 +410,7 @@ function addFirestoreLogEntry(entry: { from: string; data: any }) {
 }
 
 function addDatabaseLogEntry(entry: { from: any; data: any }) {
-  const output = document.querySelector('.tab-content--database .shell-output');
+  const output = getElement('.tab-content--database .shell-output');
   const shellItem = document.createElement('span');
   shellItem.classList.add(
     'log-from--' + (entry.from || 'unknown').toLowerCase()
@@ -443,10 +431,10 @@ function openModal(
         isHTML?: boolean;
       }
 ) {
-  const modal = document.querySelector(selector);
+  const modal = getElement(selector);
 
   if (modal) {
-    const contentElement = modal.querySelector<HTMLElement>('.content');
+    const contentElement = getElement(modal, '.content');
 
     if (typeof options === 'string') {
       contentElement.innerText = options;
@@ -457,15 +445,14 @@ function openModal(
         contentElement.innerText = options.content;
       }
 
-      modal.querySelector<HTMLElement>('.modal-title').innerText =
-        options.title;
+      getElement(modal, '.modal-title').innerText = options.title;
 
-      modal.querySelector<HTMLElement>('.modal-button-action').innerText =
+      getElement(modal, '.modal-button-action').innerText =
         options.actionButton;
     }
 
     modal.classList.add('is-active');
-    document.querySelector('html').classList.add('is-clipped');
+    getElement('html').classList.add('is-clipped');
   }
 }
 
@@ -473,25 +460,25 @@ function closeModal(event: Event) {
   const modal = (event.target as HTMLElement).closest('.modal');
   if (modal) {
     modal.classList.remove('is-active');
-    document.querySelector('html').classList.remove('is-clipped');
-    modal.querySelector('.content').innerHTML = '';
+    getElement('html').classList.remove('is-clipped');
+    getElement(modal, '.content').innerHTML = '';
   }
 }
 
 function tableClick(event: Event) {
-  const row = (event.target as HTMLElement).closest('tr');
+  const row = (event.target as HTMLElement).closest('tr')!;
   const logEntryPos = Number(row.dataset.logEntryPos);
   const entry = logEntries[logEntryPos];
   openModal('.modal-json-viewer', JSON.stringify(entry.data, null, 2));
 }
 
 function applyHttpsFuncLogLevel() {
-  const table = document.querySelector<HTMLTableElement>(
+  const table = getElement<HTMLTableElement>(
     '.tab-content--https-functions table'
   );
 
   ['user', 'info', 'debug', 'error', 'system'].forEach(level => {
-    const checkbox = document.querySelector<HTMLInputElement>(
+    const checkbox = getElement<HTMLInputElement>(
       '#tab-content--https-functions--log-level--' + level
     );
 
@@ -577,22 +564,28 @@ function handleTerminateInstanceModal(
 
 function isDatabaseEmulatorInstance(info: ProcessInfo): boolean {
   return (
+    info &&
+    contains(info, 'invokingCommand') &&
     info.command === 'java' &&
-    /firebase-database-emulator(.+)\.jar/.test(info.invokingCommand)
+    /firebase-database-emulator(.+)\.jar/.test(info.invokingCommand!)
   );
 }
 
 function isFirestoreEmulatorInstance(info: ProcessInfo): boolean {
   return (
+    info &&
+    contains(info, 'invokingCommand') &&
     info.command === 'java' &&
-    /cloud-firestore-emulator(.+)\.jar/.test(info.invokingCommand)
+    /cloud-firestore-emulator(.+)\.jar/.test(info.invokingCommand!)
   );
 }
 
 function isFunctionsEmulatorInstance(info: ProcessInfo): boolean {
   return (
+    info &&
+    contains(info, 'invokingCommand') &&
     info.command === 'node' &&
-    /firebase(.+)emulators:start/.test(info.invokingCommand)
+    /firebase(.+)emulators:start/.test(info.invokingCommand!)
   );
 }
 
@@ -604,4 +597,45 @@ function showDivider(shellOutput: Element, text: string): void {
   setTimeout(() => {
     scrollToBottomIfEnabled(shellOutput.closest('.tailing') as HTMLElement);
   }, 0);
+}
+
+function getElement<T extends HTMLElement = HTMLElement>(selector: string): T;
+function getElement<T extends HTMLElement = HTMLElement>(
+  parent: Element,
+  selector: string
+): T;
+function getElement<T extends HTMLElement = HTMLElement>(
+  parentOrSelector: string | Element,
+  selector?: string
+): T {
+  if (typeof parentOrSelector === 'string') {
+    return document.querySelector(parentOrSelector) as T;
+  } else {
+    return parentOrSelector.querySelector(selector!) as T;
+  }
+}
+
+function getElements<T extends HTMLElement = HTMLElement>(
+  selector: string
+): NodeListOf<T>;
+function getElements<T extends HTMLElement = HTMLElement>(
+  parent: Element,
+  selector: string
+): NodeListOf<T>;
+function getElements<T extends HTMLElement = HTMLElement>(
+  parentOrSelector: string | Element,
+  selector?: string
+): NodeListOf<T> {
+  if (typeof parentOrSelector === 'string') {
+    return document.querySelectorAll(parentOrSelector);
+  } else {
+    return parentOrSelector.querySelectorAll(selector!);
+  }
+}
+
+function contains<T extends object, K extends string>(
+  obj: T,
+  field: K
+): boolean {
+  return Object.prototype.hasOwnProperty.call(obj, field);
 }
