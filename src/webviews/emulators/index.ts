@@ -1,15 +1,10 @@
+import { PsNodeResult } from '../../emulators/utils';
+
 declare const acquireVsCodeApi: () => {
   postMessage: (msg: any) => void;
   setState: <T>(newState: T) => T;
   getState: () => any;
 };
-
-interface ProcessInfo {
-  command?: string;
-  invokingCommand?: string;
-  pid?: string;
-  port?: string;
-}
 
 const vscode = acquireVsCodeApi();
 
@@ -24,7 +19,10 @@ const workspaceSelector = getElement('.top-controls .workspace-selector');
 
 let logEntries: any[] = [];
 
-let portBlockingProcessInfo: ProcessInfo | undefined;
+const portBlocking: {
+  processInfo?: PsNodeResult | undefined;
+  port?: string | undefined;
+} = {};
 
 setupDOMListeners();
 
@@ -54,16 +52,20 @@ window.addEventListener('message', ({ data }) => {
       openTerminateInstanceModal(data);
       break;
     case 'kill-process-result':
-      if (portBlockingProcessInfo) {
+      const port = portBlocking.port;
+      if (port) {
         const shellOutput = getElement('.tab-content--dashboard .shell-output');
         showDivider(
           shellOutput,
           (data.success ? 'Terminated' : 'Failed to terminate') +
             ' program at port ' +
-            portBlockingProcessInfo.port
+            port
         );
-        portBlockingProcessInfo = undefined;
       }
+      portBlocking.port = undefined;
+      portBlocking.processInfo = undefined;
+      startButton.removeAttribute('disabled');
+      startButton.classList.remove('is-loading');
       if (data.success) {
         start();
       }
@@ -196,6 +198,18 @@ function stopped() {
 
   const shellOutput = getElement('.tab-content--dashboard .shell-output');
   showDivider(shellOutput, 'DONE');
+
+  ['firestore', 'database'].forEach(emulator => {
+    if (isSwitchEnabled('switch-emu-' + emulator)) {
+      const lastElem = getElement(
+        `.tab-content--${emulator} .shell-output div:last-child`
+      );
+      if (!lastElem.classList.contains('is-divider')) {
+        const output = getElement(`.tab-content--${emulator} .shell-output`);
+        showDivider(output, 'DONE');
+      }
+    }
+  });
 }
 
 function initialize(data: {
@@ -445,8 +459,9 @@ function openModal(
 
       getElement(modal, '.modal-title').innerText = options.title;
 
-      getElement(modal, '.modal-button-action').innerText =
-        options.actionButton;
+      const actionButton = getElement(modal, '.modal-button-action');
+      actionButton.title = options.actionButton;
+      actionButton.innerText = options.actionButton;
     }
 
     modal.classList.add('is-active');
@@ -499,47 +514,64 @@ function scrollToBottom(element: HTMLElement) {
   element.scrollTo(0, element.scrollHeight);
 }
 
-function openTerminateInstanceModal(data: any): void {
+function openTerminateInstanceModal(data: {
+  emulator: any;
+  processInfo: PsNodeResult;
+}): void {
   let isInstanceOf: 'database' | 'firestore' | 'functions' | undefined;
   let errorMsg = `<h3>Failed to start the <i>${
     data.emulator.name
   }</i> emulator.</h3>`;
 
-  portBlockingProcessInfo = data.processInfo;
+  if (data.processInfo) {
+    portBlocking.processInfo = data.processInfo;
+    portBlocking.port = data.emulator.addr.port;
 
-  if (isDatabaseEmulatorInstance(data.processInfo)) {
-    isInstanceOf = 'database';
-  } else if (isFirestoreEmulatorInstance(data.processInfo)) {
-    isInstanceOf = 'firestore';
-  } else if (isFunctionsEmulatorInstance(data.processInfo)) {
-    isInstanceOf = 'functions';
-  }
+    if (isDatabaseEmulatorInstance(data.processInfo)) {
+      isInstanceOf = 'database';
+    } else if (isFirestoreEmulatorInstance(data.processInfo)) {
+      isInstanceOf = 'firestore';
+    } else if (isFunctionsEmulatorInstance(data.processInfo)) {
+      isInstanceOf = 'functions';
+    }
 
-  if (typeof isInstanceOf === 'string') {
-    errorMsg += `
+    if (typeof isInstanceOf === 'string') {
+      errorMsg += `
     There's another instance of the ${data.emulator.name} emulator running
-    in port ${data.emulator.addr.port}.
+    using port ${portBlocking.port}.
     <br/><br/>
     <b>Do you want to terminate it to free the port?</b>
     `;
-  } else {
-    errorMsg += `
-    The port ${
-      data.emulator.addr.port
-    } is already taken by another unknown program:<br/>
-    <pre><code>${JSON.stringify(data.processInfo, null, 2)}</code></pre>
-    <b>Do you want to terminate the other program to free the port?</b>
-    <br/><br/>
-    <i><b>Warning:</b> You might lose data if you terminate it unexpectedly.</i>
+    } else {
+      const { pid, command, arguments: args } = data.processInfo;
+      const fullCmd = command + ' ' + args.join(' ');
+      errorMsg += `
+    <div>The port ${
+      portBlocking.port
+    } is already taken by another program:</div>
+    <div><pre><code><b>    PID</b>: ${pid}\n<b>Command</b>: ${fullCmd}</code></pre></div>
+    <br/>
+    <div><b>Do you want to terminate the other program to free the port?</b></div>
+    <br/>
+    <div><i><b>Warning:</b> You might lose data if you terminate it unexpectedly.</i></div>
     `;
-  }
+    }
 
-  openModal('.modal-prompt-terminate-other-instance', {
-    isHTML: true,
-    content: errorMsg,
-    title: 'Warning',
-    actionButton: 'Terminate program'
-  });
+    openModal('.modal-prompt-terminate-other-instance', {
+      isHTML: true,
+      content: errorMsg,
+      title: 'Warning',
+      actionButton:
+        'Terminate ' +
+        (typeof isInstanceOf === 'string' ? 'instance' : 'program')
+    });
+  } else {
+    const shellOutput = getElement('.tab-content--dashboard .shell-output');
+    showDivider(
+      shellOutput,
+      'Unknown program is using port ' + data.emulator.addr.port
+    );
+  }
 }
 
 function handleTerminateInstanceModal(
@@ -547,43 +579,47 @@ function handleTerminateInstanceModal(
   modalButton: HTMLElement
 ): void {
   if (modalButton.dataset.option === 'cancel') {
-    portBlockingProcessInfo = undefined;
+    portBlocking.port = undefined;
+    portBlocking.processInfo = undefined;
     closeModal(event);
   } else if (modalButton.dataset.option === 'action') {
-    if (portBlockingProcessInfo) {
+    if (portBlocking.processInfo) {
+      startButton.setAttribute('disabled', 'disabled');
+      startButton.classList.add('is-loading');
+
       vscode.postMessage({
         command: 'kill-process',
-        pid: portBlockingProcessInfo.pid
+        pid: portBlocking.processInfo.pid
       });
     }
     closeModal(event);
   }
 }
 
-function isDatabaseEmulatorInstance(info: ProcessInfo): boolean {
+function isDatabaseEmulatorInstance(info: PsNodeResult): boolean {
   return (
     info &&
-    contains(info, 'invokingCommand') &&
+    contains(info, 'arguments') &&
     info.command === 'java' &&
-    /firebase-database-emulator(.+)\.jar/.test(info.invokingCommand!)
+    /firebase-database-emulator(.+)\.jar/.test(info.arguments.join(' '))
   );
 }
 
-function isFirestoreEmulatorInstance(info: ProcessInfo): boolean {
+function isFirestoreEmulatorInstance(info: PsNodeResult): boolean {
   return (
     info &&
-    contains(info, 'invokingCommand') &&
+    contains(info, 'arguments') &&
     info.command === 'java' &&
-    /cloud-firestore-emulator(.+)\.jar/.test(info.invokingCommand!)
+    /cloud-firestore-emulator(.+)\.jar/.test(info.arguments.join(' '))
   );
 }
 
-function isFunctionsEmulatorInstance(info: ProcessInfo): boolean {
+function isFunctionsEmulatorInstance(info: PsNodeResult): boolean {
   return (
     info &&
-    contains(info, 'invokingCommand') &&
+    contains(info, 'arguments') &&
     info.command === 'node' &&
-    /firebase(.+)emulators:start/.test(info.invokingCommand!)
+    /firebase(.+)emulators:start/.test(info.arguments.join(' '))
   );
 }
 

@@ -4,12 +4,20 @@ import { WebSocketServer } from './server';
 import { ProjectManager, FirebaseProject } from '../projects/ProjectManager';
 import { AccountManager } from '../accounts/AccountManager';
 import { webviewPanels, postToPanel, ansiToHTML } from '../utils';
+import { findPidByPort } from './find-process';
 
-const listeningProcesses = require('listening-processes');
+const psNode = require('ps-node');
 
 const EMULATORS_START_COMMAND = 'emulators:start';
 
 let cliProcess: ChildProcess | undefined;
+
+export interface PsNodeResult {
+  pid: string;
+  ppid: string;
+  command: string;
+  arguments: string[];
+}
 
 export async function startEmulators(
   server: WebSocketServer,
@@ -109,7 +117,7 @@ export async function prepareServerStart(
     debug: boolean;
   }
 ): Promise<void> {
-  server.on('stdout', (line) => {
+  server.on('stdout', line => {
     if (webviewPanels.emulators) {
       postToPanel(webviewPanels.emulators, {
         command: 'stdout',
@@ -118,7 +126,7 @@ export async function prepareServerStart(
     }
   });
 
-  server.on('stderr', (line) => {
+  server.on('stderr', line => {
     if (webviewPanels.emulators) {
       postToPanel(webviewPanels.emulators, {
         command: 'stderr',
@@ -140,8 +148,8 @@ export async function prepareServerStart(
     server.clearListeners();
   });
 
-  server.on('emulator-port-taken', emulator => {
-    let processInfo = findWhoHasPort(emulator.addr.port);
+  server.on('emulator-port-taken', async emulator => {
+    let processInfo = await findWhoHasPort(emulator.addr.port);
     postToPanel(webviewPanels.emulators!, {
       command: 'emulator-port-taken',
       emulator,
@@ -161,35 +169,51 @@ export async function prepareServerStart(
   }
 }
 
-export function findWhoHasPort(port: number | string): any {
-  let processInfo: any = null;
-
+export async function findWhoHasPort(
+  port: number | string
+): Promise<PsNodeResult | undefined> {
   try {
-    // TODO: check if this works on windows & mac
-    const procs = listeningProcesses();
-    const portToFind = Number(port);
+    const pid = await findPidByPort(port);
 
-    for (const [, value] of Object.entries(procs)) {
-      const proc = (value as any[]).find(
-        proc => Number(proc.port) === portToFind
-      );
-      if (proc) {
-        processInfo = proc;
-        break; // for-loop
-      }
+    if (!pid) {
+      return;
     }
-  } catch (err) {
-    // Something went wrong while listing processes with open ports
-  }
 
-  return processInfo;
+    return new Promise(resolve => {
+      psNode.lookup({ pid }, (err: string | null, results: PsNodeResult[]) => {
+        if (err || !results || results.length === 0) {
+          resolve();
+        } else {
+          resolve(results[0]);
+        }
+      });
+    });
+  } catch (err) {
+    return;
+  }
 }
 
 export async function killProcess(pid: number | string): Promise<boolean> {
-  // TODO: listeningProcesses.kill() sends a SIGKILL, which is quite brute force.
-  // Maybe find a way to send a SIGINT first? If the process is still
-  // running after a certain timeout has passsed, then try with SIGKILL.
-  pid = Number(pid);
-  const { success } = listeningProcesses.kill(pid);
-  return (success as number[]).includes(pid);
+  return new Promise<boolean>(resolve => {
+    // First we send a polite SIGINT with a 5 second timeout
+    psNode.kill(
+      pid,
+      {
+        signal: 'SIGINT',
+        timeout: 5
+      },
+      (errSIGINT: any) => {
+        if (!errSIGINT) {
+          resolve(true);
+        } else {
+          // It didn't work. Let's try to be more blunt.
+          psNode.kill(pid, 'SIGKILL', (errSIGKILL: any) => {
+            resolve(errSIGKILL ? false : true);
+          });
+        }
+      }
+    );
+  }).catch(() => {
+    return false;
+  });
 }

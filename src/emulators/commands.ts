@@ -100,10 +100,9 @@ async function openDashboard(): Promise<void> {
             await stopEmulators();
             break;
           case 'kill-process':
-            const success = killProcess(data.pid);
+            const success = await killProcess(data.pid);
             postToPanel(webviewPanels.emulators!, {
               command: 'kill-process-result',
-              pid: data.pid,
               success
             });
             break;
