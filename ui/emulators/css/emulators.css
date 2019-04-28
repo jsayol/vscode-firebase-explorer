@@ -161,7 +161,6 @@ input[type='checkbox'].is-checkradio + label:hover {
 
 .box {
   padding: 1rem;
-  /* padding: 1rem 1rem 1rem 0.5rem; */
   box-shadow: none;
 }
 
@@ -212,12 +211,14 @@ label.checkbox:hover {
 
 .shell-output-box {
   height: 100%;
-  padding-left: 0.5rem;
+  padding-left: 0;
   border: 1px solid var(--vscode-editorWidget-background);
 }
 
 .shell-output .item {
+  white-space: pre-wrap;
   padding-left: 0.3rem;
+  margin-left: 0.2rem;
 }
 
 .shell-output .item-stderr {
@@ -382,7 +383,7 @@ label.checkbox:hover {
 }
 
 .tab-content--firestore .shell-output-box {
-  padding-left: 1rem;
+  /* padding-left: 1rem; */
 }
 
 .with-dropdown-arrow::after {
@@ -402,11 +403,6 @@ label.checkbox:hover {
   border-color: var(--vscode-button-background);
   z-index: 4;
   margin-left: 1rem;
-}
-
-.tab-content--firestore .shell-output .log-from--stderr,
-.tab-content--database .shell-output .log-from--stderr {
-  color: var(--vscode-terminal-ansiRed);
 }
 
 .shell-output .is-divider {

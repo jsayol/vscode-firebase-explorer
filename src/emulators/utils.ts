@@ -16,7 +16,8 @@ export async function startEmulators(
   workspacePath: string,
   email: string,
   projectId: string,
-  emulators: 'all' | string[]
+  emulators: 'all' | string[],
+  debug: boolean
 ): Promise<void> {
   server.useProjectManager(ProjectManager.for(email, projectId));
   await server.start();
@@ -27,6 +28,10 @@ export async function startEmulators(
 
       if (Array.isArray(emulators)) {
         args = args.concat('--only', emulators.join(','));
+      }
+
+      if (debug) {
+        args.push('--debug');
       }
 
       const spawnOptions = {
@@ -101,22 +106,23 @@ export async function prepareServerStart(
     email: string;
     projectId: string;
     emulators: 'all' | string[];
+    debug: boolean;
   }
 ): Promise<void> {
-  server.on('stdout', ({ data }) => {
+  server.on('stdout', (line) => {
     if (webviewPanels.emulators) {
       postToPanel(webviewPanels.emulators, {
         command: 'stdout',
-        message: linkify(ansiToHTML(data))
+        message: linkify(ansiToHTML(line))
       });
     }
   });
 
-  server.on('stderr', ({ data }) => {
+  server.on('stderr', (line) => {
     if (webviewPanels.emulators) {
       postToPanel(webviewPanels.emulators, {
         command: 'stderr',
-        message: linkify(ansiToHTML(data))
+        message: linkify(ansiToHTML(line))
       });
     }
   });
@@ -143,10 +149,10 @@ export async function prepareServerStart(
     });
   });
 
-  const { path, email, projectId, emulators } = data;
+  const { path, email, projectId, emulators, debug } = data;
 
   // This promise resolves when the child process exits
-  await startEmulators(server, path, email, projectId, emulators);
+  await startEmulators(server, path, email, projectId, emulators, debug);
   // The CLI has exited
 
   if (webviewPanels.emulators) {

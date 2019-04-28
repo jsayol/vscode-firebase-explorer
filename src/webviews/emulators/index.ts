@@ -92,7 +92,7 @@ function setupDOMListeners() {
     stop
   );
 
-  getElement('#switch-emu-all').addEventListener(
+  getElement('#switch-all-emulators').addEventListener(
     'change',
     toggleAllEmulatorsSwitch
   );
@@ -149,25 +149,31 @@ function start() {
   ].value.split('#');
   // @ts-ignore
   const path = workspaceSelector.options[workspaceSelector.selectedIndex].value;
+  const debug = isSwitchEnabled('enable-debug');
 
   let emulators;
-  const allEmulators = isSwitchEnabled('switch-emu-all');
+  const allEmulators = isSwitchEnabled('switch-all-emulators');
   if (allEmulators) {
     emulators = 'all';
   } else {
-    emulators = [];
-    if (isSwitchEnabled('switch-emu-functions')) {
-      emulators.push('functions');
-    }
-    if (isSwitchEnabled('switch-emu-firestore')) {
-      emulators.push('firestore');
-    }
-    if (isSwitchEnabled('switch-emu-database')) {
-      emulators.push('database');
-    }
+    const inputs = getElements<HTMLInputElement>(
+      '.tab-content--dashboard input[id^="switch-emu-"]'
+    );
+
+    emulators = [...inputs]
+      .filter(input => input.checked)
+      .map(input => input.id.match(/switch-emu-(.+)/)![1]);
   }
 
-  vscode.postMessage({ command: 'start', email, projectId, path, emulators });
+  vscode.postMessage({
+    command: 'start',
+    email,
+    projectId,
+    path,
+    emulators,
+    debug
+  });
+
   startButton.setAttribute('disabled', 'disabled');
   stopButton.removeAttribute('disabled');
   document.body.classList.add('running');
@@ -265,7 +271,6 @@ function initialize(data: {
 
 function showCLIOutput(data: { command: string; message: string }) {
   const shellOutput = getElement('.tab-content--dashboard .shell-output');
-
   const shellItem = document.createElement('div');
   shellItem.classList.add('item', 'item-' + data.command);
   shellItem.innerHTML = data.message;
@@ -280,7 +285,7 @@ function isSwitchEnabled(id: string) {
 
 function toggleAllEmulatorsSwitch(event: Event) {
   const isChecked = (event.currentTarget as HTMLInputElement).checked;
-  ['functions', 'firestore', 'database'].forEach(service => {
+  ['functions', 'firestore', 'database', 'hosting'].forEach(service => {
     const element = getElement('#switch-emu-' + service);
     if (element) {
       if (isChecked) {
@@ -337,10 +342,8 @@ function addLogEntry(entry: /*TODO*/ {
       addFunctionsLogEntry(entry as any /*TODO*/);
       break;
     case 'firestore':
-      addFirestoreLogEntry(entry as any /*TODO*/);
-      break;
     case 'database':
-      addDatabaseLogEntry(entry as any /*TODO*/);
+      addLogEntryHelper(entry.module, entry as any /*TODO*/);
       break;
     default:
       console.warn(`Unknown log module "${entry.module}".`, entry);
@@ -400,22 +403,17 @@ function addFunctionsLogEntry(entry: { mode: string; log: any }) {
   scrollToBottomIfEnabled(output.closest('.tailing') as HTMLElement);
 }
 
-function addFirestoreLogEntry(entry: { from: string; data: any }) {
-  const output = getElement('.tab-content--firestore .shell-output');
-  const shellItem = document.createElement('span');
-  shellItem.classList.add('log-from--' + entry.from);
-  shellItem.innerText = entry.data;
-  output.appendChild(shellItem);
-  scrollToBottomIfEnabled(output.closest('.tailing') as HTMLElement);
-}
-
-function addDatabaseLogEntry(entry: { from: any; data: any }) {
-  const output = getElement('.tab-content--database .shell-output');
-  const shellItem = document.createElement('span');
+function addLogEntryHelper(
+  module: 'firestore' | 'database',
+  entry: { from: string; line: string }
+) {
+  const output = getElement(`.tab-content--${module} .shell-output`);
+  const shellItem = document.createElement('div');
   shellItem.classList.add(
-    'log-from--' + (entry.from || 'unknown').toLowerCase()
+    'item',
+    'item-' + (entry.from || 'unknown').toLowerCase()
   );
-  shellItem.innerText = entry.data;
+  shellItem.innerHTML = escapeHtml(entry.line);
   output.appendChild(shellItem);
   scrollToBottomIfEnabled(output.closest('.tailing') as HTMLElement);
 }
@@ -638,4 +636,13 @@ function contains<T extends object, K extends string>(
   field: K
 ): boolean {
   return Object.prototype.hasOwnProperty.call(obj, field);
+}
+
+function escapeHtml(unsafe: string): string {
+  return unsafe
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#039;');
 }

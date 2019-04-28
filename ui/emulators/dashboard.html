@@ -103,13 +103,14 @@
               Enabled Emulators
             </label>
             <div class="field">
-              <input type="checkbox" id="switch-emu-all" class="switch is-outlined" checked>
-              <label class="checkbox" for="switch-emu-all">
+              <input type="checkbox" id="switch-all-emulators" class="switch is-outlined" checked>
+              <label class="checkbox" for="switch-all-emulators">
                 All
               </label>
             </div>
             <div class="field">
-              <input type="checkbox" id="switch-emu-functions" class="switch is-outlined" checked disabled>
+              <input type="checkbox" id="switch-emu-functions" class="switch is-outlined" data-emulator="functions"
+                checked disabled>
               <label class="checkbox" for="switch-emu-functions">
                 Functions
               </label>
@@ -124,6 +125,21 @@
               <input type="checkbox" id="switch-emu-database" class="switch is-outlined" checked disabled>
               <label class="checkbox" for="switch-emu-database">
                 Database
+              </label>
+            </div>
+            <div class="field">
+              <input type="checkbox" id="switch-emu-hosting" class="switch is-outlined" checked disabled>
+              <label class="checkbox" for="switch-emu-hosting">
+                Hosting
+              </label>
+            </div>
+          </div>
+
+          <div class="box">
+            <div class="field">
+              <input type="checkbox" id="enable-debug" class="is-checkradio">
+              <label class="checkbox" for="enable-debug">
+                Debug
               </label>
             </div>
           </div>

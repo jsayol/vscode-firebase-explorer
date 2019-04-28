@@ -208,18 +208,15 @@ export class WebSocketServer {
         break;
       case 'stdout':
       case 'stderr':
-        // log(message);
         break;
       case 'error':
         // TODO
         log(message);
         break;
       case 'log':
-        // log(message);
         break;
       case 'pid':
         // TODO
-        log(message);
         break;
       case 'emulator-port-taken':
         break;
