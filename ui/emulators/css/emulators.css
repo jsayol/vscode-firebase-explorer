@@ -382,10 +382,6 @@ label.checkbox:hover {
   background-color: var(--vscode-editorWidget-background);
 }
 
-.tab-content--firestore .shell-output-box {
-  /* padding-left: 1rem; */
-}
-
 .with-dropdown-arrow::after {
   border: 3px solid transparent;
   border-radius: 2px;
@@ -419,12 +415,44 @@ label.checkbox:hover {
   background: var(--vscode-editorWidget-background);
 }
 
+.modal-prompt-terminate-other-instance .message-header {
+  background-color: var(--vscode-terminal-ansiRed);
+}
+
 .modal-prompt-terminate-other-instance .message .message-body {
   padding: 0;
 }
 
+.modal-prompt-terminate-other-instance .message .card-content {
+  color: var(--vscode-foreground);
+  background-color: var(--vscode-editorWidget-background);
+}
+
+.modal-prompt-terminate-other-instance .message .card-content h4 {
+  color: var(--vscode-foreground);
+}
+
 .modal-prompt-terminate-other-instance pre {
-  background-color: #e9e9e9;
+  /* background-color: #e9e9e9; */
+  background-color: var(--vscode-foreground);
+  color: var(--vscode-editorWidget-background);
+}
+
+.modal-prompt-terminate-other-instance footer,
+.modal-prompt-terminate-other-instance footer a {
+  color: var(--vscode-foreground);
+  background-color: var(--vscode-editor-background);
+  border-color: var(--vscode-editorWidget-background) !important;
+}
+
+.modal-prompt-terminate-other-instance footer .modal-button:hover {
+  opacity: 0.8;
+  background-color: var(--vscode-foreground);
+  color: var(--vscode-editor-background) !important;
+}
+
+.modal footer a {
+  text-decoration: none !important;
 }
 
 .table.logging-table thead tr th {
@@ -432,4 +460,8 @@ label.checkbox:hover {
   top: 0;
   z-index: 10;
   background-color: var(--vscode-editorWidget-background);
+}
+
+.capitalize {
+  text-transform: capitalize;
 }

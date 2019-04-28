@@ -204,7 +204,7 @@ function stopped() {
       const lastElem = getElement(
         `.tab-content--${emulator} .shell-output div:last-child`
       );
-      if (!lastElem.classList.contains('is-divider')) {
+      if (lastElem && !lastElem.classList.contains('is-divider')) {
         const output = getElement(`.tab-content--${emulator} .shell-output`);
         showDivider(output, 'DONE');
       }
@@ -294,7 +294,7 @@ function showCLIOutput(data: { command: string; message: string }) {
 
 function isSwitchEnabled(id: string) {
   const elem = getElement<HTMLInputElement>('#' + id);
-  return elem.checked;
+  return elem && elem.checked;
 }
 
 function toggleAllEmulatorsSwitch(event: Event) {
@@ -519,9 +519,9 @@ function openTerminateInstanceModal(data: {
   processInfo: PsNodeResult;
 }): void {
   let isInstanceOf: 'database' | 'firestore' | 'functions' | undefined;
-  let errorMsg = `<h3>Failed to start the <i>${
+  let errorMsg = `<h4>Failed to start the <span class="capitalize">${
     data.emulator.name
-  }</i> emulator.</h3>`;
+  }</span> emulator.</h4>`;
 
   if (data.processInfo) {
     portBlocking.processInfo = data.processInfo;
@@ -537,8 +537,10 @@ function openTerminateInstanceModal(data: {
 
     if (typeof isInstanceOf === 'string') {
       errorMsg += `
-    There's another instance of the ${data.emulator.name} emulator running
-    using port ${portBlocking.port}.
+    There's ${
+      isInstanceOf === data.emulator.name ? 'another' : 'an'
+    } instance of the <span class="capitalize">${isInstanceOf}</span>
+    emulator already using port ${portBlocking.port}.
     <br/><br/>
     <b>Do you want to terminate it to free the port?</b>
     `;
