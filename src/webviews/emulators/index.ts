@@ -70,6 +70,17 @@ window.addEventListener('message', ({ data }) => {
         start();
       }
       break;
+    case 'select-project':
+      const optionValue = data.email + '#' + data.projectId;
+      const option = [...projectSelector.options].find(
+        opt => opt.value === optionValue
+      );
+      if (option) {
+        option.selected = true;
+      } else {
+        projectSelector.options[0].selected = true;
+      }
+      break;
     default:
       console.error('Unknown command received:', data);
     // TODO: throw? ignore?
@@ -110,6 +121,7 @@ function setupDOMListeners() {
     tableClick
   );
 
+  // TODO: change this to attach click events to individual elements
   document.body.addEventListener('click', (event: Event) => {
     const target = event.target as HTMLElement;
     if (
@@ -142,15 +154,30 @@ function setupDOMListeners() {
       }
     });
   });
+
+  getElement<HTMLSelectElement>(
+    '.tab-content--dashboard .workspace-selector-field .workspace-selector'
+  ).addEventListener('change', function() {
+    const path = this.options[this.selectedIndex].value;
+    vscode.postMessage({
+      command: 'folder-selected',
+      path
+    });
+  });
 }
 
 function start() {
-  // @ts-ignore
-  const [email, projectId] = projectSelector.options[
-    projectSelector.selectedIndex
-  ].value.split('#');
+  const selectedProject =
+    projectSelector.options[projectSelector.selectedIndex];
+
+  if (!selectedProject || selectedProject.value === '') {
+    // TODO: show message telling the user to select a project
+    return;
+  }
+
   // @ts-ignore
   const path = workspaceSelector.options[workspaceSelector.selectedIndex].value;
+  const [email, projectId] = selectedProject.value.split('#');
   const debug = isSwitchEnabled('enable-debug');
 
   let emulators;
@@ -212,18 +239,8 @@ function stopped() {
   });
 }
 
-function initialize(data: {
-  folders: any;
-  accountsWithProjects: any;
-  selectedAccountEmail: any;
-  selectedProjectId: any;
-}) {
-  const {
-    folders,
-    accountsWithProjects,
-    selectedAccountEmail,
-    selectedProjectId
-  } = data;
+function initialize(data: { folders: any; accountsWithProjects: any }) {
+  const { folders, accountsWithProjects } = data;
 
   const numAccounts = accountsWithProjects.length;
 
@@ -246,15 +263,6 @@ function initialize(data: {
           const option = document.createElement('option');
           option.innerText = project.displayName || project.projectId;
           option.setAttribute('value', awp.email + '#' + project.projectId);
-
-          const isSelected =
-            selectedAccountEmail === awp.email &&
-            selectedProjectId === project.projectId;
-
-          if (isSelected) {
-            option.setAttribute('selected', 'selected');
-          }
-
           parent.appendChild(option);
         }
       );
@@ -272,10 +280,11 @@ function initialize(data: {
     workspaceSelector.appendChild(option);
   });
 
-  if (folders.length > 1) {
-    const field = getElement('.top-controls .workspace-selector-field');
-    field.classList.remove('hidden');
-  }
+  setTimeout(() => {
+    const event = document.createEvent('HTMLEvents');
+    event.initEvent('change', false, true);
+    workspaceSelector.dispatchEvent(event);
+  }, 0);
 
   logEntries = [];
 

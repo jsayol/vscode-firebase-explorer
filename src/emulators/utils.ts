@@ -1,10 +1,19 @@
+import { dirname } from 'path';
+import * as vscode from 'vscode';
 import * as linkify from 'linkify-urls';
 import { spawn, ChildProcess } from 'child_process';
 import { WebSocketServer } from './server';
 import { ProjectManager, FirebaseProject } from '../projects/ProjectManager';
-import { AccountManager } from '../accounts/AccountManager';
-import { webviewPanels, postToPanel, ansiToHTML } from '../utils';
+import { AccountManager, AccountInfo } from '../accounts/AccountManager';
+import {
+  webviewPanels,
+  postToPanel,
+  ansiToHTML,
+  readFile,
+  contains
+} from '../utils';
 import { findPidByPort } from './find-process';
+import { getCliConfig } from '../accounts/cli';
 
 const psNode = require('ps-node');
 
@@ -216,4 +225,71 @@ export async function killProcess(pid: number | string): Promise<boolean> {
   }).catch(() => {
     return false;
   });
+}
+
+export async function getProjectForFolder(
+  path: string
+): Promise<{ account: AccountInfo; project: FirebaseProject } | undefined> {
+  if (vscode.workspace.workspaceFolders) {
+    const { activeProjects } = Object.assign(
+      { activeProjects: {} },
+      await getCliConfig()
+    );
+
+    let useProjectId: string | undefined;
+
+    if (contains(activeProjects, path)) {
+      useProjectId = activeProjects[path];
+    }
+
+    const rcFiles = await vscode.workspace.findFiles(
+      '.firebaserc',
+      '**/​node_modules*'
+    );
+    const rcFile = rcFiles.find(rcFile => {
+      // return new RegExp(`^${escapeRegExp(path)}`).test(rcFile.path);
+      return dirname(rcFile.path) === path;
+    });
+
+    if (rcFile) {
+      try {
+        const firebaseRc = JSON.parse(await readFile(rcFile.path, 'utf8'));
+        if (contains(firebaseRc, 'projects')) {
+          if (useProjectId) {
+            if (contains(firebaseRc.projects, useProjectId)) {
+              useProjectId = firebaseRc.projects[useProjectId];
+            }
+          } else {
+            if (contains(firebaseRc.projects, 'default')) {
+              useProjectId = firebaseRc.projects.default;
+            }
+          }
+        }
+      } catch (err) {
+        // Couldn't read or parse the `.firebaserc` file, no problem
+      }
+    }
+
+    if (useProjectId) {
+      let projectManager: ProjectManager | undefined;
+      // Find an account that has access to the selected project
+      const account = AccountManager.getAccounts().find(account => {
+        try {
+          projectManager = ProjectManager.for(account, useProjectId!);
+          return true;
+        } catch (err) {
+          // This account doesn't have access
+          return false;
+        }
+      });
+
+      if (account && projectManager) {
+        // Return the AccountInfo & FirebaseProject for the selected project
+        return { account, project: projectManager.project };
+      }
+    }
+  }
+
+  // Couldn't determine the project to use
+  return;
 }

@@ -1,6 +1,6 @@
 import * as request from 'request-promise-native';
 import { Url } from 'url';
-import { contains, extContext } from '../utils';
+import { contains, getContext } from '../utils';
 import { FirebaseProject } from '../projects/ProjectManager';
 import { ProjectsAPI } from '../projects/api';
 import { AccountsAPI } from './api';
@@ -18,7 +18,7 @@ export class AccountManager {
   }
 
   static forSelectedAccount(): AccountManager {
-    const context = extContext();
+    const context = getContext();
     const account = context.globalState.get<AccountInfo>('selectedAccount');
 
     if (!account) {
@@ -29,7 +29,7 @@ export class AccountManager {
   }
 
   static getAccounts(): AccountInfo[] {
-    const context = extContext();
+    const context = getContext();
     let accounts = context.globalState.get<AccountInfo[]>('accounts');
 
     if (!Array.isArray(accounts)) {
@@ -40,7 +40,7 @@ export class AccountManager {
   }
 
   static setAccounts(accounts: AccountInfo[]): Thenable<void> {
-    const context = extContext();
+    const context = getContext();
     return context.globalState.update('accounts', accounts);
   }
 
@@ -175,7 +175,7 @@ export interface AccountUser {
   aud: string;
   sub: string;
   email: string;
-  email_verified: true;
+  email_verified: boolean;
   at_hash: string;
   iat: number;
   exp: number;

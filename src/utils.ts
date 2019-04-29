@@ -64,7 +64,7 @@ export function setContextObj(context: vscode.ExtensionContext) {
   _context = context;
 }
 
-export function extContext(): vscode.ExtensionContext {
+export function getContext(): vscode.ExtensionContext {
   return _context;
 }
 
@@ -143,7 +143,7 @@ export function httpsGet(
 }
 
 export function getFilePath(...filenameParts: string[]): string {
-  return extContext().asAbsolutePath(path.join(...filenameParts));
+  return getContext().asAbsolutePath(path.join(...filenameParts));
 }
 
 interface DirectoryResult {
@@ -370,7 +370,7 @@ export function ansiToHTML(text: string): string {
 }
 
 export function replaceResources(content: string): string {
-  const { extensionPath } = extContext();
+  const { extensionPath } = getContext();
 
   return content.replace(/{{ *resource: *([^}]+) *}}/g, (_, resource) => {
     const filePath = vscode.Uri.file(path.join(extensionPath, resource));
@@ -381,3 +381,8 @@ export function replaceResources(content: string): string {
 export const webviewPanels: {
   [k: string]: vscode.WebviewPanel | undefined;
 } = {};
+
+// https://developer.mozilla.org/en-US/docs/Web/JavaScript/Guide/Regular_Expressions#Escaping
+export function escapeRegExp(str: string): string {
+  return str.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'); // $& means the whole matched string
+}

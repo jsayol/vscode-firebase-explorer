@@ -11,10 +11,9 @@ import {
   stopEmulators,
   listAllProjects,
   killProcess,
-  prepareServerStart
+  prepareServerStart,
+  getProjectForFolder
 } from './utils';
-import { FirebaseProject } from '../projects/ProjectManager';
-import { AccountInfo } from '../accounts/AccountManager';
 
 let context: vscode.ExtensionContext;
 let isDashboardReady = false;
@@ -39,6 +38,12 @@ export function registerEmulatorsCommands(_context: vscode.ExtensionContext) {
 }
 
 async function openDashboard(): Promise<void> {
+  // TODO: refuse to open if there are no workspace folders.
+  
+  // TODO: refuse to open if there are no accounts logged in.
+
+  // TODO: refuse to open if the logged in accounts have no projects.
+
   try {
     if (webviewPanels.emulators) {
       if (isDashboardReady) {
@@ -77,20 +82,11 @@ async function openDashboard(): Promise<void> {
             const folders = (vscode.workspace.workspaceFolders || []).map(
               folder => ({ name: folder.name, path: folder.uri.fsPath })
             );
-            const selectedAccount = context.globalState.get<AccountInfo>(
-              'selectedAccount'
-            );
-            const selectedProject = context.globalState.get<FirebaseProject>(
-              'selectedProject'
-            );
             isDashboardReady = true;
             postToPanel(webviewPanels.emulators!, {
               command: 'initialize',
               folders,
-              accountsWithProjects: await listAllProjects(),
-              selectedAccountEmail:
-                selectedAccount && selectedAccount.user.email,
-              selectedProjectId: selectedProject && selectedProject.projectId
+              accountsWithProjects: await listAllProjects()
             });
             break;
           case 'start':
@@ -106,8 +102,19 @@ async function openDashboard(): Promise<void> {
               success
             });
             break;
+          case 'folder-selected':
+            const foundProject = await getProjectForFolder(data.path);
+            postToPanel(webviewPanels.emulators!, {
+              command: 'select-project',
+              email: foundProject && foundProject.account.user.email,
+              projectId: foundProject && foundProject.project.projectId
+            });
+            break;
         }
       });
+
+      // TODO: detect when a workspace folder is added or removed and
+      // pass that information to the webview.
 
       webviewPanels.emulators.onDidDispose(
         async () => {

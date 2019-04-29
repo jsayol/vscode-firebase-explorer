@@ -1,6 +1,6 @@
 import { homedir } from 'os';
 import { resolve as resolvePath } from 'path';
-import { AccountInfo } from './AccountManager';
+import { AccountInfo, AccountUser, AccountTokens } from './AccountManager';
 import { readFile } from '../utils';
 
 export const CLI_API_CONFIG = {
@@ -9,22 +9,48 @@ export const CLI_API_CONFIG = {
   clientSecret: 'j9iVZfS8kkCEFUPaAeJV0sAi'
 };
 
-export async function getCliAccount(): Promise<AccountInfo | null> {
-  let cachedConfig: any;
+export interface CliConfig {
+  motd: {
+    minVersion: string;
+  };
+  'motd.fetched': number;
+  activeProjects: {
+    // '/path/to/folder': 'project-id or alias'
+    [path: string]: string;
+  };
+  previews: {
+    mods: boolean;
+    functions: boolean;
+    firestore: boolean;
+    taberna: boolean;
+  };
+  'analytics-uuid': string;
+  usage: false;
+  user: AccountUser;
+  tokens: AccountTokens;
+}
 
+export function getCliConfigPath(): string {
+  return resolvePath(
+    homedir(),
+    '.config',
+    'configstore',
+    'firebase-tools.json'
+  );
+}
+
+export async function getCliConfig(): Promise<CliConfig | undefined> {
   try {
-    const configPath = resolvePath(
-      homedir(),
-      '.config',
-      'configstore',
-      'firebase-tools.json'
-    );
-
-    const config = JSON.parse(await readFile(configPath, 'utf8'));
-    cachedConfig = config;
+    const configPath = getCliConfigPath();
+    return JSON.parse(await readFile(configPath, 'utf8'));
   } catch (err) {
-    /* no problem */
+    // Couldn't read or parse the file. Maybe it doesn't exist, that's OK.
+    return;
   }
+}
+
+export async function getCliAccount(): Promise<AccountInfo | null> {
+  const cachedConfig = await getCliConfig();
 
   if (cachedConfig) {
     const { user, tokens } = cachedConfig;
