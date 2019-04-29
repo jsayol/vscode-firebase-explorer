@@ -52,6 +52,7 @@ export class ProjectManager {
 
   readonly accountManager: AccountManager;
   private config?: ProjectConfig;
+  private webAppConfig?: WebAppConfig;
   private apps?: ProjectApps;
 
   private constructor(
@@ -71,6 +72,14 @@ export class ProjectManager {
       this.config = await api.getProjectConfig(this.project);
     }
     return this.config;
+  }
+
+  async getWebAppConfig(): Promise<WebAppConfig> {
+    if (!this.webAppConfig) {
+      const api = ProjectsAPI.for(this.accountManager.account);
+      this.webAppConfig = await api.getWebAppConfig(this.project);
+    }
+    return this.webAppConfig;
   }
 
   async listApps(forceRefresh = false): Promise<ProjectApps> {
@@ -196,4 +205,9 @@ export interface ProjectInfo {
   projectId: string;
   displayName: string;
   locationId: string;
+}
+
+export interface WebAppConfig {
+  // TODO: apiKey, databaseURL, etc.
+  [k: string]: any;
 }

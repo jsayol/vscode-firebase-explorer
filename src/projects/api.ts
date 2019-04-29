@@ -1,7 +1,11 @@
 import * as request from 'request-promise-native';
-import { AccountInfo, AccountManager, RequestOptions } from '../accounts/AccountManager';
+import {
+  AccountInfo,
+  AccountManager,
+  RequestOptions
+} from '../accounts/AccountManager';
 import { contains, caseInsensitiveCompare } from '../utils';
-import { FirebaseProject, ProjectConfig, ProjectInfo } from './ProjectManager';
+import { FirebaseProject, ProjectConfig, ProjectInfo, WebAppConfig } from './ProjectManager';
 import { API } from '../api';
 
 // https://mobilesdk-pa.googleapis.com/v1/projects
@@ -100,6 +104,26 @@ export class ProjectsAPI {
         'GET',
         `projects/${project.projectId}/adminSdkConfig`
       );
+
+      if (!response.body) {
+        throw new Error(response as any);
+      }
+
+      return response.body;
+    } catch (err) {
+      throw new Error(
+        `Failed to retrieve the config for project ${project.projectId}: ${err}`
+      );
+    }
+  }
+
+  async getWebAppConfig(project: FirebaseProject): Promise<WebAppConfig> {
+    try {
+      const response = await this.request('GET', '', {
+        url: `${API.mobilesdk.origin}/${API.mobilesdk.version}/projects/${
+          project.projectNumber
+        }/clients/_:getWebAppConfig`
+      });
 
       if (!response.body) {
         throw new Error(response as any);

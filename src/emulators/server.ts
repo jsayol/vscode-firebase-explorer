@@ -47,7 +47,7 @@ interface WebSocketDebuggerInitData {
   };
 }
 
-type SendMessageType = 'init' | 'stop' | 'error';
+type SendMessageType = 'init' | 'stop' | 'error' | 'web-config';
 type RecvMessageType =
   | 'init'
   | 'log'
@@ -55,7 +55,8 @@ type RecvMessageType =
   | 'stdout'
   | 'stderr'
   | 'pid'
-  | 'emulator-port-taken';
+  | 'emulator-port-taken'
+  | 'get-web-config';
 
 export type ListenerEventType = RecvMessageType | 'close';
 
@@ -163,6 +164,11 @@ export class WebSocketServer {
     this.listeners.clear();
   }
 
+  async sendWebAppconfig(client: WebSocketClient): Promise<void> {
+    const config = await this.projectManager!.getWebAppConfig();
+    await this.sendMessage(client, 'web-config', config);
+  }
+
   private onConnection(client: WebSocketClient): void {
     log('New connection');
     this.client = client;
@@ -198,13 +204,13 @@ export class WebSocketServer {
   }
 
   private async processMessage(
-    socket: WebSocketClient,
+    client: WebSocketClient,
     message: { type: RecvMessageType; payload: any }
   ): Promise<any> {
     switch (message.type) {
       case 'init':
-        socket.fbTools = message.payload;
-        await this.respondInit(socket);
+        client.fbTools = message.payload;
+        await this.respondInit(client);
         break;
       case 'stdout':
       case 'stderr':
@@ -219,6 +225,9 @@ export class WebSocketServer {
         // TODO
         break;
       case 'emulator-port-taken':
+        break;
+      case 'get-web-config':
+        await this.sendWebAppconfig(client);
         break;
       default:
         throw new Error('Unknow message type: ' + message.type);
