@@ -366,6 +366,7 @@ function addLogEntry(entry: /*TODO*/ {
       break;
     case 'firestore':
     case 'database':
+    case 'hosting':
       addLogEntryHelper(entry.module, entry as any /*TODO*/);
       break;
     default:
@@ -427,7 +428,7 @@ function addFunctionsLogEntry(entry: { mode: string; log: any }) {
 }
 
 function addLogEntryHelper(
-  module: 'firestore' | 'database',
+  module: 'firestore' | 'database' | 'hosting',
   entry: { from: string; line: string }
 ) {
   const output = getElement(`.tab-content--${module} .shell-output`);
