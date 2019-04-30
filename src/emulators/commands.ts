@@ -121,7 +121,7 @@ async function openDashboard(): Promise<void> {
           webviewPanels.emulators = undefined;
           isDashboardReady = false;
           if (server) {
-            server.clearListeners();
+            server.removeAllListeners();
             await stopEmulators();
           }
         },
@@ -133,7 +133,7 @@ async function openDashboard(): Promise<void> {
         server = new WebSocketServer();
       }
 
-      server.clearListeners();
+      server.removeAllListeners();
     }
   } catch (err) {
     console.log(err);

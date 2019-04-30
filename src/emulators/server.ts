@@ -2,9 +2,10 @@ import * as WebSocket from 'ws';
 import * as util from 'util';
 import * as portfinder from 'portfinder';
 import { ProjectManager } from '../projects/ProjectManager';
+import { EventEmitter } from 'events';
 
 const PORT_START = 35000;
-const ALIVE_CHECK_INTERVAL = 1000; // ms
+const PING_INTERVAL = 1000; // ms
 
 function getRandomPort(host: string): Promise<number> {
   return portfinder.getPortPromise({ host, port: PORT_START });
@@ -21,10 +22,6 @@ function log(...args: any[]): void {
     typeof arg === 'string' ? arg : util.inspect(arg, inspectOpts)
   );
   console.log(...args);
-}
-
-function noop(..._: any[]): void {
-  // noop
 }
 
 interface WebSocketClient extends WebSocket {
@@ -47,28 +44,37 @@ interface WebSocketDebuggerInitData {
   };
 }
 
-type SendMessageType = 'init' | 'stop' | 'error' | 'web-config';
-type RecvMessageType =
-  | 'init'
-  | 'log'
-  | 'error'
-  | 'stdout'
-  | 'stderr'
-  | 'pid'
-  | 'emulator-port-taken'
-  | 'get-web-config';
+const enum SendType {
+  INIT = 'init',
+  STOP = 'stop',
+  ERROR = 'error',
+  WEB_CONFIG = 'web-config'
+}
 
-export type ListenerEventType = RecvMessageType | 'close';
+export enum RecvType {
+  INIT = 'init',
+  LOG = 'log',
+  ERROR = 'error',
+  STDOUT = 'stdout',
+  STDERR = 'stderr',
+  PID = 'pid',
+  EMULATOR_PORT_TAKEN = 'emulator-port-taken',
+  GET_WEB_CONFIG = 'get-web-config'
+}
 
-export class WebSocketServer {
-  private server: WebSocket.Server;
+export type ListenerType = RecvType | 'close';
+
+const validRecvMessageTypes = Object.values(RecvType);
+
+export class WebSocketServer extends EventEmitter {
+  private server: WebSocket.Server | null;
   private pingInterval: any;
   private projectManager?: ProjectManager;
-  private listeners = new Map<ListenerEventType, Set<Function>>();
   private isStarted = false;
   private client?: WebSocketClient | null;
 
   constructor(public host = 'localhost') {
+    super();
     this.server = null as any;
   }
 
@@ -108,15 +114,17 @@ export class WebSocketServer {
           });
 
           this.pingInterval = setInterval(() => {
-            this.server.clients.forEach((client: WebSocketClient) => {
-              if (client.isAlive === false) {
-                return client.terminate();
-              }
+            if (this.server) {
+              this.server.clients.forEach((client: WebSocketClient) => {
+                if (client.isAlive === false) {
+                  return client.terminate();
+                }
 
-              client.isAlive = false;
-              client.ping(noop);
-            });
-          }, ALIVE_CHECK_INTERVAL);
+                client.isAlive = false;
+                client.ping();
+              });
+            }
+          }, PING_INTERVAL);
         } catch (err) {
           reject(err);
         }
@@ -128,11 +136,15 @@ export class WebSocketServer {
     this.isStarted = false;
     clearInterval(this.pingInterval);
     if (this.client) {
-      await this.sendMessage(this.client, 'stop');
+      await this.sendMessage(this.client, SendType.STOP);
     }
   }
 
   getAddress(): string {
+    if (!this.server) {
+      throw new Error("Server hasn't been started yet.");
+    }
+
     const serverAddr = this.server.address();
 
     if (typeof serverAddr === 'string') {
@@ -146,26 +158,18 @@ export class WebSocketServer {
     this.projectManager = projectManager;
   }
 
-  on(type: ListenerEventType, callback: (payload: any) => void): () => void {
-    if (!this.listeners.has(type)) {
-      this.listeners.set(type, new Set<typeof callback>());
-    }
-
-    const listeners = this.listeners.get(type);
-    listeners!.add(callback);
-
-    return () => {
-      listeners!.delete(callback);
-    };
-  }
-
-  clearListeners(): void {
-    this.listeners.clear();
-  }
-
   async sendWebAppconfig(client: WebSocketClient): Promise<void> {
     const config = await this.projectManager!.getWebAppConfig();
-    await this.sendMessage(client, 'web-config', config);
+    await this.sendMessage(client, SendType.WEB_CONFIG, config);
+  }
+
+  on(event: ListenerType, listener: (...args: any[]) => void): this {
+    super.on(event, listener);
+    return this;
+  }
+
+  emit(event: ListenerType, ...args: any[]): boolean {
+    return super.emit(event, ...args);
   }
 
   private onConnection(client: WebSocketClient): void {
@@ -177,7 +181,7 @@ export class WebSocketServer {
       client.isAlive = true;
     });
 
-    client.on('close', async (code, reason) => {
+    client.on('close', async () => {
       this.client = null;
       await this.stop();
       this.close();
@@ -191,7 +195,7 @@ export class WebSocketServer {
       } catch (err) {
         // Couldn't parse the message sent by the client... exTERMINATE!
         // (You have to read that last part with a Dalek voice or it won't be funny)
-        await this.sendMessage(client, 'error', err.message);
+        await this.sendMessage(client, SendType.ERROR, err.message);
         client.terminate();
         return;
       }
@@ -202,42 +206,29 @@ export class WebSocketServer {
 
   private async processMessage(
     client: WebSocketClient,
-    message: { type: RecvMessageType; payload: any }
-  ): Promise<any> {
-    switch (message.type) {
-      case 'init':
-        client.fbTools = message.payload;
-        await this.respondInit(client);
-        break;
-      case 'stdout':
-      case 'stderr':
-        break;
-      case 'error':
-        // TODO
-        log(message);
-        break;
-      case 'log':
-        break;
-      case 'pid':
-        // TODO
-        break;
-      case 'emulator-port-taken':
-        break;
-      case 'get-web-config':
-        await this.sendWebAppconfig(client);
-        break;
-      default:
-        throw new Error('Unknow message type: ' + message.type);
+    message: { type: RecvType; payload: any }
+  ): Promise<void> {
+    if (!validRecvMessageTypes.includes(message.type)) {
+      throw new Error('Unknow message type: ' + message.type);
     }
 
-    this.broadcastEvent(message.type, message.payload);
+    if (message.type === RecvType.INIT) {
+      client.fbTools = message.payload;
+      await this.respondInit(client);
+    } else if (message.type === RecvType.GET_WEB_CONFIG) {
+      await this.sendWebAppconfig(client);
+      return;
+    } else if (message.type === RecvType.ERROR) {
+      log(message);
+      return;
+    }
 
-    return JSON.stringify(message);
+    this.emit(message.type, message.payload);
   }
 
   private sendMessage(
     socket: WebSocketClient,
-    type: SendMessageType,
+    type: SendType,
     payload?: any
   ): Promise<void> {
     return new Promise(resolve => {
@@ -259,20 +250,16 @@ export class WebSocketServer {
           installIfMissing: false // TODO
         }
       };
-      await this.sendMessage(socket, 'init', payload);
+      await this.sendMessage(socket, SendType.INIT, payload);
     }
   }
 
   private close() {
-    this.server.close();
-    this.broadcastEvent('close');
-  }
-
-  private broadcastEvent(type: ListenerEventType, payload?: any): void {
-    if (this.listeners.has(type)) {
-      this.listeners.get(type)!.forEach(listener => {
-        listener(payload);
-      });
+    if (!this.server) {
+      throw new Error("Server hasn't ben started yet.");
     }
+
+    this.server.close();
+    this.emit('close');
   }
 }

@@ -22,7 +22,7 @@
         <li class="tab--dashboard is-active" data-tabname="dashboard">
           <a title="Dashboard">
             <span class="icon is-small"><i class="mdi mdi-monitor-dashboard" aria-hidden="true"></i></span>
-            <span>Dashboard</span>
+            <span class="has-badge has-badge-inline">Dashboard</span>
           </a>
         </li>
         <li class="tab--https-functions" data-tabname="https-functions">
@@ -31,10 +31,10 @@
             <span class="has-badge has-badge-inline">HTTPS Functions</span>
           </a>
         </li>
-        <li class="tab--callable-functions" data-tabname="callable-functions">
-          <a title="Callable Functions">
+        <li class="tab--background-functions" data-tabname="background-functions">
+          <a title="Event Functions">
             <span class="icon is-small"><i class="mdi mdi-cloud-braces" aria-hidden="true"></i></span>
-            <span class="has-badge has-badge-inline">Callable Functions</span>
+            <span class="has-badge has-badge-inline">Event Functions</span>
           </a>
         </li>
         <li class="tab--firestore" data-tabname="firestore">
@@ -175,33 +175,48 @@
           <div class="dropdown-menu" id="log-level-selection--https-functions" role="menu">
             <div class="dropdown-content">
 
-              <div class="dropdown-item field">
+              <a class="dropdown-item field">
                 <input class="is-checkradio" id="tab-content--https-functions--log-level--user" type="checkbox"
                   checked="checked">
-                <label for="tab-content--https-functions--log-level--user">User</label>
-              </div>
+                <label for="tab-content--https-functions--log-level--user">
+                  <span class="icon"><i class="mdi mdi-20px mdi-account"></i></span>
+                  <span>User</span>
+                </label>
+              </a>
 
-              <div class="dropdown-item field">
+              <a class="dropdown-item field">
                 <input class="is-checkradio" id="tab-content--https-functions--log-level--info" type="checkbox"
                   checked="checked">
-                <label for="tab-content--https-functions--log-level--info">Info</label>
-              </div>
+                <label for="tab-content--https-functions--log-level--info">
+                  <span class="icon"><i class="mdi mdi-20px mdi-information"></i></span>
+                  <span>Info</span>
+                </label>
+              </a>
 
-              <div class="dropdown-item field">
+              <a class="dropdown-item field">
                 <input class="is-checkradio" id="tab-content--https-functions--log-level--error" type="checkbox"
                   checked="checked">
-                <label for="tab-content--https-functions--log-level--error">Error</label>
-              </div>
+                <label for="tab-content--https-functions--log-level--error">
+                  <span class="icon"><i class="mdi mdi-20px mdi-alert"></i></span>
+                  <span>Error</span>
+                </label>
+              </a>
 
-              <div class="dropdown-item field">
+              <a class="dropdown-item field">
                 <input class="is-checkradio" id="tab-content--https-functions--log-level--debug" type="checkbox">
-                <label for="tab-content--https-functions--log-level--debug">Debug</label>
-              </div>
+                <label for="tab-content--https-functions--log-level--debug">
+                  <span class="icon"><i class="mdi mdi-20px mdi-flag-outline"></i></span>
+                  <span>Debug</span>
+                </label>
+              </a>
 
-              <div class="dropdown-item field">
+              <a class="dropdown-item field">
                 <input class="is-checkradio" id="tab-content--https-functions--log-level--system" type="checkbox">
-                <label for="tab-content--https-functions--log-level--system">System</label>
-              </div>
+                <label for="tab-content--https-functions--log-level--system">
+                  <span class="icon"><i class="mdi mdi-20px mdi-server"></i></span>
+                  <span>System</span>
+                </label>
+              </a>
 
             </div>
           </div>
@@ -210,73 +225,61 @@
 
       <div class="level height-almost-100 no-margin-bottom">
         <div class="box shell-output-box terminal width-100 tailing no-padding">
-          <table class="table logging-table is-fullwidth is-hoverable">
+          <table class="table logging-table is-fullwidth is-hoverable" data-mode="https">
             <thead>
               <tr>
                 <th class="log-entry-header-timestamp">Timestamp</th>
-                <th class="log-entry-header-type">Type</th>
                 <th class="log-entry-header-level">Level</th>
+                <th class="log-entry-header-function">Function</th>
+                <!-- <th class="log-entry-header-type">Type</th> -->
                 <th class="log-entry-header-text">Text</th>
               </tr>
             </thead>
             <tbody>
             </tbody>
           </table>
-        </div>
-      </div>
-
-      <div class="modal modal-json-viewer">
-        <div class="modal-background"></div>
-        <div class="modal-card">
-          <header class="modal-card-head">
-            <p class="modal-card-title">Log entry data</p>
-            <button class="delete" aria-label="close"></button>
-          </header>
-          <section class="modal-card-body">
-            <pre><code class="content"></code></pre>
-          </section>
         </div>
       </div>
     </div>
 
-    <div class="tab-content tab-content--callable-functions">
+    <div class="tab-content tab-content--background-functions">
       <div class="level">
         <div class="dropdown is-hoverable log-level-selection">
           <div class="dropdown-trigger">
             <button class="button with-dropdown-arrow" aria-haspopup="true"
-              aria-controls="log-level-selection--callable-functions">
+              aria-controls="log-level-selection--background-functions">
               <span>Log level</span>
             </button>
           </div>
-          <div class="dropdown-menu" id="log-level-selection--callable-functions" role="menu">
+          <div class="dropdown-menu" id="log-level-selection--background-functions" role="menu">
             <div class="dropdown-content">
 
               <div class="dropdown-item field">
-                <input class="is-checkradio" id="tab-content--callable-functions--log-level--user" type="checkbox"
+                <input class="is-checkradio" id="tab-content--background-functions--log-level--user" type="checkbox"
                   checked="checked">
-                <label for="tab-content--callable-functions--log-level--user">User</label>
+                <label for="tab-content--background-functions--log-level--user">User</label>
               </div>
 
               <div class="dropdown-item field">
-                <input class="is-checkradio" id="tab-content--callable-functions--log-level--info" type="checkbox"
+                <input class="is-checkradio" id="tab-content--background-functions--log-level--info" type="checkbox"
                   checked="checked">
-                <label for="tab-content--callable-functions--log-level--info">Info</label>
+                <label for="tab-content--background-functions--log-level--info">Info</label>
               </div>
 
               <div class="dropdown-item field">
-                <input class="is-checkradio" id="tab-content--callable-functions--log-level--error" type="checkbox"
+                <input class="is-checkradio" id="tab-content--background-functions--log-level--error" type="checkbox"
                   checked="checked">
-                <label for="tab-content--callable-functions--log-level--error">Error</label>
+                <label for="tab-content--background-functions--log-level--error">Error</label>
               </div>
 
               <div class="dropdown-item field">
-                <input class="is-checkradio" id="tab-content--callable-functions--log-level--debug" type="checkbox">
-                <label for="tab-content--callable-functions--log-level--debug">Debug</label>
+                <input class="is-checkradio" id="tab-content--background-functions--log-level--debug" type="checkbox">
+                <label for="tab-content--background-functions--log-level--debug">Debug</label>
               </div>
 
               <div class="dropdown-item field">
-                <input class="is-checkradio" id="tab-content--callable-functions--log-level--system" type="checkbox">
-                <label for="tab-content--callable-functions--log-level--system">System</label>
+                <input class="is-checkradio" id="tab-content--background-functions--log-level--system" type="checkbox">
+                <label for="tab-content--background-functions--log-level--system">System</label>
               </div>
 
             </div>
@@ -286,31 +289,19 @@
 
       <div class="level height-almost-100 no-margin-bottom">
         <div class="box shell-output-box terminal width-100 tailing no-padding">
-          <table class="table logging-table is-fullwidth is-hoverable">
+          <table class="table logging-table is-fullwidth is-hoverable" data-mode="background">
             <thead>
               <tr>
                 <th class="log-entry-header-timestamp">Timestamp</th>
-                <th class="log-entry-header-type">Type</th>
                 <th class="log-entry-header-level">Level</th>
+                <th class="log-entry-header-function">Function</th>
+                <!-- <th class="log-entry-header-type">Type</th> -->
                 <th class="log-entry-header-text">Text</th>
               </tr>
             </thead>
             <tbody>
             </tbody>
           </table>
-        </div>
-      </div>
-
-      <div class="modal modal-json-viewer">
-        <div class="modal-background"></div>
-        <div class="modal-card">
-          <header class="modal-card-head">
-            <p class="modal-card-title">Log entry data</p>
-            <button class="delete" aria-label="close"></button>
-          </header>
-          <section class="modal-card-body">
-            <pre><code class="content"></code></pre>
-          </section>
         </div>
       </div>
     </div>
@@ -350,6 +341,19 @@
             </tbody>
           </table>
         </div>
+      </div>
+    </div>
+
+    <div class="modal modal-json-viewer">
+      <div class="modal-background"></div>
+      <div class="modal-card">
+        <header class="modal-card-head">
+          <p class="modal-card-title">Log entry data</p>
+          <button class="delete" aria-label="close"></button>
+        </header>
+        <section class="modal-card-body">
+          <pre><code class="content"></code></pre>
+        </section>
       </div>
     </div>
 

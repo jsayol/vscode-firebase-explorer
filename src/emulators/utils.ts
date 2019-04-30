@@ -2,7 +2,7 @@ import { dirname } from 'path';
 import * as vscode from 'vscode';
 import * as linkify from 'linkify-urls';
 import { spawn, ChildProcess } from 'child_process';
-import { WebSocketServer } from './server';
+import { WebSocketServer, RecvType } from './server';
 import { ProjectManager, FirebaseProject } from '../projects/ProjectManager';
 import { AccountManager, AccountInfo } from '../accounts/AccountManager';
 import {
@@ -125,7 +125,7 @@ export async function prepareServerStart(
     debug: boolean;
   }
 ): Promise<void> {
-  server.on('stdout', line => {
+  server.on(RecvType.STDOUT, line => {
     if (webviewPanels.emulators) {
       postToPanel(webviewPanels.emulators, {
         command: 'stdout',
@@ -134,7 +134,7 @@ export async function prepareServerStart(
     }
   });
 
-  server.on('stderr', line => {
+  server.on(RecvType.STDERR, line => {
     if (webviewPanels.emulators) {
       postToPanel(webviewPanels.emulators, {
         command: 'stderr',
@@ -143,7 +143,7 @@ export async function prepareServerStart(
     }
   });
 
-  server.on('log', logEntry => {
+  server.on(RecvType.LOG, logEntry => {
     if (webviewPanels.emulators) {
       if (logEntry.module === 'functions') {
         if (contains(logEntry, 'log') && contains(logEntry.log, 'text')) {
@@ -162,10 +162,10 @@ export async function prepareServerStart(
   });
 
   server.on('close', () => {
-    server.clearListeners();
+    server.removeAllListeners();
   });
 
-  server.on('emulator-port-taken', async emulator => {
+  server.on(RecvType.EMULATOR_PORT_TAKEN, async emulator => {
     let processInfo = await findWhoHasPort(emulator.addr.port);
     postToPanel(webviewPanels.emulators!, {
       command: 'emulator-port-taken',
@@ -182,7 +182,7 @@ export async function prepareServerStart(
 
   if (webviewPanels.emulators) {
     postToPanel(webviewPanels.emulators, { command: 'stopped' });
-    server.clearListeners();
+    server.removeAllListeners();
   }
 }
 

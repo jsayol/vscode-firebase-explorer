@@ -31,6 +31,10 @@
   padding-bottom: 0 !important;
 }
 
+* {
+  user-select: none;
+}
+
 html,
 body {
   height: 100%;
@@ -216,7 +220,13 @@ label.checkbox:hover {
 .shell-output-box {
   height: 100%;
   padding-left: 0;
+  user-select: auto;
   border: 1px solid var(--vscode-editorWidget-background);
+}
+
+.shell-output-box,
+.shell-output-box * {
+  user-select: text;
 }
 
 .shell-output .item {
@@ -262,7 +272,8 @@ label.checkbox:hover {
 
 .table.logging-table th,
 .table.logging-table td {
-  border: none;
+  /* border: none; */
+  border-color: var(--vscode-list-inactiveSelectionBackground);
   padding: 0.2em 0.4em;
 }
 
@@ -272,56 +283,59 @@ label.checkbox:hover {
 }
 
 .table.is-hoverable tbody tr:not(.is-selected):hover {
-  background-color: var(--vscode-editorWidget-background);
+  background-color: var(--vscode-list-hoverBackground) !important;
+  /* background-color: var(--vscode-list-inactiveSelectionBackground) !important; */
 }
 
-.tab-content--https-functions td.log-entry-cell-timestamp,
-.tab-content--callable-functions td.log-entry-cell-timestamp {
+/* .tab-content--https-functions td.log-entry-cell-timestamp,
+.tab-content--background-functions td.log-entry-cell-timestamp {
   min-width: 10rem;
 }
 
 .tab-content--https-functions td.log-entry-cell-type,
-.tab-content--callable-functions td.log-entry-cell-type {
+.tab-content--background-functions td.log-entry-cell-type {
   min-width: 7rem;
 }
 
 .tab-content--https-functions td.log-entry-cell-level,
-.tab-content--callable-functions td.log-entry-cell-level {
+.tab-content--background-functions td.log-entry-cell-level {
   min-width: 4rem;
-}
+} */
 
 .tab-content--https-functions table tbody tr,
-.tab-content--callable-functions table tbody tr {
+.tab-content--background-functions table tbody tr {
   display: none;
 }
 
 .tab-content--https-functions table.log-level--user tr.log-level--user,
-.tab-content--callable-functions table.log-level--user tr.log-level--user {
+.tab-content--background-functions table.log-level--user tr.log-level--user {
   display: table-row;
 }
 
 .tab-content--https-functions table.log-level--info tr.log-level--info,
-.tab-content--callable-functions table.log-level--info tr.log-level--info {
+.tab-content--background-functions table.log-level--info tr.log-level--info {
   display: table-row;
 }
 
 .tab-content--https-functions table.log-level--debug tr.log-level--debug,
-.tab-content--callable-functions table.log-level--debug tr.log-level--debug {
+.tab-content--background-functions table.log-level--debug tr.log-level--debug {
   display: table-row;
 }
 
 .tab-content--https-functions table.log-level--error tr.log-level--error,
-.tab-content--callable-functions table.log-level--error tr.log-level--error {
+.tab-content--background-functions table.log-level--error tr.log-level--error {
   display: table-row;
 }
 
 .tab-content--https-functions table.log-level--system tr.log-level--system,
-.tab-content--callable-functions table.log-level--system tr.log-level--system {
+.tab-content--background-functions
+  table.log-level--system
+  tr.log-level--system {
   display: table-row;
 }
 
 .tab-content--https-functions tr.log-level--error td.log-entry-cell-level,
-.tab-content--callable-functions tr.log-level--error td.log-entry-cell-level {
+.tab-content--background-functions tr.log-level--error td.log-entry-cell-level {
   color: var(--vscode-terminal-ansiRed);
 }
 
@@ -475,66 +489,74 @@ label.checkbox:hover {
   text-decoration: underline;
 }
 
-.tab-content--hosting td.log-entry-cell-date,
-.tab-content--hosting th.log-entry-header-date {
-  width: 17%;
-}
-
-.tab-content--hosting td.log-entry-cell-ip,
-.tab-content--hosting th.log-entry-header-ip {
-  width: 15%;
-}
-
-.tab-content--hosting th.log-entry-cell-status,
-.tab-content--hosting td.log-entry-header-status {
-  width: 8%;
-}
-
-.tab-content--hosting td.log-entry-cell-method,
-.tab-content--hosting th.log-entry-header-method {
-  width: 10%;
-}
-
-.tab-content--hosting td.log-entry-cell-resource,
-.tab-content--hosting th.log-entry-header-resource {
-  width: 50%;
-}
-
-.tab-content--https-functions td.log-entry-cell-timestamp,
+/* .tab-content--https-functions td.log-entry-cell-timestamp,
 .tab-content--https-functions th.log-entry-header-timestamp,
-.tab-content--callable-functions td.log-entry-cell-timestamp,
-.tab-content--callable-functions th.log-entry-header-timestamp {
-  width: 17%;
+.tab-content--background-functions td.log-entry-cell-timestamp,
+.tab-content--background-functions th.log-entry-header-timestamp {
+  min-width: 15%;
+}
+
+.tab-content--https-functions td.log-entry-cell-triggerId,
+.tab-content--https-functions th.log-entry-header-triggerId,
+.tab-content--background-functions td.log-entry-cell-triggerId,
+.tab-content--background-functions th.log-entry-header-triggerId {
+  min-width: 10%;
 }
 
 .tab-content--https-functions td.log-entry-cell-type,
 .tab-content--https-functions th.log-entry-header-type,
-.tab-content--callable-functions td.log-entry-cell-type,
-.tab-content--callable-functions th.log-entry-header-type {
-  width: 10%;
+.tab-content--background-functions td.log-entry-cell-type,
+.tab-content--background-functions th.log-entry-header-type {
+  min-width: 10%;
 }
 
 .tab-content--https-functions td.log-entry-cell-level,
 .tab-content--https-functions th.log-entry-header-level,
-.tab-content--callable-functions td.log-entry-cell-level,
-.tab-content--callable-functions th.log-entry-header-level {
-  width: 7%;
-}
+.tab-content--background-functions td.log-entry-cell-level,
+.tab-content--background-functions th.log-entry-header-level {
+  min-width: 7%;
+} */
 
 .tab-content--https-functions td.log-entry-cell-text,
 .tab-content--https-functions th.log-entry-header-text,
-.tab-content--callable-functions td.log-entry-cell-text,
-.tab-content--callable-functions th.log-entry-header-text {
-  width: 66%;
+.tab-content--background-functions td.log-entry-cell-text,
+.tab-content--background-functions th.log-entry-header-text {
+  /* min-width: 58%; */
+  /* width: 60%; */
   white-space: pre-wrap;
 }
 
 .tab-content--https-functions tr.log-type--function-error .log-entry-cell-text,
-.tab-content--callable-functions
+.tab-content--background-functions
   tr.log-type--function-error
   .log-entry-cell-text {
   color: var(--vscode-terminal-ansiRed);
 }
+
+/* .tab-content--hosting td.log-entry-cell-date,
+.tab-content--hosting th.log-entry-header-date {
+  min-width: 17%;
+}
+
+.tab-content--hosting td.log-entry-cell-ip,
+.tab-content--hosting th.log-entry-header-ip {
+  min-width: 15%;
+}
+
+.tab-content--hosting th.log-entry-cell-status,
+.tab-content--hosting td.log-entry-header-status {
+  min-width: 8%;
+}
+
+.tab-content--hosting td.log-entry-cell-method,
+.tab-content--hosting th.log-entry-header-method {
+  min-width: 10%;
+}
+
+.tab-content--hosting td.log-entry-cell-resource,
+.tab-content--hosting th.log-entry-header-resource {
+  min-width: 50%;
+} */
 
 .tabs .has-badge {
   margin-right: 0;
@@ -547,11 +569,15 @@ label.checkbox:hover {
   padding: 0 0.25rem;
   min-height: 0.85rem;
   box-shadow: none;
-  border-radius: 4px;
+  border-radius: 7px;
   color: var(--vscode-button-foreground);
   background-color: var(--vscode-button-background);
 }
 
 .tabs li.is-active .has-badge[data-badge]::after {
   content: none;
+}
+
+.mdi-20px.mdi::before {
+  font-size: 20px;
 }

@@ -17,7 +17,10 @@ const projectSelector = getElement<HTMLSelectElement>(
 
 const workspaceSelector = getElement('.top-controls .workspace-selector');
 
-let functionsLogEntries: any[] = [];
+const functionsLogEntries: { https: any[]; background: any[] } = {
+  https: [],
+  background: []
+};
 
 const portBlocking: {
   processInfo?: PsNodeResult | undefined;
@@ -110,16 +113,17 @@ function setupDOMListeners() {
     toggleAllEmulatorsSwitch
   );
 
-  getElements(
-    '.tab-content--https-functions .log-level-selection input.is-checkradio'
-  ).forEach(input => {
-    input.addEventListener('change', applyHttpsFuncLogLevel);
-  });
+  (['https', 'background'] as ('https' | 'background')[]).forEach(mode => {
+    getElements(
+      `.tab-content--${mode}-functions .log-level-selection input.is-checkradio`
+    ).forEach(input => {
+      input.addEventListener('change', () => applyFunctionsLogLevel(mode));
+    });
 
-  getElement('.tab-content--https-functions .logging-table').addEventListener(
-    'click',
-    httpsFuncTableClick
-  );
+    getElement(
+      `.tab-content--${mode}-functions .logging-table`
+    ).addEventListener('click', functionsTableClick);
+  });
 
   // TODO: change this to attach click events to individual elements
   document.body.addEventListener('click', (event: Event) => {
@@ -286,10 +290,13 @@ function initialize(data: { folders: any; accountsWithProjects: any }) {
     workspaceSelector.dispatchEvent(event);
   }, 0);
 
-  functionsLogEntries = [];
+  functionsLogEntries.https = [];
+  functionsLogEntries.background = [];
 
   startButton.removeAttribute('disabled');
-  applyHttpsFuncLogLevel();
+
+  applyFunctionsLogLevel('https');
+  applyFunctionsLogLevel('background');
 }
 
 function showCLIOutput(data: { command: string; message: string }) {
@@ -299,6 +306,11 @@ function showCLIOutput(data: { command: string; message: string }) {
   shellItem.innerHTML = data.message;
   shellOutput.appendChild(shellItem);
   scrollToBottomIfEnabled(shellOutput.closest('.tailing') as HTMLElement);
+
+  const tab = getElement(`.tabs .tab--dashboard`);
+  if (!tab.classList.contains('is-active')) {
+    incrementBadgeCounter(tab);
+  }
 }
 
 function isSwitchEnabled(id: string) {
@@ -378,22 +390,43 @@ function addLogEntry(entry: /*TODO*/ {
   }
 }
 
-function addFunctionsLogEntry(entry: { mode: string; log: any }) {
-  const { mode, log } = entry;
-  let functionType: string;
+function getIconForLogLevel(level: string, type?: string): string {
+  // bug-outline
+  // comment-outline
+  // comment-alert-outline
+  // message-outline
+  // message-alert-outline
+  // desktop-tower
 
-  if (mode === 'HTTPS') {
-    functionType = 'https';
-  } else if (mode === 'BACKGROUND') {
-    functionType = 'callable';
-  } else {
-    console.warn(`Unknown mode "${mode}" from functions log:`, entry);
+  switch (level) {
+    case 'USER':
+      return type === 'function-error' ? 'account-alert' : 'account';
+    case 'INFO':
+      return 'information';
+    case 'ERROR':
+      return 'alert';
+    case 'DEBUG':
+      return 'flag-outline';
+    case 'SYSTEM':
+      // return 'desktop-tower';
+      return 'server';
+    default:
+      console.warn('Unknown log level: ' + level);
+      return 'help-rhombus-outline';
+  }
+}
+
+function addFunctionsLogEntry(entry: { mode: string; log: any; data?: any }) {
+  const { mode: originalMode, log } = entry;
+
+  if (!['HTTPS', 'BACKGROUND'].includes(originalMode)) {
+    console.warn(`Unknown mode "${originalMode}" from functions log:`, entry);
     return;
   }
 
-  const output = getElement(
-    `.tab-content--${functionType}-functions table tbody`
-  );
+  const triggerId = (log.data || {}).triggerId || 'no-triggerId';
+  const mode = originalMode.toLowerCase() as 'https' | 'background';
+  const output = getElement(`.tab-content--${mode}-functions table tbody`);
   const row = document.createElement('tr');
 
   row.classList.add(
@@ -402,43 +435,49 @@ function addFunctionsLogEntry(entry: { mode: string; log: any }) {
     'log-level--' + (log.level || 'unknown').toLowerCase()
   );
 
-  let clickableText = false;
-  if (log.data && Object.keys(log.data).length > 0) {
-    clickableText = true;
-    row.dataset.logEntryPos = String(functionsLogEntries.length);
-    functionsLogEntries.push(log);
-  }
+  row.dataset.logEntryPos = String(functionsLogEntries[mode].length);
+  functionsLogEntries[mode].push(log);
 
-  ['timestamp', 'type', 'level', 'text'].forEach(field => {
-    let value = log[field] || '';
+  ['timestamp', 'level', 'triggerId', /*'type',*/ 'text'].forEach(field => {
     const cell = document.createElement('td');
     cell.classList.add('log-entry-cell', 'log-entry-cell-' + field);
-    cell.setAttribute('title', value);
 
-    if (value && field === 'timestamp') {
-      const date = new Date(value);
-      value = date.toLocaleDateString(undefined, {
-        month: 'short',
-        day: 'numeric',
-        year: 'numeric',
-        hour: 'numeric',
-        minute: 'numeric',
-        second: 'numeric'
-      });
+    if (field === 'triggerId') {
+      cell.innerText = triggerId;
+    } else {
+      let value = log[field] || '';
+
+      if (value && field === 'timestamp') {
+        const date = new Date(value);
+        value = date.toLocaleDateString(undefined, {
+          month: 'short',
+          day: 'numeric',
+          year: 'numeric',
+          hour: 'numeric',
+          minute: 'numeric',
+          second: 'numeric'
+        });
+      }
+
+      if (field === 'level') {
+        const icon = getIconForLogLevel(log.level, log.type);
+        value = `<span class="icon"><i class="mdi mdi-20px mdi-${icon}"></i></span>`;
+      }
+
+      cell.innerHTML = value;
     }
 
-    if (clickableText && field === 'text') {
+    if (field === 'timestamp') {
       cell.classList.add('clickable');
     }
 
-    cell.innerHTML = value;
     row.appendChild(cell);
   });
 
   output.appendChild(row);
   scrollToBottomIfEnabled(output.closest('.tailing') as HTMLElement);
 
-  const tab = getElement(`.tabs .tab--${functionType}-functions`);
+  const tab = getElement(`.tabs .tab--${mode}-functions`);
   if (!tab.classList.contains('is-active')) {
     incrementBadgeCounter(tab);
   }
@@ -554,23 +593,27 @@ function closeModal(event: Event) {
   }
 }
 
-function httpsFuncTableClick(event: Event) {
-  const row = (event.target as HTMLElement).closest('tr')!;
-  if (contains(row.dataset, 'logEntryPos')) {
+function functionsTableClick(event: Event) {
+  const target = event.target as HTMLElement;
+  const row = target.closest('tr')!;
+  const isTimestampCell = target.closest('td.log-entry-cell-timestamp');
+
+  if (isTimestampCell && contains(row.dataset, 'logEntryPos')) {
+    const mode = row.closest('table')!.dataset.mode as 'https' | 'background';
     const logEntryPos = Number(row.dataset.logEntryPos);
-    const entry = functionsLogEntries[logEntryPos];
-    openModal('.modal-json-viewer', JSON.stringify(entry.data, null, 2));
+    const entry = functionsLogEntries[mode][logEntryPos];
+    openModal('.modal-json-viewer', JSON.stringify(entry, null, 2));
   }
 }
 
-function applyHttpsFuncLogLevel() {
+function applyFunctionsLogLevel(mode: 'https' | 'background') {
   const table = getElement<HTMLTableElement>(
-    '.tab-content--https-functions table'
+    `.tab-content--${mode}-functions table`
   );
 
   ['user', 'info', 'debug', 'error', 'system'].forEach(level => {
     const checkbox = getElement<HTMLInputElement>(
-      '#tab-content--https-functions--log-level--' + level
+      `#tab-content--${mode}-functions--log-level--${level}`
     );
 
     if (checkbox.checked) {
@@ -815,7 +858,10 @@ function resetBadgeCounter(element: HTMLElement) {
   const badge = element.classList.contains('.has-badge')
     ? element
     : getElement(element, '.has-badge');
-  badge.removeAttribute('data-badge');
+
+  if (badge) {
+    badge.removeAttribute('data-badge');
+  }
 }
 
 function incrementBadgeCounter(element: HTMLElement, increment = 1) {

@@ -208,6 +208,10 @@ export interface ProjectInfo {
 }
 
 export interface WebAppConfig {
-  // TODO: apiKey, databaseURL, etc.
-  [k: string]: any;
+  apiKey: string;
+  databaseURL: string;
+  storageBucket: string;
+  authDomain: string;
+  messagingSenderId: string;
+  projectId: string;
 }
