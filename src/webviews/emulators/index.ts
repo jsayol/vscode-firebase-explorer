@@ -431,7 +431,7 @@ function addFunctionsLogEntry(entry: { mode: string; log: any }) {
       cell.classList.add('clickable');
     }
 
-    cell.innerText = value;
+    cell.innerHTML = value;
     row.appendChild(cell);
   });
 
@@ -454,7 +454,7 @@ function addLogEntryHelper(
     'item',
     'item-' + (entry.from || 'unknown').toLowerCase()
   );
-  shellItem.innerHTML = escapeHtml(entry.line);
+  shellItem.innerHTML = entry.line;
   output.appendChild(shellItem);
   scrollToBottomIfEnabled(output.closest('.tailing') as HTMLElement);
 

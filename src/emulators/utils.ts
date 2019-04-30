@@ -146,6 +146,15 @@ export async function prepareServerStart(
 
   server.on('log', logEntry => {
     if (webviewPanels.emulators) {
+      if (logEntry.module === 'functions') {
+        if (contains(logEntry, 'log') && contains(logEntry.log, 'text')) {
+          logEntry.log.text = linkify(ansiToHTML(logEntry.log.text));
+        }
+      } else if (['firestore', 'database'].includes(logEntry.module)) {
+        if (contains(logEntry, 'line')) {
+          logEntry.line = linkify(ansiToHTML(logEntry.line));
+        }
+      }
       postToPanel(webviewPanels.emulators, {
         command: 'log',
         message: logEntry
