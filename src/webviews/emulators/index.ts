@@ -17,7 +17,7 @@ const projectSelector = getElement<HTMLSelectElement>(
 
 const workspaceSelector = getElement('.top-controls .workspace-selector');
 
-let logEntries: any[] = [];
+let functionsLogEntries: any[] = [];
 
 const portBlocking: {
   processInfo?: PsNodeResult | undefined;
@@ -118,7 +118,7 @@ function setupDOMListeners() {
 
   getElement('.tab-content--https-functions .logging-table').addEventListener(
     'click',
-    tableClick
+    httpsFuncTableClick
   );
 
   // TODO: change this to attach click events to individual elements
@@ -286,7 +286,7 @@ function initialize(data: { folders: any; accountsWithProjects: any }) {
     workspaceSelector.dispatchEvent(event);
   }, 0);
 
-  logEntries = [];
+  functionsLogEntries = [];
 
   startButton.removeAttribute('disabled');
   applyHttpsFuncLogLevel();
@@ -366,8 +366,10 @@ function addLogEntry(entry: /*TODO*/ {
       break;
     case 'firestore':
     case 'database':
-    case 'hosting':
       addLogEntryHelper(entry.module, entry as any /*TODO*/);
+      break;
+    case 'hosting':
+      addHostingLogEntry(entry as any /*TODO*/);
       break;
     default:
       console.warn(`Unknown log module "${entry.module}".`, entry);
@@ -398,8 +400,12 @@ function addFunctionsLogEntry(entry: { mode: string; log: any }) {
     'log-level--' + (log.level || 'unknown').toLowerCase()
   );
 
-  row.dataset.logEntryPos = String(logEntries.length);
-  logEntries.push(log);
+  let clickableText = false;
+  if (log.data && Object.keys(log.data).length > 0) {
+    clickableText = true;
+    row.dataset.logEntryPos = String(functionsLogEntries.length);
+    functionsLogEntries.push(log);
+  }
 
   ['timestamp', 'type', 'level', 'text'].forEach(field => {
     let value = log[field] || '';
@@ -417,6 +423,10 @@ function addFunctionsLogEntry(entry: { mode: string; log: any }) {
         minute: 'numeric',
         second: 'numeric'
       });
+    }
+
+    if (clickableText && field === 'text') {
+      cell.classList.add('clickable');
     }
 
     cell.innerText = value;
@@ -439,6 +449,45 @@ function addLogEntryHelper(
   );
   shellItem.innerHTML = escapeHtml(entry.line);
   output.appendChild(shellItem);
+  scrollToBottomIfEnabled(output.closest('.tailing') as HTMLElement);
+}
+
+function addHostingLogEntry({ line }: { line: string }) {
+  const log = parseHostingLogLine(line);
+  if (!log) {
+    console.error('Failed to parse a Hosting log entry:', line);
+    return;
+  }
+
+  const output = getElement(`.tab-content--hosting table tbody`);
+  const row = document.createElement('tr');
+
+  row.classList.add('log-entry');
+
+  (['date', 'ip', 'statusCode', 'method', 'resource'] as Array<
+    keyof HostingLogEntry
+  >).forEach(field => {
+    let value = log[field];
+    const cell = document.createElement('td');
+    cell.classList.add('log-entry-cell', 'log-entry-cell-' + field);
+    cell.setAttribute('title', String(value || ''));
+
+    if (value && field === 'date') {
+      value = (value as Date).toLocaleDateString(undefined, {
+        month: 'short',
+        day: 'numeric',
+        year: 'numeric',
+        hour: 'numeric',
+        minute: 'numeric',
+        second: 'numeric'
+      });
+    }
+
+    cell.innerText = String(value || '');
+    row.appendChild(cell);
+  });
+
+  output.appendChild(row);
   scrollToBottomIfEnabled(output.closest('.tailing') as HTMLElement);
 }
 
@@ -488,11 +537,13 @@ function closeModal(event: Event) {
   }
 }
 
-function tableClick(event: Event) {
+function httpsFuncTableClick(event: Event) {
   const row = (event.target as HTMLElement).closest('tr')!;
-  const logEntryPos = Number(row.dataset.logEntryPos);
-  const entry = logEntries[logEntryPos];
-  openModal('.modal-json-viewer', JSON.stringify(entry.data, null, 2));
+  if (contains(row.dataset, 'logEntryPos')) {
+    const logEntryPos = Number(row.dataset.logEntryPos);
+    const entry = functionsLogEntries[logEntryPos];
+    openModal('.modal-json-viewer', JSON.stringify(entry.data, null, 2));
+  }
 }
 
 function applyHttpsFuncLogLevel() {
@@ -528,7 +579,12 @@ function openTerminateInstanceModal(data: {
   emulator: any;
   processInfo: PsNodeResult;
 }): void {
-  let isInstanceOf: 'database' | 'firestore' | 'functions' | undefined;
+  let isInstanceOf:
+    | 'database'
+    | 'firestore'
+    | 'functions'
+    | 'hosting'
+    | undefined;
   let errorMsg = `<h4>Failed to start the <span class="capitalize">${
     data.emulator.name
   }</span> emulator.</h4>`;
@@ -541,8 +597,8 @@ function openTerminateInstanceModal(data: {
       isInstanceOf = 'database';
     } else if (isFirestoreEmulatorInstance(data.processInfo)) {
       isInstanceOf = 'firestore';
-    } else if (isFunctionsEmulatorInstance(data.processInfo)) {
-      isInstanceOf = 'functions';
+    } else if (isOtherEmulatorInstance(data.processInfo)) {
+      isInstanceOf = data.emulator.name;
     }
 
     if (typeof isInstanceOf === 'string') {
@@ -626,7 +682,7 @@ function isFirestoreEmulatorInstance(info: PsNodeResult): boolean {
   );
 }
 
-function isFunctionsEmulatorInstance(info: PsNodeResult): boolean {
+function isOtherEmulatorInstance(info: PsNodeResult): boolean {
   return (
     info &&
     contains(info, 'arguments') &&
@@ -693,4 +749,47 @@ function escapeHtml(unsafe: string): string {
     .replace(/>/g, '&gt;')
     .replace(/"/g, '&quot;')
     .replace(/'/g, '&#039;');
+}
+
+interface HostingLogEntry {
+  ip: string;
+  date: Date;
+  method: string;
+  resource: string;
+  protocol: string;
+  statusCode: number;
+  size: number;
+  referer: string | null;
+  userAgent: string;
+}
+
+const hostingLogEntryRegex = /^(\S+) (\S+) (\S+) \[([\w:/]+\s[+\-]\d{4})\] "(\S+)\s?(\S+)?\s?(\S+)?" (\d{3}|-) (\d+|-)\s?"?([^"]*)"?\s?"?([^"]*)?"?\n?$/;
+const hostingLogDateRegex = /^(\d+)\/(\w+)\/(\d+):(\d+):(\d+):(\d+) ([\+\-])(\d+)$/;
+
+function parseHostingLogLine(line: string): HostingLogEntry | undefined {
+  const match = line.match(hostingLogEntryRegex);
+  if (!match) {
+    return;
+  }
+
+  const d = match[4].match(hostingLogDateRegex);
+  if (!d) {
+    return;
+  }
+
+  const date = new Date(
+    `${d[1]} ${d[2]} ${d[3]} ${d[4]}:${d[5]}:${d[6]} GMT${d[7]}${d[8]}`
+  );
+
+  return {
+    ip: match[1],
+    date,
+    method: match[5],
+    resource: match[6],
+    protocol: match[7],
+    statusCode: Number(match[8]),
+    size: Number(match[9]) || 0,
+    referer: match[10] === '-' ? null : match[10],
+    userAgent: match[11]
+  };
 }

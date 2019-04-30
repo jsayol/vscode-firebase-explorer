@@ -88,6 +88,10 @@ input[type='checkbox'].is-checkradio + label,
   border-bottom-color: var(--vscode-editorGroupHeader-tabsBackground);
 }
 
+.tabs ul li + li {
+  border-left: 1px solid var(--vscode-editor-background);
+}
+
 .tabs .icon {
   font-size: 1.2rem;
 }
@@ -464,4 +468,34 @@ label.checkbox:hover {
 
 .capitalize {
   text-transform: capitalize;
+}
+
+.clickable:hover {
+  cursor: pointer;
+  text-decoration: underline;
+}
+
+.tab-content--hosting td.log-entry-cell-date,
+.tab-content--hosting th.log-entry-header-date {
+  width: 17%;
+}
+
+.tab-content--hosting td.log-entry-cell-ip,
+.tab-content--hosting th.log-entry-header-ip {
+  width: 15%;
+}
+
+.tab-content--hosting th.log-entry-cell-status,
+.tab-content--hosting td.log-entry-header-status {
+  width: 8%;
+}
+
+.tab-content--hosting td.log-entry-cell-method,
+.tab-content--hosting th.log-entry-header-method {
+  width: 10%;
+}
+
+.tab-content--hosting td.log-entry-cell-resource,
+.tab-content--hosting th.log-entry-header-resource {
+  width: 50%;
 }

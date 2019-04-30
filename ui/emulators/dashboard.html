@@ -19,39 +19,39 @@
     <div class="tabs main-navigation">
       <ul>
         <li class="tab--dashboard is-active" data-tabname="dashboard">
-          <a>
+          <a title="Dashboard">
             <span class="icon is-small"><i class="mdi mdi-monitor-dashboard" aria-hidden="true"></i></span>
-            <span title="Dashboard">Dashboard</span>
+            <span>Dashboard</span>
           </a>
         </li>
         <li class="tab--https-functions" data-tabname="https-functions">
-          <a>
+          <a title="HTTPS Functions">
             <span class="icon is-small"><i class="mdi mdi-web" aria-hidden="true"></i></span>
-            <span title="HTTPS Functions">HTTPS Functions</span>
+            <span>HTTPS Functions</span>
           </a>
         </li>
         <li class="tab--callable-functions" data-tabname="callable-functions">
-          <a>
+          <a title="Callable Functions">
             <span class="icon is-small"><i class="mdi mdi-cloud-braces" aria-hidden="true"></i></span>
-            <span title="Callable Functions">Callable Functions</span>
+            <span>Callable Functions</span>
           </a>
         </li>
         <li class="tab--firestore" data-tabname="firestore">
-          <a>
+          <a title="Firestore">
             <span class="icon is-small"><i class="mdi mdi-fire" aria-hidden="true"></i></span>
-            <span title="Firestore">Firestore</span>
+            <span>Firestore</span>
           </a>
         </li>
         <li class="tab--database" data-tabname="database">
-          <a>
+          <a title="Database">
             <span class="icon is-small"><i class="mdi mdi-database" aria-hidden="true"></i></span>
-            <span title="Database">Database</span>
+            <span>Database</span>
           </a>
         </li>
         <li class="tab--hosting" data-tabname="hosting">
-          <a>
+          <a title="Hosting">
             <span class="icon is-small"><i class="mdi mdi-earth" aria-hidden="true"></i></span>
-            <span title="Database">Database</span>
+            <span>Hosting</span>
           </a>
         </li>
       </ul>
@@ -335,10 +335,21 @@
     </div>
 
     <div class="tab-content tab-content--hosting">
-      <div class="level height-100">
-        <div class="box shell-output-box terminal width-100 tailing">
-          <div class="shell-output terminal">
-          </div>
+      <div class="level height-almost-100 no-margin-bottom">
+        <div class="box shell-output-box terminal width-100 tailing no-padding">
+          <table class="table logging-table is-fullwidth is-hoverable">
+            <thead>
+              <tr>
+                <th class="log-entry-header-date">Timestamp</th>
+                <th class="log-entry-header-ip">IP Address</th>
+                <th class="log-entry-header-status">Status</th>
+                <th class="log-entry-header-method">Method</th>
+                <th class="log-entry-header-resource">Resource</th>
+              </tr>
+            </thead>
+            <tbody>
+            </tbody>
+          </table>
         </div>
       </div>
     </div>
