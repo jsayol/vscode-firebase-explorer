@@ -499,3 +499,23 @@ label.checkbox:hover {
 .tab-content--hosting th.log-entry-header-resource {
   width: 50%;
 }
+
+.tabs .has-badge {
+  margin-right: 0;
+}
+
+.tabs [data-badge].has-badge::after {
+  top: 0;
+  right: 0;
+  font-size: 0.75rem;
+  padding: 0 .25rem;
+  min-height: 0.85rem;
+  box-shadow: none;
+  border-radius: 4px;
+  color: var(--vscode-button-foreground);
+  background-color: var(--vscode-button-background);
+}
+
+.tabs li.is-active .has-badge[data-badge]::after {
+  content: none;
+}

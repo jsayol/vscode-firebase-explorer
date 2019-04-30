@@ -847,6 +847,13 @@ builtin-status-codes@^3.0.0:
   resolved "https://registry.yarnpkg.com/builtin-status-codes/-/builtin-status-codes-3.0.0.tgz#85982878e21b98e1c66425e03d0174788f569ee8"
   integrity sha1-hZgoeOIbmOHGZCXgPQF0eI9Wnug=
 
+bulma-badge@^3.0.0:
+  version "3.0.0"
+  resolved "https://registry.yarnpkg.com/bulma-badge/-/bulma-badge-3.0.0.tgz#d2b9f0b715a544a2b4d73b0dcf44edf21e54675d"
+  integrity sha512-J/j7u/fnvxImrQBRbFT/j/4kpbsfG4FNz1Zb5t02KXhWY7RmBPZDydv8fRr4gFBNMEVRIAhUUyWxWIH0CX9Zew==
+  dependencies:
+    bulma latest
+
 bulma-checkradio@^2.1.0:
   version "2.1.0"
   resolved "https://registry.yarnpkg.com/bulma-checkradio/-/bulma-checkradio-2.1.0.tgz#494ab05b0245a41a0083bbd08436fafbde4b3814"
@@ -862,7 +869,7 @@ bulma-switch@^2.0.0:
   resolved "https://registry.yarnpkg.com/bulma-switch/-/bulma-switch-2.0.0.tgz#7a187cd1bb8073e9a542478d936b89315f1ffcd8"
   integrity sha512-myD38zeUfjmdduq+pXabhJEe3x2hQP48l/OI+Y0fO3HdDynZUY/VJygucvEAJKRjr4HxD5DnEm4yx+oDOBXpAA==
 
-bulma@^0.7.4:
+bulma@^0.7.4, bulma@latest:
   version "0.7.4"
   resolved "https://registry.yarnpkg.com/bulma/-/bulma-0.7.4.tgz#7e74512e9118d9799021339e67e365ee0ac4f3f9"
   integrity sha512-krG2rP6eAX1WE0sf6O0SC/FUVSOBX4m1PBC2+GKLpb2pX0qanaDqcv9U2nu75egFrsHkI0zdWYuk/oGwoszVWg==

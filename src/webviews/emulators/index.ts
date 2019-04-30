@@ -350,6 +350,8 @@ function openTab(event: Event) {
         tabContent.classList.remove('is-active');
       }
     });
+
+    resetBadgeCounter(tab);
   }
 }
 
@@ -435,10 +437,15 @@ function addFunctionsLogEntry(entry: { mode: string; log: any }) {
 
   output.appendChild(row);
   scrollToBottomIfEnabled(output.closest('.tailing') as HTMLElement);
+
+  const tab = getElement(`.tabs .tab--${functionType}-functions`);
+  if (!tab.classList.contains('is-active')) {
+    incrementBadgeCounter(tab);
+  }
 }
 
 function addLogEntryHelper(
-  module: 'firestore' | 'database' | 'hosting',
+  module: 'firestore' | 'database',
   entry: { from: string; line: string }
 ) {
   const output = getElement(`.tab-content--${module} .shell-output`);
@@ -450,6 +457,11 @@ function addLogEntryHelper(
   shellItem.innerHTML = escapeHtml(entry.line);
   output.appendChild(shellItem);
   scrollToBottomIfEnabled(output.closest('.tailing') as HTMLElement);
+
+  const tab = getElement(`.tabs .tab--${module}`);
+  if (!tab.classList.contains('is-active')) {
+    incrementBadgeCounter(tab);
+  }
 }
 
 function addHostingLogEntry({ line }: { line: string }) {
@@ -489,6 +501,11 @@ function addHostingLogEntry({ line }: { line: string }) {
 
   output.appendChild(row);
   scrollToBottomIfEnabled(output.closest('.tailing') as HTMLElement);
+
+  const tab = getElement(`.tabs .tab--hosting`);
+  if (!tab.classList.contains('is-active')) {
+    incrementBadgeCounter(tab);
+  }
 }
 
 function openModal(
@@ -792,4 +809,19 @@ function parseHostingLogLine(line: string): HostingLogEntry | undefined {
     referer: match[10] === '-' ? null : match[10],
     userAgent: match[11]
   };
+}
+
+function resetBadgeCounter(element: HTMLElement) {
+  const badge = element.classList.contains('.has-badge')
+    ? element
+    : getElement(element, '.has-badge');
+  badge.removeAttribute('data-badge');
+}
+
+function incrementBadgeCounter(element: HTMLElement, increment = 1) {
+  const badge = element.classList.contains('.has-badge')
+    ? element
+    : getElement(element, '.has-badge');
+  const value = Number(badge.dataset.badge || 0);
+  badge.dataset.badge = String(value + increment);
 }

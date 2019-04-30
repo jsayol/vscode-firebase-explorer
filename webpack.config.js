@@ -29,6 +29,10 @@ const copyPluginConfig = [
     to: 'css'
   },
   {
+    from: 'node_modules/bulma-badge/dist/css/bulma-badge.min.css',
+    to: 'css'
+  },
+  {
     from: 'node_modules/@mdi/font/css/materialdesignicons.min.css',
     to: 'css'
   },
