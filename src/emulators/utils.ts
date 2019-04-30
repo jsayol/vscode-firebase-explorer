@@ -62,8 +62,7 @@ export async function startEmulators(
       cliProcess = spawn('node' /* TODO: 'firebase' */, args, spawnOptions);
       // cliProcess = spawn('firebase' */, args, spawnOptions);
 
-      cliProcess.once('exit', (code, signal) => {
-        console.log('ChildProcess exit:', code, signal);
+      cliProcess.once('exit', () => {
         cliProcess = undefined;
         resolve();
       });

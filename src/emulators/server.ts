@@ -90,7 +90,6 @@ export class WebSocketServer {
           });
 
           this.server.on('listening', () => {
-            log(this.getAddress());
             resolve();
           });
 
@@ -170,7 +169,6 @@ export class WebSocketServer {
   }
 
   private onConnection(client: WebSocketClient): void {
-    log('New connection');
     this.client = client;
 
     client.isAlive = true;
@@ -180,7 +178,6 @@ export class WebSocketServer {
     });
 
     client.on('close', async (code, reason) => {
-      log(`Closed connection (${code}): ${reason}`);
       this.client = null;
       await this.stop();
       this.close();
