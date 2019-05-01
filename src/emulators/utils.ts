@@ -28,6 +28,20 @@ export interface PsNodeResult {
   arguments: string[];
 }
 
+export interface EmulatedTriggerDefinition {
+  entryPoint: string;
+  name: string;
+  timeout?: string | number;
+  availableMemoryMb?: '128MB' | '256MB' | '512MB' | '1GB' | '2GB';
+  httpsTrigger?: any;
+  eventTrigger?: any;
+}
+
+export interface InitializedFunctions {
+  https: EmulatedTriggerDefinition[];
+  firestore: EmulatedTriggerDefinition[];
+}
+
 export async function startEmulators(
   server: WebSocketServer,
   workspacePath: string,
@@ -157,6 +171,15 @@ export async function prepareServerStart(
       postToPanel(webviewPanels.emulators, {
         command: 'log',
         message: logEntry
+      });
+    }
+  });
+
+  server.on(RecvType.FUNCTIONS, functions => {
+    if (webviewPanels.emulators) {
+      postToPanel(webviewPanels.emulators, {
+        command: 'functions',
+        functions
       });
     }
   });

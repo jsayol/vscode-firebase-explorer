@@ -164,60 +164,78 @@
     </div>
 
     <div class="tab-content tab-content--https-functions">
-      <div class="level">
-        <div class="dropdown is-hoverable log-level-selection">
-          <div class="dropdown-trigger">
-            <button class="button with-dropdown-arrow" aria-haspopup="true"
-              aria-controls="log-level-selection--https-functions">
-              <span>Log level</span>
-            </button>
+      <div class="level top-controls">
+        <div>
+          <div class="dropdown is-hoverable log-level-selection">
+            <div class="dropdown-trigger">
+              <button class="button with-dropdown-arrow" aria-haspopup="true"
+                aria-controls="log-level-selection--https-functions">
+                <span>Log level</span>
+              </button>
+            </div>
+            <div class="dropdown-menu" id="log-level-selection--https-functions" role="menu">
+              <div class="dropdown-content">
+
+                <a class="dropdown-item field">
+                  <input class="is-checkradio" id="tab-content--https-functions--log-level--user" type="checkbox"
+                    checked="checked">
+                  <label for="tab-content--https-functions--log-level--user">
+                    <span class="icon"><i class="mdi mdi-20px mdi-account"></i></span>
+                    <span>User</span>
+                  </label>
+                </a>
+
+                <a class="dropdown-item field">
+                  <input class="is-checkradio" id="tab-content--https-functions--log-level--info" type="checkbox"
+                    checked="checked">
+                  <label for="tab-content--https-functions--log-level--info">
+                    <span class="icon"><i class="mdi mdi-20px mdi-information"></i></span>
+                    <span>Info</span>
+                  </label>
+                </a>
+
+                <a class="dropdown-item field">
+                  <input class="is-checkradio" id="tab-content--https-functions--log-level--error" type="checkbox"
+                    checked="checked">
+                  <label for="tab-content--https-functions--log-level--error">
+                    <span class="icon"><i class="mdi mdi-20px mdi-alert"></i></span>
+                    <span>Error</span>
+                  </label>
+                </a>
+
+                <a class="dropdown-item field">
+                  <input class="is-checkradio" id="tab-content--https-functions--log-level--debug" type="checkbox">
+                  <label for="tab-content--https-functions--log-level--debug">
+                    <span class="icon"><i class="mdi mdi-20px mdi-flag-outline"></i></span>
+                    <span>Debug</span>
+                  </label>
+                </a>
+
+                <a class="dropdown-item field">
+                  <input class="is-checkradio" id="tab-content--https-functions--log-level--system" type="checkbox">
+                  <label for="tab-content--https-functions--log-level--system">
+                    <span class="icon"><i class="mdi mdi-20px mdi-server"></i></span>
+                    <span>System</span>
+                  </label>
+                </a>
+
+              </div>
+            </div>
           </div>
-          <div class="dropdown-menu" id="log-level-selection--https-functions" role="menu">
-            <div class="dropdown-content">
 
-              <a class="dropdown-item field">
-                <input class="is-checkradio" id="tab-content--https-functions--log-level--user" type="checkbox"
-                  checked="checked">
-                <label for="tab-content--https-functions--log-level--user">
-                  <span class="icon"><i class="mdi mdi-20px mdi-account"></i></span>
-                  <span>User</span>
-                </label>
-              </a>
-
-              <a class="dropdown-item field">
-                <input class="is-checkradio" id="tab-content--https-functions--log-level--info" type="checkbox"
-                  checked="checked">
-                <label for="tab-content--https-functions--log-level--info">
-                  <span class="icon"><i class="mdi mdi-20px mdi-information"></i></span>
-                  <span>Info</span>
-                </label>
-              </a>
-
-              <a class="dropdown-item field">
-                <input class="is-checkradio" id="tab-content--https-functions--log-level--error" type="checkbox"
-                  checked="checked">
-                <label for="tab-content--https-functions--log-level--error">
-                  <span class="icon"><i class="mdi mdi-20px mdi-alert"></i></span>
-                  <span>Error</span>
-                </label>
-              </a>
-
-              <a class="dropdown-item field">
-                <input class="is-checkradio" id="tab-content--https-functions--log-level--debug" type="checkbox">
-                <label for="tab-content--https-functions--log-level--debug">
-                  <span class="icon"><i class="mdi mdi-20px mdi-flag-outline"></i></span>
-                  <span>Debug</span>
-                </label>
-              </a>
-
-              <a class="dropdown-item field">
-                <input class="is-checkradio" id="tab-content--https-functions--log-level--system" type="checkbox">
-                <label for="tab-content--https-functions--log-level--system">
-                  <span class="icon"><i class="mdi mdi-20px mdi-server"></i></span>
-                  <span>System</span>
-                </label>
-              </a>
-
+          <div class="dropdown is-hoverable function-selection">
+            <div class="dropdown-trigger">
+              <button class="button with-dropdown-arrow" aria-haspopup="true"
+                aria-controls="function-selection--https-functions">
+                <span>Functions</span>
+              </button>
+            </div>
+            <div class="dropdown-menu" id="function-selection--https-functions" role="menu">
+              <div class="dropdown-content">
+                <a class="dropdown-item field">
+                  No functions to show
+                </a>
+              </div>
             </div>
           </div>
         </div>
@@ -243,60 +261,79 @@
     </div>
 
     <div class="tab-content tab-content--background-functions">
-      <div class="level">
-        <div class="dropdown is-hoverable log-level-selection">
-          <div class="dropdown-trigger">
-            <button class="button with-dropdown-arrow" aria-haspopup="true"
-              aria-controls="log-level-selection--background-functions">
-              <span>Log level</span>
-            </button>
+      <div class="level top-controls">
+        <div>
+          <div class="dropdown is-hoverable log-level-selection">
+            <div class="dropdown-trigger">
+              <button class="button with-dropdown-arrow" aria-haspopup="true"
+                aria-controls="log-level-selection--background-functions">
+                <span>Log level</span>
+              </button>
+            </div>
+            <div class="dropdown-menu" id="log-level-selection--background-functions" role="menu">
+              <div class="dropdown-content">
+
+                <a class="dropdown-item field">
+                  <input class="is-checkradio" id="tab-content--background-functions--log-level--user" type="checkbox"
+                    checked="checked">
+                  <label for="tab-content--background-functions--log-level--user">
+                    <span class="icon"><i class="mdi mdi-20px mdi-account"></i></span>
+                    <span>User</span>
+                  </label>
+                </a>
+
+                <a class="dropdown-item field">
+                  <input class="is-checkradio" id="tab-content--background-functions--log-level--info" type="checkbox"
+                    checked="checked">
+                  <label for="tab-content--background-functions--log-level--info">
+                    <span class="icon"><i class="mdi mdi-20px mdi-information"></i></span>
+                    <span>Info</span>
+                  </label>
+                </a>
+
+                <a class="dropdown-item field">
+                  <input class="is-checkradio" id="tab-content--background-functions--log-level--error" type="checkbox"
+                    checked="checked">
+                  <label for="tab-content--background-functions--log-level--error">
+                    <span class="icon"><i class="mdi mdi-20px mdi-alert"></i></span>
+                    <span>Error</span>
+                  </label>
+                </a>
+
+                <a class="dropdown-item field">
+                  <input class="is-checkradio" id="tab-content--background-functions--log-level--debug" type="checkbox">
+                  <label for="tab-content--background-functions--log-level--debug">
+                    <span class="icon"><i class="mdi mdi-20px mdi-flag-outline"></i></span>
+                    <span>Debug</span>
+                  </label>
+                </a>
+
+                <a class="dropdown-item field">
+                  <input class="is-checkradio" id="tab-content--background-functions--log-level--system"
+                    type="checkbox">
+                  <label for="tab-content--background-functions--log-level--system">
+                    <span class="icon"><i class="mdi mdi-20px mdi-server"></i></span>
+                    <span>System</span>
+                  </label>
+                </a>
+
+              </div>
+            </div>
           </div>
-          <div class="dropdown-menu" id="log-level-selection--background-functions" role="menu">
-            <div class="dropdown-content">
 
-              <a class="dropdown-item field">
-                <input class="is-checkradio" id="tab-content--background-functions--log-level--user" type="checkbox"
-                  checked="checked">
-                <label for="tab-content--background-functions--log-level--user">
-                  <span class="icon"><i class="mdi mdi-20px mdi-account"></i></span>
-                  <span>User</span>
-                </label>
-              </a>
-
-              <a class="dropdown-item field">
-                <input class="is-checkradio" id="tab-content--background-functions--log-level--info" type="checkbox"
-                  checked="checked">
-                <label for="tab-content--background-functions--log-level--info">
-                  <span class="icon"><i class="mdi mdi-20px mdi-information"></i></span>
-                  <span>Info</span>
-                </label>
-              </a>
-
-              <a class="dropdown-item field">
-                <input class="is-checkradio" id="tab-content--background-functions--log-level--error" type="checkbox"
-                  checked="checked">
-                <label for="tab-content--background-functions--log-level--error">
-                  <span class="icon"><i class="mdi mdi-20px mdi-alert"></i></span>
-                  <span>Error</span>
-                </label>
-              </a>
-
-              <a class="dropdown-item field">
-                <input class="is-checkradio" id="tab-content--background-functions--log-level--debug" type="checkbox">
-                <label for="tab-content--background-functions--log-level--debug">
-                  <span class="icon"><i class="mdi mdi-20px mdi-flag-outline"></i></span>
-                  <span>Debug</span>
-                </label>
-              </a>
-
-              <a class="dropdown-item field">
-                <input class="is-checkradio" id="tab-content--background-functions--log-level--system" type="checkbox">
-                <label for="tab-content--background-functions--log-level--system">
-                  <span class="icon"><i class="mdi mdi-20px mdi-server"></i></span>
-                  <span>System</span>
-                </label>
-              </a>
-
+          <div class="dropdown is-hoverable function-selection">
+            <div class="dropdown-trigger">
+              <button class="button with-dropdown-arrow" aria-haspopup="true"
+                aria-controls="function-selection--background-functions">
+                <span>Functions</span>
+              </button>
+            </div>
+            <div class="dropdown-menu" id="function-selection--background-functions" role="menu">
+              <div class="dropdown-content">
+                <a class="dropdown-item field">
+                  No functions to show
+                </a>
+              </div>
             </div>
           </div>
         </div>

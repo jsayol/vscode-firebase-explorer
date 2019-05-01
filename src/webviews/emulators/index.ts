@@ -1,4 +1,4 @@
-import { PsNodeResult } from '../../emulators/utils';
+import { PsNodeResult, InitializedFunctions } from '../../emulators/utils';
 
 declare const acquireVsCodeApi: () => {
   postMessage: (msg: any) => void;
@@ -6,16 +6,16 @@ declare const acquireVsCodeApi: () => {
   getState: () => any;
 };
 
+type FunctionMode = 'https' | 'background';
+
 const vscode = acquireVsCodeApi();
 
-const startButton = getElement('.controls .button.start');
-const stopButton = getElement('.controls .button.stop');
+const startButton = $('.controls .button.start');
+const stopButton = $('.controls .button.stop');
 
-const projectSelector = getElement<HTMLSelectElement>(
-  '.top-controls .project-selector'
-);
+const projectSelector = $<HTMLSelectElement>('.top-controls .project-selector');
 
-const workspaceSelector = getElement('.top-controls .workspace-selector');
+const workspaceSelector = $('.top-controls .workspace-selector');
 
 const functionsLogEntries: { https: any[]; background: any[] } = {
   https: [],
@@ -57,7 +57,7 @@ window.addEventListener('message', ({ data }) => {
     case 'kill-process-result':
       const port = portBlocking.port;
       if (port) {
-        const shellOutput = getElement('.tab-content--dashboard .shell-output');
+        const shellOutput = $('.tab-content--dashboard .shell-output');
         showDivider(
           shellOutput,
           (data.success ? 'Terminated' : 'Failed to terminate') +
@@ -84,6 +84,9 @@ window.addEventListener('message', ({ data }) => {
         projectSelector.options[0].selected = true;
       }
       break;
+    case 'functions':
+      processInitializedFunctions(data.functions);
+      break;
     default:
       console.error('Unknown command received:', data);
     // TODO: throw? ignore?
@@ -95,34 +98,36 @@ vscode.postMessage({
 });
 
 window.addEventListener('DOMContentLoaded', () => {
-  getElement('.tabs.main-navigation').addEventListener('click', openTab);
+  $('.tabs.main-navigation').addEventListener('click', openTab);
 });
 
 function setupDOMListeners() {
-  getElement(
-    '.tab-content--dashboard .controls .button.start'
-  ).addEventListener('click', start);
+  $('.tab-content--dashboard .controls .button.start').addEventListener(
+    'click',
+    start
+  );
 
-  getElement('.tab-content--dashboard .controls .button.stop').addEventListener(
+  $('.tab-content--dashboard .controls .button.stop').addEventListener(
     'click',
     stop
   );
 
-  getElement('#switch-all-emulators').addEventListener(
+  $('#switch-all-emulators').addEventListener(
     'change',
     toggleAllEmulatorsSwitch
   );
 
-  (['https', 'background'] as ('https' | 'background')[]).forEach(mode => {
-    getElements(
+  (['https', 'background'] as FunctionMode[]).forEach(mode => {
+    $$(
       `.tab-content--${mode}-functions .log-level-selection input.is-checkradio`
     ).forEach(input => {
       input.addEventListener('change', () => applyFunctionsLogLevel(mode));
     });
 
-    getElement(
-      `.tab-content--${mode}-functions .logging-table`
-    ).addEventListener('click', functionsTableClick);
+    $(`.tab-content--${mode}-functions .logging-table`).addEventListener(
+      'click',
+      functionsTableClick
+    );
   });
 
   // TODO: change this to attach click events to individual elements
@@ -145,7 +150,7 @@ function setupDOMListeners() {
     }
   });
 
-  getElements('.tailing').forEach(element => {
+  $$('.tailing').forEach(element => {
     element.addEventListener('scroll', () => {
       const dataset = element.dataset;
 
@@ -159,7 +164,7 @@ function setupDOMListeners() {
     });
   });
 
-  getElement<HTMLSelectElement>(
+  $<HTMLSelectElement>(
     '.tab-content--dashboard .workspace-selector-field .workspace-selector'
   ).addEventListener('change', function() {
     const path = this.options[this.selectedIndex].value;
@@ -189,7 +194,7 @@ function start() {
   if (allEmulators) {
     emulators = 'all';
   } else {
-    const inputs = getElements<HTMLInputElement>(
+    const inputs = $$<HTMLInputElement>(
       '.tab-content--dashboard input[id^="switch-emu-"]'
     );
 
@@ -227,16 +232,16 @@ function stopped() {
   document.body.classList.remove('running');
   document.body.classList.remove('stopping');
 
-  const shellOutput = getElement('.tab-content--dashboard .shell-output');
+  const shellOutput = $('.tab-content--dashboard .shell-output');
   showDivider(shellOutput, 'DONE');
 
   ['firestore', 'database'].forEach(emulator => {
     if (isSwitchEnabled('switch-emu-' + emulator)) {
-      const lastElem = getElement(
+      const lastElem = $(
         `.tab-content--${emulator} .shell-output div:last-child`
       );
       if (lastElem && !lastElem.classList.contains('is-divider')) {
-        const output = getElement(`.tab-content--${emulator} .shell-output`);
+        const output = $(`.tab-content--${emulator} .shell-output`);
         showDivider(output, 'DONE');
       }
     }
@@ -300,28 +305,28 @@ function initialize(data: { folders: any; accountsWithProjects: any }) {
 }
 
 function showCLIOutput(data: { command: string; message: string }) {
-  const shellOutput = getElement('.tab-content--dashboard .shell-output');
+  const shellOutput = $('.tab-content--dashboard .shell-output');
   const shellItem = document.createElement('div');
   shellItem.classList.add('item', 'item-' + data.command);
   shellItem.innerHTML = data.message;
   shellOutput.appendChild(shellItem);
   scrollToBottomIfEnabled(shellOutput.closest('.tailing') as HTMLElement);
 
-  const tab = getElement(`.tabs .tab--dashboard`);
+  const tab = $(`.tabs .tab--dashboard`);
   if (!tab.classList.contains('is-active')) {
     incrementBadgeCounter(tab);
   }
 }
 
 function isSwitchEnabled(id: string) {
-  const elem = getElement<HTMLInputElement>('#' + id);
+  const elem = $<HTMLInputElement>('#' + id);
   return elem && elem.checked;
 }
 
 function toggleAllEmulatorsSwitch(event: Event) {
   const isChecked = (event.currentTarget as HTMLInputElement).checked;
   ['functions', 'firestore', 'database', 'hosting'].forEach(service => {
-    const element = getElement('#switch-emu-' + service);
+    const element = $('#switch-emu-' + service);
     if (element) {
       if (isChecked) {
         element.setAttribute('disabled', 'disabled');
@@ -338,7 +343,7 @@ function openTab(event: Event) {
   if (tab) {
     const tabName = tab.dataset.tabname;
 
-    const tabs = getElements('.tabs li');
+    const tabs = $$('.tabs li');
     tabs.forEach(tab => {
       const isSelected = tab.classList.contains('tab--' + tabName);
       if (isSelected) {
@@ -348,14 +353,14 @@ function openTab(event: Event) {
       }
     });
 
-    const contents = getElements('.tab-content');
+    const contents = $$('.tab-content');
     contents.forEach(tabContent => {
       const isSelected = tabContent.classList.contains(
         'tab-content--' + tabName
       );
       if (isSelected) {
         tabContent.classList.add('is-active');
-        getElements(tabContent, '.tailing').forEach(element => {
+        $$(tabContent, '.tailing').forEach(element => {
           scrollToBottomIfEnabled(element);
         });
       } else {
@@ -425,15 +430,23 @@ function addFunctionsLogEntry(entry: { mode: string; log: any; data?: any }) {
   }
 
   const triggerId = (log.data || {}).triggerId || 'no-triggerId';
-  const mode = originalMode.toLowerCase() as 'https' | 'background';
-  const output = getElement(`.tab-content--${mode}-functions table tbody`);
+  const mode = originalMode.toLowerCase() as FunctionMode;
+  const output = $(`.tab-content--${mode}-functions table tbody`);
   const row = document.createElement('tr');
 
   row.classList.add(
     'log-entry',
     'log-type--' + (log.type || 'unknown').toLowerCase(),
-    'log-level--' + (log.level || 'unknown').toLowerCase()
+    'log-level--' + (log.level || 'unknown').toLowerCase(),
+    'triggerId--' + triggerId
   );
+
+  const triggerSelection: HTMLInputElement = $(
+    `#function-selection--${mode}-functions input.triggerId--${triggerId}`
+  );
+  if (!triggerSelection.checked) {
+    row.classList.add('unselected');
+  }
 
   row.dataset.logEntryPos = String(functionsLogEntries[mode].length);
   functionsLogEntries[mode].push(log);
@@ -477,7 +490,7 @@ function addFunctionsLogEntry(entry: { mode: string; log: any; data?: any }) {
   output.appendChild(row);
   scrollToBottomIfEnabled(output.closest('.tailing') as HTMLElement);
 
-  const tab = getElement(`.tabs .tab--${mode}-functions`);
+  const tab = $(`.tabs .tab--${mode}-functions`);
   if (!tab.classList.contains('is-active')) {
     incrementBadgeCounter(tab);
   }
@@ -487,7 +500,7 @@ function addLogEntryHelper(
   module: 'firestore' | 'database',
   entry: { from: string; line: string }
 ) {
-  const output = getElement(`.tab-content--${module} .shell-output`);
+  const output = $(`.tab-content--${module} .shell-output`);
   const shellItem = document.createElement('div');
   shellItem.classList.add(
     'item',
@@ -497,7 +510,7 @@ function addLogEntryHelper(
   output.appendChild(shellItem);
   scrollToBottomIfEnabled(output.closest('.tailing') as HTMLElement);
 
-  const tab = getElement(`.tabs .tab--${module}`);
+  const tab = $(`.tabs .tab--${module}`);
   if (!tab.classList.contains('is-active')) {
     incrementBadgeCounter(tab);
   }
@@ -510,7 +523,7 @@ function addHostingLogEntry({ line }: { line: string }) {
     return;
   }
 
-  const output = getElement(`.tab-content--hosting table tbody`);
+  const output = $(`.tab-content--hosting table tbody`);
   const row = document.createElement('tr');
 
   row.classList.add('log-entry');
@@ -541,7 +554,7 @@ function addHostingLogEntry({ line }: { line: string }) {
   output.appendChild(row);
   scrollToBottomIfEnabled(output.closest('.tailing') as HTMLElement);
 
-  const tab = getElement(`.tabs .tab--hosting`);
+  const tab = $(`.tabs .tab--hosting`);
   if (!tab.classList.contains('is-active')) {
     incrementBadgeCounter(tab);
   }
@@ -558,10 +571,10 @@ function openModal(
         isHTML?: boolean;
       }
 ) {
-  const modal = getElement(selector);
+  const modal = $(selector);
 
   if (modal) {
-    const contentElement = getElement(modal, '.content');
+    const contentElement = $(modal, '.content');
 
     if (typeof options === 'string') {
       contentElement.innerText = options;
@@ -572,15 +585,15 @@ function openModal(
         contentElement.innerText = options.content;
       }
 
-      getElement(modal, '.modal-title').innerText = options.title;
+      $(modal, '.modal-title').innerText = options.title;
 
-      const actionButton = getElement(modal, '.modal-button-action');
+      const actionButton = $(modal, '.modal-button-action');
       actionButton.title = options.actionButton;
       actionButton.innerText = options.actionButton;
     }
 
     modal.classList.add('is-active');
-    getElement('html').classList.add('is-clipped');
+    $('html').classList.add('is-clipped');
   }
 }
 
@@ -588,8 +601,8 @@ function closeModal(event: Event) {
   const modal = (event.target as HTMLElement).closest('.modal');
   if (modal) {
     modal.classList.remove('is-active');
-    getElement('html').classList.remove('is-clipped');
-    getElement(modal, '.content').innerHTML = '';
+    $('html').classList.remove('is-clipped');
+    $(modal, '.content').innerHTML = '';
   }
 }
 
@@ -599,20 +612,18 @@ function functionsTableClick(event: Event) {
   const isTimestampCell = target.closest('td.log-entry-cell-timestamp');
 
   if (isTimestampCell && contains(row.dataset, 'logEntryPos')) {
-    const mode = row.closest('table')!.dataset.mode as 'https' | 'background';
+    const mode = row.closest('table')!.dataset.mode as FunctionMode;
     const logEntryPos = Number(row.dataset.logEntryPos);
     const entry = functionsLogEntries[mode][logEntryPos];
     openModal('.modal-json-viewer', JSON.stringify(entry, null, 2));
   }
 }
 
-function applyFunctionsLogLevel(mode: 'https' | 'background') {
-  const table = getElement<HTMLTableElement>(
-    `.tab-content--${mode}-functions table`
-  );
+function applyFunctionsLogLevel(mode: FunctionMode) {
+  const table = $<HTMLTableElement>(`.tab-content--${mode}-functions table`);
 
   ['user', 'info', 'debug', 'error', 'system'].forEach(level => {
-    const checkbox = getElement<HTMLInputElement>(
+    const checkbox = $<HTMLInputElement>(
       `#tab-content--${mode}-functions--log-level--${level}`
     );
 
@@ -694,7 +705,7 @@ function openTerminateInstanceModal(data: {
         (typeof isInstanceOf === 'string' ? 'instance' : 'program')
     });
   } else {
-    const shellOutput = getElement('.tab-content--dashboard .shell-output');
+    const shellOutput = $('.tab-content--dashboard .shell-output');
     showDivider(
       shellOutput,
       'Unknown program is using port ' + data.emulator.addr.port
@@ -761,12 +772,12 @@ function showDivider(shellOutput: Element, text: string): void {
   }, 0);
 }
 
-function getElement<T extends HTMLElement = HTMLElement>(selector: string): T;
-function getElement<T extends HTMLElement = HTMLElement>(
+function $<T extends HTMLElement = HTMLElement>(selector: string): T;
+function $<T extends HTMLElement = HTMLElement>(
   parent: Element,
   selector: string
 ): T;
-function getElement<T extends HTMLElement = HTMLElement>(
+function $<T extends HTMLElement = HTMLElement>(
   parentOrSelector: string | Element,
   selector?: string
 ): T {
@@ -777,14 +788,14 @@ function getElement<T extends HTMLElement = HTMLElement>(
   }
 }
 
-function getElements<T extends HTMLElement = HTMLElement>(
+function $$<T extends HTMLElement = HTMLElement>(
   selector: string
 ): NodeListOf<T>;
-function getElements<T extends HTMLElement = HTMLElement>(
+function $$<T extends HTMLElement = HTMLElement>(
   parent: Element,
   selector: string
 ): NodeListOf<T>;
-function getElements<T extends HTMLElement = HTMLElement>(
+function $$<T extends HTMLElement = HTMLElement>(
   parentOrSelector: string | Element,
   selector?: string
 ): NodeListOf<T> {
@@ -857,7 +868,7 @@ function parseHostingLogLine(line: string): HostingLogEntry | undefined {
 function resetBadgeCounter(element: HTMLElement) {
   const badge = element.classList.contains('.has-badge')
     ? element
-    : getElement(element, '.has-badge');
+    : $(element, '.has-badge');
 
   if (badge) {
     badge.removeAttribute('data-badge');
@@ -867,7 +878,166 @@ function resetBadgeCounter(element: HTMLElement) {
 function incrementBadgeCounter(element: HTMLElement, increment = 1) {
   const badge = element.classList.contains('.has-badge')
     ? element
-    : getElement(element, '.has-badge');
+    : $(element, '.has-badge');
   const value = Number(badge.dataset.badge || 0);
   badge.dataset.badge = String(value + increment);
+}
+
+function createDropdownCheckradioItem(
+  inputId: string,
+  htmlContent: string,
+  onChange?: ((event: Event) => void) | null,
+  extraInfo: [string, string][] = [],
+  checked = true
+): HTMLAnchorElement {
+  const item = document.createElement('a');
+  item.classList.add('dropdown-item', 'field');
+
+  const input = document.createElement('input');
+  input.classList.add('is-checkradio');
+  input.setAttribute('id', inputId);
+  input.setAttribute('type', 'checkbox');
+
+  if (checked) {
+    input.setAttribute('checked', 'checked');
+  }
+
+  if (onChange) {
+    input.addEventListener('change', onChange);
+  }
+
+  if (extraInfo) {
+    extraInfo.forEach(([name, value]) => {
+      input.dataset[name] = value;
+      input.classList.add(`${name}--${value}`);
+    });
+  }
+
+  const label = document.createElement('label');
+  label.classList.add('is-checkradio');
+  label.setAttribute('for', inputId);
+  label.innerHTML = htmlContent;
+
+  item.appendChild(input);
+  item.appendChild(label);
+
+  return item;
+}
+
+function createDropdownInfoItem(htmlContent: string): HTMLAnchorElement {
+  const item = document.createElement('a');
+  item.classList.add('dropdown-item');
+  item.innerHTML = htmlContent;
+  return item;
+}
+
+function createDropdownDivider(): HTMLHRElement {
+  const divider = document.createElement('hr');
+  divider.classList.add('dropdown-divider');
+  return divider;
+}
+
+function processInitializedFunctions(functions: InitializedFunctions): void {
+  const httpsDropdown = $(
+    '#function-selection--https-functions .dropdown-content'
+  );
+  const backgroundDropdown = $(
+    '#function-selection--background-functions .dropdown-content'
+  );
+
+  // Clear any existing items
+  httpsDropdown.innerHTML = '';
+  backgroundDropdown.innerHTML = '';
+
+  if (functions.https.length === 0) {
+    httpsDropdown.appendChild(
+      createDropdownInfoItem('<i>No functions to show</i>')
+    );
+  } else {
+    httpsDropdown.appendChild(
+      createDropdownCheckradioItem(
+        'tab-content--https-functions--function-all-functions',
+        'All functions',
+        toggleShowFunction,
+        [['mode', 'https'], ['triggerId', 'all-functions']]
+      )
+    );
+    httpsDropdown.appendChild(createDropdownDivider());
+    functions.https.forEach(func => {
+      httpsDropdown.appendChild(
+        createDropdownCheckradioItem(
+          `tab-content--https-functions--function-${func.name}`,
+          func.name,
+          toggleShowFunction,
+          [['mode', 'https'], ['triggerId', func.name]]
+        )
+      );
+    });
+  }
+
+  // Add more types here when they're integrated with the emulators
+  const backgroundTypes = ['firestore'] as (keyof InitializedFunctions)[];
+  const childrenToAdd: HTMLElement[] = [];
+  let funcsAdded = 0;
+
+  backgroundTypes.forEach(type => {
+    const typeFuncs = functions[type];
+    if (typeFuncs && typeFuncs.length > 0) {
+      childrenToAdd.push(createDropdownDivider());
+      typeFuncs.forEach(func => {
+        funcsAdded += 1;
+        childrenToAdd.push(
+          createDropdownCheckradioItem(
+            `tab-content--background-functions--function-${func.name}`,
+            func.name,
+            toggleShowFunction,
+            [['mode', 'background'], ['triggerId', func.name]]
+          )
+        );
+      });
+    }
+  });
+
+  if (funcsAdded === 0) {
+    backgroundDropdown.appendChild(
+      createDropdownInfoItem('<i>No functions to show</i>')
+    );
+  } else {
+    backgroundDropdown.appendChild(
+      createDropdownCheckradioItem(
+        'tab-content--background-functions--function-all-functions',
+        'All functions',
+        toggleShowFunction,
+        [['mode', 'background'], ['triggerId', 'all-functions']]
+      )
+    );
+    childrenToAdd.forEach(child => {
+      backgroundDropdown.appendChild(child);
+    });
+  }
+}
+
+function toggleShowFunction(event: Event): void {
+  const changedInput = event.target as HTMLInputElement;
+  const mode = changedInput.dataset.mode;
+  const funcName = changedInput.dataset.triggerId;
+
+  if (funcName === 'all-functions') {
+    $$<HTMLInputElement>(
+      `#function-selection--${mode}-functions .dropdown-item input`
+    ).forEach(input => {
+      if (input !== changedInput) {
+        input.checked = changedInput.checked;
+        toggleShowFunction({ target: input } as any);
+      }
+    });
+  } else {
+    const table = $<HTMLTableElement>(`.tab-content--${mode}-functions table`);
+    const rows = $$(table, 'tbody tr.triggerId--' + funcName);
+    if (changedInput.checked) {
+      rows.forEach(row => row.classList.remove('unselected'));
+    } else {
+      rows.forEach(row => row.classList.add('unselected'));
+    }
+  }
 }

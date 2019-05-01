@@ -59,7 +59,8 @@ export enum RecvType {
   STDERR = 'stderr',
   PID = 'pid',
   EMULATOR_PORT_TAKEN = 'emulator-port-taken',
-  GET_WEB_CONFIG = 'get-web-config'
+  GET_WEB_CONFIG = 'get-web-config',
+  FUNCTIONS = 'functions'
 }
 
 export type ListenerType = RecvType | 'close';

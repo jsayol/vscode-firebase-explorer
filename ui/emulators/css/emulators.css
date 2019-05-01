@@ -307,30 +307,48 @@ label.checkbox:hover {
   display: none;
 }
 
-.tab-content--https-functions table.log-level--user tr.log-level--user,
-.tab-content--background-functions table.log-level--user tr.log-level--user {
+.tab-content--https-functions
+  table.log-level--user
+  tr:not(.unselected).log-level--user,
+.tab-content--background-functions
+  table.log-level--user
+  tr:not(.unselected).log-level--user {
   display: table-row;
 }
 
-.tab-content--https-functions table.log-level--info tr.log-level--info,
-.tab-content--background-functions table.log-level--info tr.log-level--info {
+.tab-content--https-functions
+  table.log-level--info
+  tr:not(.unselected).log-level--info,
+.tab-content--background-functions
+  table.log-level--info
+  tr:not(.unselected).log-level--info {
   display: table-row;
 }
 
-.tab-content--https-functions table.log-level--debug tr.log-level--debug,
-.tab-content--background-functions table.log-level--debug tr.log-level--debug {
+.tab-content--https-functions
+  table.log-level--debug
+  tr:not(.unselected).log-level--debug,
+.tab-content--background-functions
+  table.log-level--debug
+  tr:not(.unselected).log-level--debug {
   display: table-row;
 }
 
-.tab-content--https-functions table.log-level--error tr.log-level--error,
-.tab-content--background-functions table.log-level--error tr.log-level--error {
+.tab-content--https-functions
+  table.log-level--error
+  tr:not(.unselected).log-level--error,
+.tab-content--background-functions
+  table.log-level--error
+  tr:not(.unselected).log-level--error {
   display: table-row;
 }
 
-.tab-content--https-functions table.log-level--system tr.log-level--system,
+.tab-content--https-functions
+  table.log-level--system
+  tr:not(.unselected).log-level--system,
 .tab-content--background-functions
   table.log-level--system
-  tr.log-level--system {
+  tr:not(.unselected).log-level--system {
   display: table-row;
 }
 
@@ -386,6 +404,7 @@ label.checkbox:hover {
 
 .dropdown .dropdown-menu {
   min-width: 0;
+  box-shadow: 0px 4px 10px -1px rgba(0, 0, 0, 0.75);
 }
 
 .dropdown .dropdown-content {
@@ -580,4 +599,8 @@ label.checkbox:hover {
 
 .mdi-20px.mdi::before {
   font-size: 20px;
+}
+
+hr.dropdown-divider {
+  background-color: var(--vscode-list-inactiveSelectionBackground);
 }
