@@ -110,6 +110,11 @@ async function openDashboard(): Promise<void> {
               projectId: foundProject && foundProject.project.projectId
             });
             break;
+          case 'set-debugging-state':
+            if (server) {
+              await server.setDebuggingState(data.enabled);
+            }
+            break;
         }
       });
 

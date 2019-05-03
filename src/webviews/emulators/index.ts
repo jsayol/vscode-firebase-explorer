@@ -185,6 +185,18 @@ function setupDOMListeners() {
       path
     });
   });
+
+  $<HTMLInputElement>('#enable-functions-debug').addEventListener(
+    'change',
+    function() {
+      if (state.running) {
+        vscode.postMessage({
+          command: 'set-debugging-state',
+          enabled: this.checked
+        });
+      }
+    }
+  );
 }
 
 function start() {

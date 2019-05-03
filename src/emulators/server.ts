@@ -45,11 +45,12 @@ interface WebSocketDebuggerInitData {
   functionsDebug?: boolean;
 }
 
-const enum SendType {
+enum SendType {
   INIT = 'init',
   STOP = 'stop',
   ERROR = 'error',
-  WEB_CONFIG = 'web-config'
+  WEB_CONFIG = 'web-config',
+  SET_DEBUGGING_STATE = 'set-debugging-state'
 }
 
 export enum RecvType {
@@ -178,6 +179,13 @@ export class WebSocketServer extends EventEmitter {
 
   emit(event: ListenerType, ...args: any[]): boolean {
     return super.emit(event, ...args);
+  }
+
+  async setDebuggingState(enabled: boolean): Promise<void> {
+    if (!this.client) {
+      throw new Error(`Can't set debugging state if there is no client.`);
+    }
+    await this.sendMessage(this.client, SendType.SET_DEBUGGING_STATE, enabled);
   }
 
   private onConnection(client: WebSocketClient): void {
