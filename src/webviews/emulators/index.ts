@@ -129,6 +129,18 @@ function setupDOMListeners() {
     toggleAllEmulatorsSwitch
   );
 
+  $<HTMLInputElement>('#switch-emu-functions').addEventListener(
+    'change',
+    function() {
+      const box = $('.tab-content--dashboard .functions-emulator-controls');
+      if (this.checked) {
+        box.classList.remove('display-none');
+      } else {
+        box.classList.add('display-none');
+      }
+    }
+  );
+
   (['https', 'background'] as FunctionMode[]).forEach(mode => {
     $$(
       `.tab-content--${mode}-functions .log-level-selection input.is-checkradio`
@@ -199,6 +211,27 @@ function setupDOMListeners() {
   );
 }
 
+function setRunningState(running: boolean): void {
+  if (running !== state.running) {
+    const box = $('.tab-content--dashboard .emulator-selection-controls');
+    state.running = running;
+
+    if (running) {
+      $$<HTMLInputElement>(box, 'input.switch').forEach(input => {
+        input.setAttribute('disabled', 'disabled');
+      });
+    } else {
+      const switchAll = $<HTMLInputElement>(box, '#switch-all-emulators');
+      switchAll.removeAttribute('disabled');
+      if (!switchAll.checked) {
+        $$<HTMLInputElement>(box, 'input[id^="switch-emu-"]').forEach(input => {
+          input.removeAttribute('disabled');
+        });
+      }
+    }
+  }
+}
+
 function start() {
   const selectedProject =
     projectSelector.options[projectSelector.selectedIndex];
@@ -240,7 +273,7 @@ function start() {
   startButton.setAttribute('disabled', 'disabled');
   stopButton.removeAttribute('disabled');
   document.body.classList.add('running');
-  state.running = true;
+  setRunningState(true);
 }
 
 function stop() {
@@ -249,7 +282,7 @@ function stop() {
   document.body.classList.remove('running');
   document.body.classList.add('stopping');
   vscode.postMessage({ command: 'stop' });
-  state.running = false;
+  setRunningState(false);
 }
 
 function stopped() {
@@ -258,7 +291,7 @@ function stopped() {
   stopButton.classList.remove('is-loading');
   document.body.classList.remove('running');
   document.body.classList.remove('stopping');
-  state.running = false;
+  setRunningState(false);
 
   const shellOutput = $('.tab-content--dashboard .shell-output');
   showDivider(shellOutput, 'DONE');

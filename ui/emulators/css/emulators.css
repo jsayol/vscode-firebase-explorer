@@ -31,6 +31,10 @@
   padding-bottom: 0 !important;
 }
 
+.display-none {
+  display: none;
+}
+
 * {
   user-select: none;
 }
