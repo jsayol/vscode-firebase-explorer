@@ -26,7 +26,7 @@ function log(...args: any[]): void {
 
 interface WebSocketClient extends WebSocket {
   isAlive?: boolean;
-  fbTools?: {
+  cliInfo?: {
     version: string;
   };
 }
@@ -42,6 +42,7 @@ interface WebSocketDebuggerInitData {
     useVersion?: string; // major version number
     installIfMissing: boolean;
   };
+  functionsDebug?: boolean;
 }
 
 const enum SendType {
@@ -57,10 +58,11 @@ export enum RecvType {
   ERROR = 'error',
   STDOUT = 'stdout',
   STDERR = 'stderr',
-  PID = 'pid',
+  EMULATOR_PID = 'emulator-pid',
   EMULATOR_PORT_TAKEN = 'emulator-port-taken',
   GET_WEB_CONFIG = 'get-web-config',
-  FUNCTIONS = 'functions'
+  FUNCTIONS = 'functions',
+  DEBUG_FUNCTION = 'debug-function'
 }
 
 export type ListenerType = RecvType | 'close';
@@ -73,6 +75,7 @@ export class WebSocketServer extends EventEmitter {
   private projectManager?: ProjectManager;
   private isStarted = false;
   private client?: WebSocketClient | null;
+  private functionsDebug?: boolean;
 
   constructor(public host = 'localhost') {
     super();
@@ -159,6 +162,10 @@ export class WebSocketServer extends EventEmitter {
     this.projectManager = projectManager;
   }
 
+  setFunctionsDebug(functionsDebug: boolean): void {
+    this.functionsDebug = functionsDebug;
+  }
+
   async sendWebAppconfig(client: WebSocketClient): Promise<void> {
     const config = await this.projectManager!.getWebAppConfig();
     await this.sendMessage(client, SendType.WEB_CONFIG, config);
@@ -214,7 +221,12 @@ export class WebSocketServer extends EventEmitter {
     }
 
     if (message.type === RecvType.INIT) {
-      client.fbTools = message.payload;
+      client.cliInfo = message.payload;
+      if (!client.cliInfo) {
+        await this.sendMessage(client, SendType.ERROR, 'Init data missing.');
+        client.terminate();
+        return;
+      }
       await this.respondInit(client);
     } else if (message.type === RecvType.GET_WEB_CONFIG) {
       await this.sendWebAppconfig(client);
@@ -249,7 +261,8 @@ export class WebSocketServer extends EventEmitter {
         projectNumber: this.projectManager.project.projectNumber,
         node: {
           installIfMissing: false // TODO
-        }
+        },
+        functionsDebug: this.functionsDebug
       };
       await this.sendMessage(socket, SendType.INIT, payload);
     }

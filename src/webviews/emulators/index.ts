@@ -1,4 +1,8 @@
-import { PsNodeResult, InitializedFunctions } from '../../emulators/utils';
+import {
+  PsNodeResult,
+  InitializedFunctions,
+  ServerStartOptions
+} from '../../emulators/utils';
 
 declare const acquireVsCodeApi: () => {
   postMessage: (msg: any) => void;
@@ -8,26 +12,40 @@ declare const acquireVsCodeApi: () => {
 
 type FunctionMode = 'https' | 'background';
 
+interface State {
+  running: boolean;
+  funcLogEntries: { https: any[]; background: any[] };
+  portBlocking: {
+    processInfo?: PsNodeResult | undefined;
+    port?: string | undefined;
+  };
+}
+
 const vscode = acquireVsCodeApi();
 
 const startButton = $('.controls .button.start');
 const stopButton = $('.controls .button.stop');
-
 const projectSelector = $<HTMLSelectElement>('.top-controls .project-selector');
+const workspaceSelector = $<HTMLSelectElement>(
+  '.top-controls .workspace-selector'
+);
 
-const workspaceSelector = $('.top-controls .workspace-selector');
-
-const functionsLogEntries: { https: any[]; background: any[] } = {
-  https: [],
-  background: []
+const state: State = {
+  running: false,
+  funcLogEntries: {
+    https: [],
+    background: []
+  },
+  portBlocking: {}
 };
 
-const portBlocking: {
-  processInfo?: PsNodeResult | undefined;
-  port?: string | undefined;
-} = {};
+window.addEventListener('DOMContentLoaded', () => {
+  setupDOMListeners();
 
-setupDOMListeners();
+  vscode.postMessage({
+    command: 'ready'
+  });
+});
 
 window.addEventListener('message', ({ data }) => {
   switch (data.command) {
@@ -55,7 +73,7 @@ window.addEventListener('message', ({ data }) => {
       openTerminateInstanceModal(data);
       break;
     case 'kill-process-result':
-      const port = portBlocking.port;
+      const port = state.portBlocking.port;
       if (port) {
         const shellOutput = $('.tab-content--dashboard .shell-output');
         showDivider(
@@ -65,8 +83,8 @@ window.addEventListener('message', ({ data }) => {
             port
         );
       }
-      portBlocking.port = undefined;
-      portBlocking.processInfo = undefined;
+      state.portBlocking.port = undefined;
+      state.portBlocking.processInfo = undefined;
       startButton.removeAttribute('disabled');
       startButton.classList.remove('is-loading');
       if (data.success) {
@@ -93,15 +111,9 @@ window.addEventListener('message', ({ data }) => {
   }
 });
 
-vscode.postMessage({
-  command: 'ready'
-});
-
-window.addEventListener('DOMContentLoaded', () => {
-  $('.tabs.main-navigation').addEventListener('click', openTab);
-});
-
 function setupDOMListeners() {
+  $('.tabs.main-navigation').addEventListener('click', openTab);
+
   $('.tab-content--dashboard .controls .button.start').addEventListener(
     'click',
     start
@@ -184,14 +196,9 @@ function start() {
     return;
   }
 
-  // @ts-ignore
-  const path = workspaceSelector.options[workspaceSelector.selectedIndex].value;
-  const [email, projectId] = selectedProject.value.split('#');
-  const debug = isSwitchEnabled('enable-debug');
+  let emulators: ServerStartOptions['emulators'];
 
-  let emulators;
-  const allEmulators = isSwitchEnabled('switch-all-emulators');
-  if (allEmulators) {
+  if (isSwitchEnabled('switch-all-emulators')) {
     emulators = 'all';
   } else {
     const inputs = $$<HTMLInputElement>(
@@ -203,18 +210,25 @@ function start() {
       .map(input => input.id.match(/switch-emu-(.+)/)![1]);
   }
 
-  vscode.postMessage({
-    command: 'start',
+  const [email, projectId] = selectedProject.value.split('#');
+  const options: ServerStartOptions = {
     email,
     projectId,
-    path,
     emulators,
-    debug
+    folder: workspaceSelector.options[workspaceSelector.selectedIndex].value,
+    functionsDebug: isSwitchEnabled('enable-functions-debug'),
+    cliDebug: isSwitchEnabled('enable-cli-debug-flag')
+  };
+
+  vscode.postMessage({
+    command: 'start',
+    options
   });
 
   startButton.setAttribute('disabled', 'disabled');
   stopButton.removeAttribute('disabled');
   document.body.classList.add('running');
+  state.running = true;
 }
 
 function stop() {
@@ -223,6 +237,7 @@ function stop() {
   document.body.classList.remove('running');
   document.body.classList.add('stopping');
   vscode.postMessage({ command: 'stop' });
+  state.running = false;
 }
 
 function stopped() {
@@ -231,6 +246,7 @@ function stopped() {
   stopButton.classList.remove('is-loading');
   document.body.classList.remove('running');
   document.body.classList.remove('stopping');
+  state.running = false;
 
   const shellOutput = $('.tab-content--dashboard .shell-output');
   showDivider(shellOutput, 'DONE');
@@ -295,8 +311,8 @@ function initialize(data: { folders: any; accountsWithProjects: any }) {
     workspaceSelector.dispatchEvent(event);
   }, 0);
 
-  functionsLogEntries.https = [];
-  functionsLogEntries.background = [];
+  state.funcLogEntries.https = [];
+  state.funcLogEntries.background = [];
 
   startButton.removeAttribute('disabled');
 
@@ -448,8 +464,8 @@ function addFunctionsLogEntry(entry: { mode: string; log: any; data?: any }) {
     row.classList.add('unselected');
   }
 
-  row.dataset.logEntryPos = String(functionsLogEntries[mode].length);
-  functionsLogEntries[mode].push(log);
+  row.dataset.logEntryPos = String(state.funcLogEntries[mode].length);
+  state.funcLogEntries[mode].push(log);
 
   ['timestamp', 'level', 'triggerId', /*'type',*/ 'text'].forEach(field => {
     const cell = document.createElement('td');
@@ -614,7 +630,7 @@ function functionsTableClick(event: Event) {
   if (isTimestampCell && contains(row.dataset, 'logEntryPos')) {
     const mode = row.closest('table')!.dataset.mode as FunctionMode;
     const logEntryPos = Number(row.dataset.logEntryPos);
-    const entry = functionsLogEntries[mode][logEntryPos];
+    const entry = state.funcLogEntries[mode][logEntryPos];
     openModal('.modal-json-viewer', JSON.stringify(entry, null, 2));
   }
 }
@@ -661,8 +677,8 @@ function openTerminateInstanceModal(data: {
   }</span> emulator.</h4>`;
 
   if (data.processInfo) {
-    portBlocking.processInfo = data.processInfo;
-    portBlocking.port = data.emulator.addr.port;
+    state.portBlocking.processInfo = data.processInfo;
+    state.portBlocking.port = data.emulator.addr.port;
 
     if (isDatabaseEmulatorInstance(data.processInfo)) {
       isInstanceOf = 'database';
@@ -677,7 +693,7 @@ function openTerminateInstanceModal(data: {
     There's ${
       isInstanceOf === data.emulator.name ? 'another' : 'an'
     } instance of the <span class="capitalize">${isInstanceOf}</span>
-    emulator already using port ${portBlocking.port}.
+    emulator already using port ${state.portBlocking.port}.
     <br/><br/>
     <b>Do you want to terminate it to free the port?</b>
     `;
@@ -686,7 +702,7 @@ function openTerminateInstanceModal(data: {
       const fullCmd = command + ' ' + args.join(' ');
       errorMsg += `
     <div>The port ${
-      portBlocking.port
+      state.portBlocking.port
     } is already taken by another program:</div>
     <div><pre><code><b>    PID</b>: ${pid}\n<b>Command</b>: ${fullCmd}</code></pre></div>
     <br/>
@@ -718,17 +734,17 @@ function handleTerminateInstanceModal(
   modalButton: HTMLElement
 ): void {
   if (modalButton.dataset.option === 'cancel') {
-    portBlocking.port = undefined;
-    portBlocking.processInfo = undefined;
+    state.portBlocking.port = undefined;
+    state.portBlocking.processInfo = undefined;
     closeModal(event);
   } else if (modalButton.dataset.option === 'action') {
-    if (portBlocking.processInfo) {
+    if (state.portBlocking.processInfo) {
       startButton.setAttribute('disabled', 'disabled');
       startButton.classList.add('is-loading');
 
       vscode.postMessage({
         command: 'kill-process',
-        pid: portBlocking.processInfo.pid
+        pid: state.portBlocking.processInfo.pid
       });
     }
     closeModal(event);

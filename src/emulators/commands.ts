@@ -39,7 +39,7 @@ export function registerEmulatorsCommands(_context: vscode.ExtensionContext) {
 
 async function openDashboard(): Promise<void> {
   // TODO: refuse to open if there are no workspace folders.
-  
+
   // TODO: refuse to open if there are no accounts logged in.
 
   // TODO: refuse to open if the logged in accounts have no projects.
@@ -90,7 +90,7 @@ async function openDashboard(): Promise<void> {
             });
             break;
           case 'start':
-            await prepareServerStart(server!, data);
+            await prepareServerStart(server!, data.options);
             break;
           case 'stop':
             await stopEmulators();

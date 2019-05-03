@@ -21,6 +21,11 @@ const EMULATORS_START_COMMAND = 'emulators:start';
 
 let cliProcess: ChildProcess | undefined;
 
+interface DebugFunctionData {
+  port: number;
+  outDir: string;
+}
+
 export interface PsNodeResult {
   pid: string;
   ppid: string;
@@ -42,15 +47,24 @@ export interface InitializedFunctions {
   firestore: EmulatedTriggerDefinition[];
 }
 
+export interface ServerStartOptions {
+  folder: string;
+  email: string;
+  projectId: string;
+  emulators: 'all' | string[];
+  functionsDebug: boolean;
+  cliDebug: boolean;
+}
+
 export async function startEmulators(
   server: WebSocketServer,
-  workspacePath: string,
-  email: string,
-  projectId: string,
-  emulators: 'all' | string[],
-  debug: boolean
+  options: ServerStartOptions
 ): Promise<void> {
+  const { folder, email, projectId, emulators, cliDebug } = options;
+
   server.useProjectManager(ProjectManager.for(email, projectId));
+  server.setFunctionsDebug(options.functionsDebug);
+
   await server.start();
 
   return new Promise(async resolve => {
@@ -61,12 +75,12 @@ export async function startEmulators(
         args = args.concat('--only', emulators.join(','));
       }
 
-      if (debug) {
+      if (cliDebug) {
         args.push('--debug');
       }
 
       const spawnOptions = {
-        cwd: workspacePath,
+        cwd: folder,
         windowsHide: true
       };
 
@@ -131,13 +145,7 @@ export async function listAllProjects(): Promise<
 
 export async function prepareServerStart(
   server: WebSocketServer,
-  data: {
-    path: string;
-    email: string;
-    projectId: string;
-    emulators: 'all' | string[];
-    debug: boolean;
-  }
+  options: ServerStartOptions
 ): Promise<void> {
   server.on(RecvType.STDOUT, line => {
     if (webviewPanels.emulators) {
@@ -184,6 +192,19 @@ export async function prepareServerStart(
     }
   });
 
+  server.on(RecvType.DEBUG_FUNCTION, (data: DebugFunctionData) => {
+    const config: vscode.DebugConfiguration = {
+      type: 'node',
+      request: 'attach',
+      name: 'debug function',
+      port: data.port,
+      stopOnEntry: false,
+      outFiles: [`${data.outDir}/**/*.js`]
+    };
+
+    vscode.debug.startDebugging(undefined, config);
+  });
+
   server.on('close', () => {
     server.removeAllListeners();
   });
@@ -197,10 +218,8 @@ export async function prepareServerStart(
     });
   });
 
-  const { path, email, projectId, emulators, debug } = data;
-
   // This promise resolves when the child process exits
-  await startEmulators(server, path, email, projectId, emulators, debug);
+  await startEmulators(server, options);
   // The CLI has exited
 
   if (webviewPanels.emulators) {
