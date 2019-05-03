@@ -445,6 +445,7 @@ function addFunctionsLogEntry(entry: { mode: string; log: any; data?: any }) {
     return;
   }
 
+  const logLevel = (log.level || 'unknown').toLowerCase();
   const triggerId = (log.data || {}).triggerId || 'no-triggerId';
   const mode = originalMode.toLowerCase() as FunctionMode;
   const output = $(`.tab-content--${mode}-functions table tbody`);
@@ -453,11 +454,11 @@ function addFunctionsLogEntry(entry: { mode: string; log: any; data?: any }) {
   row.classList.add(
     'log-entry',
     'log-type--' + (log.type || 'unknown').toLowerCase(),
-    'log-level--' + (log.level || 'unknown').toLowerCase(),
+    'log-level--' + logLevel,
     'triggerId--' + triggerId
   );
 
-  const triggerSelection: HTMLInputElement = $(
+  const triggerSelection = $<HTMLInputElement>(
     `#function-selection--${mode}-functions input.triggerId--${triggerId}`
   );
   if (!triggerSelection.checked) {
@@ -506,9 +507,15 @@ function addFunctionsLogEntry(entry: { mode: string; log: any; data?: any }) {
   output.appendChild(row);
   scrollToBottomIfEnabled(output.closest('.tailing') as HTMLElement);
 
-  const tab = $(`.tabs .tab--${mode}-functions`);
-  if (!tab.classList.contains('is-active')) {
-    incrementBadgeCounter(tab);
+  const levelSelection = $<HTMLInputElement>(
+    `#tab-content--${mode}-functions--log-level--${logLevel}`
+  );
+
+  if (levelSelection.checked && triggerSelection.checked) {
+    const tab = $(`.tabs .tab--${mode}-functions`);
+    if (!tab.classList.contains('is-active')) {
+      incrementBadgeCounter(tab);
+    }
   }
 }
 

@@ -196,7 +196,7 @@ export async function prepareServerStart(
     const config: vscode.DebugConfiguration = {
       type: 'node',
       request: 'attach',
-      name: 'debug function',
+      name: 'Firebase Explorer emulated function',
       port: data.port,
       stopOnEntry: false,
       outFiles: [`${data.outDir}/**/*.js`]
