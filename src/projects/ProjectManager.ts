@@ -7,7 +7,42 @@ import { AppsAPI } from '../apps/api';
 const instances: { [k: string]: ProjectManager } = {};
 
 export class ProjectManager {
-  static for(account: AccountInfo, project: FirebaseProject): ProjectManager {
+  static for(
+    account: AccountInfo | string,
+    project: FirebaseProject | string
+  ): ProjectManager {
+    if (typeof account === 'string') {
+      // "account" is an email, let's find the AccountInfo.
+      const foundAccount = AccountManager.getAccounts().find(
+        _account => _account.user.email === account
+      );
+
+      if (!foundAccount) {
+        throw new Error('Account not found for email ' + account);
+      }
+
+      account = foundAccount;
+    }
+
+    if (typeof project === 'string') {
+      // "project" is the projectId, let's find the FirebaseProject.
+      const projects = AccountManager.for(account).listProjectsSync();
+
+      if (!projects) {
+        throw new Error('No projects found for email ' + account);
+      }
+
+      const foundProject = projects.find(
+        _project => _project.projectId === project
+      );
+
+      if (!foundProject) {
+        throw new Error('Project not found for projectId ' + project);
+      }
+
+      project = foundProject;
+    }
+
     const id = account.user.email + '--' + project.projectId;
     if (!contains(instances, id)) {
       instances[id] = new ProjectManager(account, project);
@@ -17,6 +52,7 @@ export class ProjectManager {
 
   readonly accountManager: AccountManager;
   private config?: ProjectConfig;
+  private webAppConfig?: WebAppConfig;
   private apps?: ProjectApps;
 
   private constructor(
@@ -36,6 +72,14 @@ export class ProjectManager {
       this.config = await api.getProjectConfig(this.project);
     }
     return this.config;
+  }
+
+  async getWebAppConfig(): Promise<WebAppConfig> {
+    if (!this.webAppConfig) {
+      const api = ProjectsAPI.for(this.accountManager.account);
+      this.webAppConfig = await api.getWebAppConfig(this.project);
+    }
+    return this.webAppConfig;
   }
 
   async listApps(forceRefresh = false): Promise<ProjectApps> {
@@ -65,51 +109,6 @@ export class ProjectManager {
     }
   }
 
-  // async listApps_old(forceRefresh = false): Promise<ProjectApps> {
-  //   try {
-  //     if (!this.apps || forceRefresh) {
-  //       await this.initialized;
-
-  //       const management = firebaseAdmin.projectManagement(this.firebaseApp);
-  //       const apps = await Promise.all([
-  //         management.listIosApps(),
-  //         management.listAndroidApps()
-  //       ]);
-
-  //       const projectApps = await Promise.all([
-  //         Promise.all(
-  //           apps[0].map(async iosApp => {
-  //             const metadata = await iosApp.getMetadata();
-  //             return { app: iosApp, metadata };
-  //           })
-  //         ),
-  //         Promise.all(
-  //           apps[1].map(async androidApp => {
-  //             const metadata = await androidApp.getMetadata();
-  //             return { app: androidApp, metadata };
-  //           })
-  //         )
-  //       ]);
-
-  //       this.apps = {
-  //         ios: projectApps[0],
-  //         android: projectApps[1]
-  //       };
-  //     }
-
-  //     setContext(ContextValue.AppsLoaded, true);
-
-  //     return this.apps!;
-  //   } catch (err) {
-  //     // TODO: handle error
-  //     console.error('apps', { err });
-  //     return {
-  //       ios: [],
-  //       android: []
-  //     };
-  //   }
-  // }
-
   private async listIosApps(): Promise<IosApp[]> {
     const api = AppsAPI.for(this.accountManager.account, this.project);
     const apps = await api.listIosApps(this.project.projectId);
@@ -138,18 +137,6 @@ export interface FirebaseProject {
   displayName: string;
 }
 
-// export interface FirebaseProject {
-//   displayName: string;
-//   projectId: string;
-//   projectNumber: string;
-//   resources: {
-//     hostingSite: string;
-//     realtimeDatabaseInstance: string;
-//     storageBucket: string;
-//     locationId: string;
-//   };
-// }
-
 export interface ProjectConfig {
   projectId: string;
   databaseURL: string;
@@ -161,4 +148,13 @@ export interface ProjectInfo {
   projectId: string;
   displayName: string;
   locationId: string;
+}
+
+export interface WebAppConfig {
+  apiKey: string;
+  databaseURL: string;
+  storageBucket: string;
+  authDomain: string;
+  messagingSenderId: string;
+  projectId: string;
 }

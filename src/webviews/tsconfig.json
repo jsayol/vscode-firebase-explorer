@@ -1,0 +1,23 @@
+{
+  "compilerOptions": {
+    "experimentalDecorators": true,
+    "forceConsistentCasingInFileNames": true,
+    "lib": ["dom", "dom.iterable", "es2018"],
+    "module": "esnext",
+    "target": "es2018",
+    "moduleResolution": "node",
+    "outDir": "dist/webviews",
+    "rootDir": "../../src",
+    "sourceMap": true,
+
+    "noFallthroughCasesInSwitch": true,
+    "noImplicitReturns": true,
+    "noUnusedLocals": false,
+    "skipLibCheck": true,
+    "strict": true
+  },
+  "include": [
+    "./**/*"
+  ],
+  "exclude": ["node_modules"]
+}

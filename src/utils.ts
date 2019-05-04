@@ -341,13 +341,40 @@ export function dateToString(date: Date | string) {
 
 /**
  * Performs a case-insensitive comparison of two strings
- * @param a
- * @param b
  */
 export function caseInsensitiveCompare(a: string, b: string): number {
   return a.localeCompare(b, 'en', { sensitivity: 'base' });
 }
 
+/**
+ * Post a message toa  webview panel
+ */
+export function postToPanel(panel: vscode.WebviewPanel, msg: any) {
+  try {
+    panel.webview.postMessage(msg);
+  } catch (err) {
+    console.log('Failed sending message to WebView panel', err);
+  }
+}
+
 process.on('unhandledRejection', error => {
   console.log('unhandledRejection', error);
 });
+
+export function replaceResources(content: string): string {
+  const { extensionPath } = getContext();
+
+  return content.replace(/{{ *resource: *([^}]+) *}}/g, (_, resource) => {
+    const filePath = vscode.Uri.file(path.join(extensionPath, resource));
+    return filePath.with({ scheme: 'vscode-resource' }).toString();
+  });
+}
+
+export const webviewPanels: {
+  [k: string]: vscode.WebviewPanel | undefined;
+} = {};
+
+// https://developer.mozilla.org/en-US/docs/Web/JavaScript/Guide/Regular_Expressions#Escaping
+export function escapeRegExp(str: string): string {
+  return str.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'); // $& means the whole matched string
+}

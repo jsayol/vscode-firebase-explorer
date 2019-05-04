@@ -1,7 +1,8 @@
 .vscode/**
 .vscode-test/**
-out/test/**
-out/**/*.map
+dist/test/**
+dist/**/*.map
+out/**/*
 src/**
 tsconfig.json
 tslint.json
@@ -23,3 +24,4 @@ firebase.json
 .firebaserc
 stats.json
 .firebase/
+/public

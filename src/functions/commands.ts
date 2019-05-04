@@ -7,7 +7,9 @@ import {
   readFile,
   unzipToTmpDir,
   contains,
-  getContext
+  postToPanel,
+  getContext,
+  replaceResources
 } from '../utils';
 import { FunctionsAPI } from './api';
 import { CloudFunctionItem, FunctionsProvider } from './FunctionsProvider';
@@ -222,10 +224,12 @@ async function viewLogs(element: CloudFunctionItem): Promise<void> {
             }
           );
 
-          panel.webview.html = await readFile(
-            getFilePath('ui', 'functions', 'log.html'),
+          const content = await readFile(
+            getFilePath('ui', 'functions', 'functions-log.html'),
             'utf8'
           );
+
+          panel.webview.html = replaceResources(content);
 
           panel.webview.onDidReceiveMessage(async data => {
             switch (data.command) {
@@ -282,14 +286,6 @@ async function viewLogs(element: CloudFunctionItem): Promise<void> {
     }
   } catch (err) {
     console.log({ err });
-  }
-}
-
-function postToPanel(panel: vscode.WebviewPanel, msg: any) {
-  try {
-    panel.webview.postMessage(msg);
-  } catch (err) {
-    console.log('Failed sending message to WebView panel', err);
   }
 }
 

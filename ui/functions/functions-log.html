@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Function Log</title>
+  <link rel="stylesheet" href="{{resource:ui/functions/css/functions-log.css}}">
+</head>
+
+<body>
+  <div id="container">
+    <div id="header">
+      <div>
+        Function: <code id="functionName"></code> - Log Entries:
+        <code id="entriesConter">0</code>
+      </div>
+      <div id="buttons">
+        <div id="toggleLive" title="Live"></div>
+      </div>
+    </div>
+    <div id="logWrapper">
+      <div id="logContainer" class="grid tailing">Loading...</div>
+    </div>
+  </div>
+
+  <script src="{{resource:dist/webviews/functions-log.js}}"></script>
+</body>
+
+</html>
