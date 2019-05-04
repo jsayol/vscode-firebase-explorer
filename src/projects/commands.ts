@@ -27,7 +27,7 @@ export function registerProjectsCommands(context: vscode.ExtensionContext) {
 }
 
 function projectSelection(
-  account: AccountInfo,
+  accountInfo: AccountInfo,
   project: FirebaseProject
 ): void {
   const context = getContext();
@@ -38,7 +38,7 @@ function projectSelection(
     'selectedProject'
   );
 
-  if (account === currentAccount && project === currentProject) {
+  if (accountInfo === currentAccount && project === currentProject) {
     return;
   }
 
@@ -55,7 +55,7 @@ function projectSelection(
   setContext(ContextValue.FirestoreLoaded, false);
   setContext(ContextValue.DatabaseLoaded, false);
 
-  if (account && project) {
+  if (accountInfo && project) {
     // Empty selection and refresh to show "Loading..."
     context.globalState.update('selectedAccount', null);
     context.globalState.update('selectedProject', null);
@@ -67,10 +67,10 @@ function projectSelection(
   firestoreProvider.refresh();
   databaseProvider.refresh();
 
-  if (account && project) {
+  if (accountInfo && project) {
     setTimeout(() => {
       // Re-populate the treeviews for the selected project
-      context.globalState.update('selectedAccount', account);
+      context.globalState.update('selectedAccount', accountInfo);
       context.globalState.update('selectedProject', project);
 
       hostingProvider.refresh();
@@ -79,7 +79,7 @@ function projectSelection(
       firestoreProvider.refresh();
       databaseProvider.refresh();
 
-      setContext(ContextValue.ProjectSelected, !!(account && project));
+      setContext(ContextValue.ProjectSelected, !!(accountInfo && project));
     }, 250);
   }
 }

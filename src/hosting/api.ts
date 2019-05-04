@@ -1,5 +1,9 @@
 import * as request from 'request-promise-native';
-import { AccountInfo, AccountManager, RequestOptions } from '../accounts/AccountManager';
+import {
+  AccountInfo,
+  AccountManager,
+  RequestOptions
+} from '../accounts/AccountManager';
 import { FirebaseProject } from '../projects/ProjectManager';
 import { contains } from '../utils';
 import { API } from '../api';
@@ -11,11 +15,11 @@ const instances: { [k: string]: HostingAPI } = {};
 const fileListCache: { [k: string]: HostingReleaseVersionFile[] } = {};
 
 export class HostingAPI {
-  static for(account: AccountInfo, project: FirebaseProject): HostingAPI {
-    const id = account.user.email + '--' + project.projectId;
+  static for(accountInfo: AccountInfo, project: FirebaseProject): HostingAPI {
+    const id = accountInfo.user.email + '--' + project.projectId;
 
     if (!contains(instances, id)) {
-      instances[id] = new HostingAPI(account, project);
+      instances[id] = new HostingAPI(accountInfo, project);
     }
 
     return instances[id];
@@ -23,8 +27,11 @@ export class HostingAPI {
 
   accountManager: AccountManager;
 
-  private constructor(account: AccountInfo, public project: FirebaseProject) {
-    this.accountManager = AccountManager.for(account);
+  private constructor(
+    accountInfo: AccountInfo,
+    public project: FirebaseProject
+  ) {
+    this.accountManager = AccountManager.for(accountInfo);
   }
 
   private async request(

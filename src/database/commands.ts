@@ -89,8 +89,12 @@ async function editEntryValue(element: DatabaseElementItem): Promise<void> {
             newValue = newValueStr;
           }
 
-          const api = DatabaseAPI.for(element.account, element.project);
-          const response = await api.setValue(fullPath, newValue, element.instance);
+          const api = DatabaseAPI.for(element.accountInfo, element.project);
+          const response = await api.setValue(
+            fullPath,
+            newValue,
+            element.instance
+          );
 
           if (response.statusCode !== 200) {
             throw new Error(response.body);
@@ -142,7 +146,7 @@ async function deleteEntry(element: DatabaseElementItem): Promise<void> {
       },
       async () => {
         try {
-          const api = DatabaseAPI.for(element.account, element.project);
+          const api = DatabaseAPI.for(element.accountInfo, element.project);
           const response = await api.remove(fullPath, element.instance);
           if (response.statusCode !== 200) {
             throw new Error(response.body);

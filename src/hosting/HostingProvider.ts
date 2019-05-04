@@ -134,7 +134,7 @@ export class HostingSiteItem extends vscode.TreeItem {
   };
 
   constructor(
-    public account: AccountInfo,
+    public accountInfo: AccountInfo,
     public project: FirebaseProject,
     public site: HostingSite
   ) {
@@ -150,7 +150,7 @@ export class HostingReleaseItem extends vscode.TreeItem {
   contextValue = 'hosting.release';
 
   constructor(
-    public account: AccountInfo,
+    public accountInfo: AccountInfo,
     public project: FirebaseProject,
     public release: HostingRelease,
     public activeVersion: string
@@ -291,7 +291,7 @@ export class HostingFileItem extends vscode.TreeItem {
   // };
 
   constructor(
-    public account: AccountInfo,
+    public accountInfo: AccountInfo,
     public project: FirebaseProject,
     public release: HostingRelease,
     public part: PathTreePart
@@ -310,13 +310,13 @@ export type HostingProviderItem =
 
 function treePartToItem(
   part: PathTreePart,
-  account: AccountInfo,
+  accountInfo: AccountInfo,
   project: FirebaseProject,
   release: HostingRelease
 ): HostingFolderItem | HostingFileItem {
   {
     if (part.file) {
-      return new HostingFileItem(account, project, release, part);
+      return new HostingFileItem(accountInfo, project, release, part);
     } else {
       return new HostingFolderItem(release, part);
     }
@@ -324,7 +324,7 @@ function treePartToItem(
 }
 
 async function releasesForSite(
-  account: AccountInfo,
+  accountInfo: AccountInfo,
   project: FirebaseProject,
   api: HostingAPI,
   site: HostingSite
@@ -341,7 +341,12 @@ async function releasesForSite(
     if (releases.length > 0) {
       const activeVersion = releases[0].version ? releases[0].version.name : '';
       return releases.map(release => {
-        return new HostingReleaseItem(account, project, release, activeVersion);
+        return new HostingReleaseItem(
+          accountInfo,
+          project,
+          release,
+          activeVersion
+        );
       });
     } else {
       return [];

@@ -25,7 +25,7 @@ class BaseApp {
   projectId: string;
 
   constructor(
-    protected account: AccountInfo,
+    protected accountInfo: AccountInfo,
     protected project: FirebaseProject,
     props: { [k: string]: any }
   ) {
@@ -39,7 +39,7 @@ class BaseApp {
     type: string,
     name: string
   ): Promise<IosAppProps | AndroidAppProps | undefined> {
-    const api = AppsAPI.for(this.account, this.project);
+    const api = AppsAPI.for(this.accountInfo, this.project);
     const newProps = await api.setDisplayName(type, this.appId, name);
 
     if (newProps) {
@@ -53,7 +53,7 @@ class BaseApp {
   }
 
   getConfig(type: string): Promise<string | undefined> {
-    const api = AppsAPI.for(this.account, this.project);
+    const api = AppsAPI.for(this.accountInfo, this.project);
     return api.getAppConfig(type, this.appId);
   }
 }
@@ -62,11 +62,11 @@ export class IosApp extends BaseApp {
   bundleId: string;
 
   constructor(
-    account: AccountInfo,
+    accountInfo: AccountInfo,
     project: FirebaseProject,
     props: IosAppProps
   ) {
-    super(account, project, props);
+    super(accountInfo, project, props);
     this.bundleId = props.bundleId;
   }
 
@@ -92,11 +92,11 @@ export class AndroidApp extends BaseApp {
   packageName: string;
 
   constructor(
-    account: AccountInfo,
+    accountInfo: AccountInfo,
     project: FirebaseProject,
     props: AndroidAppProps
   ) {
-    super(account, project, props);
+    super(accountInfo, project, props);
     this.packageName = props.packageName;
   }
 
@@ -118,17 +118,17 @@ export class AndroidApp extends BaseApp {
   }
 
   getShaCertificates(): Promise<ShaCertificate[]> {
-    const api = AppsAPI.for(this.account, this.project);
+    const api = AppsAPI.for(this.accountInfo, this.project);
     return api.getShaCertificates(this.appId);
   }
 
   async addShaCertificate(cert: ShaCertificate): Promise<void> {
-    const api = AppsAPI.for(this.account, this.project);
+    const api = AppsAPI.for(this.accountInfo, this.project);
     await api.addShaCertificate(this.appId, cert);
   }
 
   async deleteShaCertificate(cert: ShaCertificate): Promise<void> {
-    const api = AppsAPI.for(this.account, this.project);
+    const api = AppsAPI.for(this.accountInfo, this.project);
     await api.deleteShaCertificate(this.appId, cert);
   }
 }

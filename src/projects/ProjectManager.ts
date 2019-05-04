@@ -8,44 +8,49 @@ const instances: { [k: string]: ProjectManager } = {};
 
 export class ProjectManager {
   static for(
-    account: AccountInfo | string,
-    project: FirebaseProject | string
+    infoOrEmail: AccountInfo | string,
+    projectOrId: FirebaseProject | string
   ): ProjectManager {
-    if (typeof account === 'string') {
-      // "account" is an email, let's find the AccountInfo.
-      const foundAccount = AccountManager.getAccounts().find(
-        _account => _account.user.email === account
-      );
+    let accountInfo: AccountInfo;
+    let project: FirebaseProject;
 
-      if (!foundAccount) {
-        throw new Error('Account not found for email ' + account);
+    if (typeof infoOrEmail === 'string') {
+      // "account" is an email, let's find the AccountInfo.
+      const foundInfo = AccountManager.getInfoForEmail(infoOrEmail);
+
+      if (!foundInfo) {
+        throw new Error('Account not found for email ' + infoOrEmail);
       }
 
-      account = foundAccount;
+      accountInfo = foundInfo;
+    } else {
+      accountInfo = infoOrEmail;
     }
 
-    if (typeof project === 'string') {
-      // "project" is the projectId, let's find the FirebaseProject.
-      const projects = AccountManager.for(account).listProjectsSync();
+    if (typeof projectOrId === 'string') {
+      // "projectOrId" is the projectId, let's find the FirebaseProject.
+      const projects = AccountManager.for(accountInfo).listProjectsSync();
 
       if (!projects) {
-        throw new Error('No projects found for email ' + account);
+        throw new Error('No projects found for email ' + infoOrEmail);
       }
 
       const foundProject = projects.find(
-        _project => _project.projectId === project
+        _project => _project.projectId === projectOrId
       );
 
       if (!foundProject) {
-        throw new Error('Project not found for projectId ' + project);
+        throw new Error('Project not found for projectId ' + projectOrId);
       }
 
       project = foundProject;
+    } else {
+      project = projectOrId;
     }
 
-    const id = account.user.email + '--' + project.projectId;
+    const id = accountInfo.user.email + '--' + project.projectId;
     if (!contains(instances, id)) {
-      instances[id] = new ProjectManager(account, project);
+      instances[id] = new ProjectManager(accountInfo, project);
     }
     return instances[id];
   }
@@ -56,10 +61,10 @@ export class ProjectManager {
   private apps?: ProjectApps;
 
   private constructor(
-    account: AccountInfo,
+    accountInfo: AccountInfo,
     public readonly project: FirebaseProject
   ) {
-    this.accountManager = AccountManager.for(account);
+    this.accountManager = AccountManager.for(accountInfo);
   }
 
   getAccessToken(): Promise<string> {
@@ -68,7 +73,7 @@ export class ProjectManager {
 
   async getConfig(): Promise<ProjectConfig> {
     if (!this.config) {
-      const api = ProjectsAPI.for(this.accountManager.account);
+      const api = ProjectsAPI.for(this.accountManager.info);
       this.config = await api.getProjectConfig(this.project);
     }
     return this.config;
@@ -76,7 +81,7 @@ export class ProjectManager {
 
   async getWebAppConfig(): Promise<WebAppConfig> {
     if (!this.webAppConfig) {
-      const api = ProjectsAPI.for(this.accountManager.account);
+      const api = ProjectsAPI.for(this.accountManager.info);
       this.webAppConfig = await api.getWebAppConfig(this.project);
     }
     return this.webAppConfig;
@@ -110,18 +115,18 @@ export class ProjectManager {
   }
 
   private async listIosApps(): Promise<IosApp[]> {
-    const api = AppsAPI.for(this.accountManager.account, this.project);
+    const api = AppsAPI.for(this.accountManager.info, this.project);
     const apps = await api.listIosApps(this.project.projectId);
     return apps.map(
-      props => new IosApp(this.accountManager.account, this.project, props)
+      props => new IosApp(this.accountManager.info, this.project, props)
     );
   }
 
   private async listAndroidApps(): Promise<AndroidApp[]> {
-    const api = AppsAPI.for(this.accountManager.account, this.project);
+    const api = AppsAPI.for(this.accountManager.info, this.project);
     const apps = await api.listAndroidApps(this.project.projectId);
     return apps.map(
-      props => new AndroidApp(this.accountManager.account, this.project, props)
+      props => new AndroidApp(this.accountManager.info, this.project, props)
     );
   }
 }

@@ -19,7 +19,7 @@ import {
   caseInsensitiveCompare,
   getFilePath
 } from '../utils';
-import { AccountInfo } from '../accounts/AccountManager';
+import { AccountInfo as accountInfo } from '../accounts/AccountManager';
 
 export class FirestoreProvider
   implements vscode.TreeDataProvider<FirestoreProviderItem> {
@@ -41,7 +41,7 @@ export class FirestoreProvider
   async getChildren(
     element?: FirestoreProviderItem
   ): Promise<FirestoreProviderItem[]> {
-    const account = this.context.globalState.get<AccountInfo>(
+    const account = this.context.globalState.get<accountInfo>(
       'selectedAccount'
     );
     const project = this.context.globalState.get<FirebaseProject | null>(
@@ -224,7 +224,7 @@ export class CollectionItem extends vscode.TreeItem {
   constructor(
     public name: string,
     public parentPath: string,
-    public account: AccountInfo,
+    public account: accountInfo,
     public project: FirebaseProject,
     public readonly command?: vscode.Command
   ) {
@@ -246,7 +246,7 @@ export class DocumentItem extends vscode.TreeItem {
   constructor(
     public document: FirestoreDocument,
     public parentPath: string,
-    public account: AccountInfo,
+    public accountInfo: accountInfo,
     public project: FirebaseProject
   ) {
     super('', vscode.TreeItemCollapsibleState.Collapsed);

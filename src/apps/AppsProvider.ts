@@ -81,7 +81,7 @@ export class IosAppItem extends vscode.TreeItem {
 
   constructor(
     public app: IosApp,
-    public account: AccountInfo,
+    public accountInfo: AccountInfo,
     public project: FirebaseProject
   ) {
     super(app.appName, vscode.TreeItemCollapsibleState.None);
@@ -98,7 +98,7 @@ export class AndroidAppItem extends vscode.TreeItem {
 
   constructor(
     public app: AndroidApp,
-    public account: AccountInfo,
+    public accountInfo: AccountInfo,
     public project: FirebaseProject
   ) {
     super(app.appName, vscode.TreeItemCollapsibleState.Collapsed);

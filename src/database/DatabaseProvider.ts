@@ -169,7 +169,7 @@ export class DatabaseElementItem extends vscode.TreeItem {
     public name: string,
     public parentPath: string,
     public instance: string,
-    public account: AccountInfo,
+    public accountInfo: AccountInfo,
     public project: FirebaseProject
   ) {
     super(name, vscode.TreeItemCollapsibleState.Collapsed);
@@ -256,7 +256,7 @@ export class DatabaseInstanceItem extends vscode.TreeItem {
   constructor(
     public name: string,
     public isDefault: boolean,
-    public account: AccountInfo,
+    public accountInfo: AccountInfo,
     public project: FirebaseProject
   ) {
     super(

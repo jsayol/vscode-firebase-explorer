@@ -1,6 +1,10 @@
 import * as request from 'request-promise-native';
 import { contains } from '../utils';
-import { AccountInfo, AccountManager, RequestOptions } from '../accounts/AccountManager';
+import {
+  AccountInfo,
+  AccountManager,
+  RequestOptions
+} from '../accounts/AccountManager';
 import { FirebaseProject } from '../projects/ProjectManager';
 import { getDetailsFromName } from './utils';
 import { API } from '../api';
@@ -13,11 +17,11 @@ import { API } from '../api';
 const instances: { [k: string]: FunctionsAPI } = {};
 
 export class FunctionsAPI {
-  static for(account: AccountInfo, project: FirebaseProject): FunctionsAPI {
-    const id = account.user.email + '--' + project.projectId;
+  static for(accountInfo: AccountInfo, project: FirebaseProject): FunctionsAPI {
+    const id = accountInfo.user.email + '--' + project.projectId;
 
     if (!contains(instances, id)) {
-      instances[id] = new FunctionsAPI(account, project);
+      instances[id] = new FunctionsAPI(accountInfo, project);
     }
 
     return instances[id];
@@ -25,8 +29,11 @@ export class FunctionsAPI {
 
   accountManager: AccountManager;
 
-  private constructor(account: AccountInfo, public project: FirebaseProject) {
-    this.accountManager = AccountManager.for(account);
+  private constructor(
+    accountInfo: AccountInfo,
+    public project: FirebaseProject
+  ) {
+    this.accountManager = AccountManager.for(accountInfo);
   }
 
   private request(
@@ -151,11 +158,9 @@ export class FunctionsAPI {
 
   async getDownloadUrl(fn: CloudFunction): Promise<string> {
     const { name, versionId } = fn;
-    const response = await this.request(
-      'POST',
-      `${name}:generateDownloadUrl`,
-      { body: { versionId } }
-    );
+    const response = await this.request('POST', `${name}:generateDownloadUrl`, {
+      body: { versionId }
+    });
     return response.body.downloadUrl || '';
   }
 }
