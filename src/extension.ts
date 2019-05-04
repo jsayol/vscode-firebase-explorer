@@ -89,9 +89,11 @@ function registerProvider<T>(
 }
 
 async function initialize(context: vscode.ExtensionContext): Promise<void> {
-  if (!PRODUCTION) {
-    // context.globalState.update('config', undefined);
-  }
+  // if (!PRODUCTION) {
+  //   await context.globalState.update('config', undefined);
+  //   await context.globalState.update('accounts', undefined);
+  //   await context.globalState.update('selectedAccount', undefined);
+  // }
 
   let extensionConfig = context.globalState.get<ExtensionConfig>('config');
 
@@ -114,7 +116,7 @@ async function initialize(context: vscode.ExtensionContext): Promise<void> {
     }
   }
 
-  if (PRODUCTION && !semver.eq(extensionConfig.version, EXTENSION_VERSION)) {
+  if (!semver.eq(extensionConfig.version, EXTENSION_VERSION)) {
     // The extension has updated. Perform any necessary upgrades to the config.
 
     // IMPORTANT: Always manipulate "context.globalState" directly inside this

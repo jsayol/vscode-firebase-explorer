@@ -133,10 +133,10 @@ export async function listAllProjects(): Promise<
 
   await Promise.all(
     accounts.map(async account => {
-      const projects = await AccountManager.for(account).listProjects({
+      const projects = await AccountManager.for(account.info).listProjects({
         refresh: false
       });
-      accountsWithProjects.push({ email: account.user.email, projects });
+      accountsWithProjects.push({ email: account.info.user.email, projects });
     })
   );
 
@@ -323,9 +323,9 @@ export async function getProjectForFolder(
     if (useProjectId) {
       let projectManager: ProjectManager | undefined;
       // Find an account that has access to the selected project
-      const account = AccountManager.getAccounts().find(account => {
+      const account = AccountManager.getAccounts().find(({ info }) => {
         try {
-          projectManager = ProjectManager.for(account, useProjectId!);
+          projectManager = ProjectManager.for(info, useProjectId!);
           return true;
         } catch (err) {
           // This account doesn't have access
@@ -335,7 +335,7 @@ export async function getProjectForFolder(
 
       if (account && projectManager) {
         // Return the AccountInfo & FirebaseProject for the selected project
-        return { account, project: projectManager.project };
+        return { account: account.info, project: projectManager.project };
       }
     }
   }
