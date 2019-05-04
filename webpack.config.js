@@ -163,7 +163,7 @@ function getExtensionConfig(env) {
     node: {
       __dirname: false
     },
-    devtool: env.production ? 'source-map' : 'cheap-module-eval-source-map',
+    devtool: env.production ? undefined : 'cheap-module-eval-source-map',
     output: {
       libraryTarget: 'commonjs2',
       filename: 'extension.js',
