@@ -60,7 +60,7 @@ export function setContextObj(context: vscode.ExtensionContext) {
   _context = context;
 }
 
-export function extContext(): vscode.ExtensionContext {
+export function getContext(): vscode.ExtensionContext {
   return _context;
 }
 
@@ -139,7 +139,7 @@ export function httpsGet(
 }
 
 export function getFilePath(...filenameParts: string[]): string {
-  return extContext().asAbsolutePath(path.join(...filenameParts));
+  return getContext().asAbsolutePath(path.join(...filenameParts));
 }
 
 interface DirectoryResult {
