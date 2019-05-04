@@ -32,7 +32,7 @@ export class ProjectsProvider
       const accountManager = AccountManager.for(element.accountInfo);
 
       let projects = accountManager.listProjectsSync()!;
-      const asyncProjects = accountManager.listProjects();
+      const asyncProjects = accountManager.listProjects({ refresh: true });
 
       if (!projects || projects.length === 0) {
         projects = await asyncProjects;

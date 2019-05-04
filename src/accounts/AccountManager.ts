@@ -187,8 +187,8 @@ export class AccountManager {
     return this.accountData.info.user.email;
   }
 
-  async listProjects(): Promise<FirebaseProject[]> {
-    if (!this.accountData.projects) {
+  async listProjects({ refresh = false } = {}): Promise<FirebaseProject[]> {
+    if (refresh || !this.accountData.projects) {
       try {
         const projectsAPI = ProjectsAPI.for(this.accountData.info);
         this.accountData.projects = await projectsAPI.listProjects();
