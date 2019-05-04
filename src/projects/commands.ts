@@ -4,17 +4,13 @@ import { FirebaseProject } from '../projects/ProjectManager';
 import { ProjectsProvider, AccountItem } from '../projects/ProjectsProvider';
 import { FirestoreProvider } from '../firestore/FirestoreProvider';
 import { DatabaseProvider } from '../database/DatabaseProvider';
-import { setContext, ContextValue } from '../utils';
+import { setContext, ContextValue, getContext } from '../utils';
 import { AppsProvider } from '../apps/AppsProvider';
 import { AccountInfo } from '../accounts/AccountManager';
 import { FunctionsProvider } from '../functions/FunctionsProvider';
 import { HostingProvider } from '../hosting/HostingProvider';
 
-let context: vscode.ExtensionContext;
-
-export function registerProjectsCommands(_context: vscode.ExtensionContext) {
-  context = _context;
-
+export function registerProjectsCommands(context: vscode.ExtensionContext) {
   context.subscriptions.push(
     vscode.commands.registerCommand(
       'firebaseExplorer.projects.refresh',
@@ -34,6 +30,7 @@ function projectSelection(
   account: AccountInfo,
   project: FirebaseProject
 ): void {
+  const context = getContext();
   const currentAccount = context.globalState.get<AccountInfo>(
     'selectedAccount'
   );

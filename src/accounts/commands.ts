@@ -1,14 +1,10 @@
 import * as vscode from 'vscode';
 import { AccountItem } from '../projects/ProjectsProvider';
-import { generateNonce } from '../utils';
+import { generateNonce, getContext } from '../utils';
 import { AccountManager } from './AccountManager';
 import { endLogin, initiateLogin } from './login';
 
-let context: vscode.ExtensionContext;
-
-export function registerAccountsCommands(_context: vscode.ExtensionContext) {
-  context = _context;
-
+export function registerAccountsCommands(context: vscode.ExtensionContext) {
   context.subscriptions.push(
     vscode.commands.registerCommand('firebaseExplorer.accounts.add', addAccount)
   );
@@ -48,7 +44,9 @@ async function addAccount(): Promise<void> {
 }
 
 function removeAccount(element: AccountItem): void {
+  const context = getContext();
   const selectedAccout = context.globalState.get('selectedAccount');
+
   if (selectedAccout === element.account) {
     context.globalState.update('selectedAccount', undefined);
     context.globalState.update('selectedProject', undefined);
