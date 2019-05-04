@@ -26,15 +26,40 @@ export class ProjectsProvider
     if (!element) {
       // List the available accounts
       const accounts = AccountManager.getAccounts();
-      return accounts.map(acc => new AccountItem(acc));
+      return accounts.map(account => new AccountItem(account.info));
     } else if (element instanceof AccountItem) {
       // List the projects for this account
-      const accountManager = AccountManager.for(element.account);
-      const projects = await accountManager.listProjects();
+      const accountManager = AccountManager.for(element.accountInfo);
+
+      let projects = accountManager.listProjectsSync()!;
+      const asyncProjects = accountManager.listProjects({ refresh: true });
+
+      if (!projects || projects.length === 0) {
+        projects = await asyncProjects;
+      } else {
+        // Since we got the list of projects from the local cache, trigger
+        // an update just in case there's been changes to the projects list.
+        asyncProjects
+          .then(newProjects => {
+            const ids = projects.map(p => p.projectId).sort();
+            const newIds = newProjects.map(p => p.projectId).sort();
+            const anyDifference =
+              projects.length !== newProjects.length ||
+              ids.some((id, index) => id !== newIds[index]);
+
+            if (anyDifference) {
+              // Reload the tree view
+              this.refresh(element);
+            }
+          })
+          .catch(err => {
+            console.error(err);
+          });
+      }
 
       if (Array.isArray(projects) && projects.length > 0) {
         return projects.map(
-          project => new ProjectItem(element.account, project)
+          project => new ProjectItem(element.accountInfo, project)
         );
       } else {
         return [
@@ -60,10 +85,10 @@ export class AccountItem extends vscode.TreeItem {
   iconPath = getFilePath('assets', 'account-google.svg');
 
   constructor(
-    public account: AccountInfo,
+    public accountInfo: AccountInfo,
     public readonly command?: vscode.Command
   ) {
-    super(account.user.email, vscode.TreeItemCollapsibleState.Expanded);
+    super(accountInfo.user.email, vscode.TreeItemCollapsibleState.Expanded);
   }
 
   get tooltip(): string {
@@ -78,10 +103,13 @@ export class ProjectItem extends vscode.TreeItem {
   readonly command: vscode.Command = {
     command: 'firebaseExplorer.projects.selection',
     title: '',
-    arguments: [this.account, this.project]
+    arguments: [this.accountInfo, this.project]
   };
 
-  constructor(private account: AccountInfo, private project: FirebaseProject) {
+  constructor(
+    private accountInfo: AccountInfo,
+    private project: FirebaseProject
+  ) {
     super(project.displayName, vscode.TreeItemCollapsibleState.None);
   }
 

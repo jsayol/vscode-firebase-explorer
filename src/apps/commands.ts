@@ -7,16 +7,16 @@ import {
 } from './AppsProvider';
 import { providerStore } from '../stores';
 import { IosApp, AndroidApp, ShaCertificate } from './apps';
-import { getCertTypeForFingerprint, writeToTmpFile } from '../utils';
+import {
+  getCertTypeForFingerprint,
+  writeToTmpFile,
+  getContext
+} from '../utils';
 import { FirebaseProject } from '../projects/ProjectManager';
 import { AppsAPI } from './api';
 import { AccountInfo } from '../accounts/AccountManager';
 
-let context: vscode.ExtensionContext;
-
-export function registerAppsCommands(_context: vscode.ExtensionContext) {
-  context = _context;
-
+export function registerAppsCommands(context: vscode.ExtensionContext) {
   context.subscriptions.push(
     vscode.commands.registerCommand(
       'firebaseExplorer.apps.refresh',
@@ -298,6 +298,7 @@ async function createNewApp(): Promise<void> {
       location: vscode.ProgressLocation.Notification
     },
     async () => {
+      const context = getContext();
       const account = context.globalState.get<AccountInfo>('selectedAccount')!;
       const project = context.globalState.get<FirebaseProject | null>(
         'selectedProject'

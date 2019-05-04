@@ -79,7 +79,8 @@ function getWebviewConfig(env) {
     name: 'webviews',
     context: path.resolve(__dirname, 'src/webviews'),
     entry: {
-      emulators: ['./emulators/index.ts']
+      emulators: ['./emulators/index.ts'],
+      'functions-log': ['./functions/functions-log.ts']
     },
     mode: env.production ? 'production' : 'development',
     devtool: env.production ? undefined : 'eval-source-map',
@@ -163,7 +164,7 @@ function getExtensionConfig(env) {
     node: {
       __dirname: false
     },
-    devtool: env.production ? 'source-map' : 'cheap-module-eval-source-map',
+    devtool: env.production ? undefined : 'cheap-module-eval-source-map',
     output: {
       libraryTarget: 'commonjs2',
       filename: 'extension.js',

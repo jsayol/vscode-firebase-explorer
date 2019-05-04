@@ -7,11 +7,11 @@ const URL_BASE = 'https://firestore.googleapis.com/v1beta1';
 const instances: { [k: string]: FirestoreAPI } = {};
 
 export class FirestoreAPI {
-  static for(account: AccountInfo, project: FirebaseProject): FirestoreAPI {
-    const id = account.user.email + '--' + project.projectId;
+  static for(accountInfo: AccountInfo, project: FirebaseProject): FirestoreAPI {
+    const id = accountInfo.user.email + '--' + project.projectId;
 
     if (!contains(instances, id)) {
-      instances[id] = new FirestoreAPI(account, project);
+      instances[id] = new FirestoreAPI(accountInfo, project);
     }
 
     return instances[id];
@@ -20,9 +20,9 @@ export class FirestoreAPI {
   projectId: string;
   projectManager: ProjectManager;
 
-  private constructor(account: AccountInfo, project: FirebaseProject) {
+  private constructor(accountInfo: AccountInfo, project: FirebaseProject) {
     this.projectId = project.projectId;
-    this.projectManager = ProjectManager.for(account, project);
+    this.projectManager = ProjectManager.for(accountInfo, project);
   }
 
   async listCollections(

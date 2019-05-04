@@ -1,0 +1,133 @@
+body {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  padding: 0;
+  overflow: hidden;
+  width: 100%;
+}
+
+#container {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  color: var(--vscode-foreground);
+  background-color: var(--vscode-editor-background);
+}
+
+#header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0 5px;
+  background-color: inherit;
+  min-height: 38px;
+  max-height: 38px;
+}
+
+#functionName,
+code {
+  font-family: 'Roboto Mono', monospace;
+}
+
+#toggleLive {
+  padding: 0 4px 4px 4px;
+  font-size: 1.4em;
+  line-height: 1.1em;
+  width: 1.1em;
+  border-radius: 4px;
+  vertical-align: baseline;
+  cursor: pointer;
+  text-align: center;
+}
+
+#toggleLive:before {
+  content: '▶';
+}
+
+.vscode-dark #toggleLive {
+  color: #333333;
+  background-color: #aaaaaa;
+  border: 2px solid #777777;
+}
+
+.vscode-light #toggleLive {
+  content: '&#x25b6;';
+  color: #333333;
+  background-color: #dddddd;
+  border: 2px solid #aaaaaa;
+}
+
+body.isLive #toggleLive {
+  background-color: #10923e;
+}
+
+body.isLive #toggleLive:before {
+  content: '⏸' !important;
+}
+
+#logWrapper {
+  overflow: auto;
+  display: flex;
+}
+
+#logContainer {
+  display: grid;
+  grid-template-columns: minmax(65px, 95px) minmax(45px, 55px) auto;
+  width: 100%;
+  padding: 0 5px;
+  overflow: auto;
+  font-family: 'Consolas', monospace;
+  bottom: 0;
+}
+
+#logContainer > span {
+  padding: 4px;
+}
+
+.vscode-dark #logContainer > span {
+  border-bottom: 1px solid #252525;
+}
+
+.vscode-light #logContainer > span {
+  border-bottom: 1px solid #e8e8e8;
+}
+
+#logContainer > span.dateHeader {
+  font-weight: bold;
+  grid-column: auto / span 3;
+  position: sticky;
+  top: 0px;
+  background-color: var(--vscode-editor-background);
+  padding: 0;
+}
+
+#logContainer > span.dateHeader > div {
+  background-color: var(--vscode-sideBarSectionHeader-background);
+  padding: 4px;
+}
+
+#logContainer > span + span.dateHeader {
+  margin-top: 10px;
+}
+
+#logContainer > span.timestamp {
+  white-space: pre-wrap;
+}
+
+#logContainer > span.severity {
+  text-align: center;
+  overflow: hidden;
+}
+
+#logContainer > span.text {
+  text-align: left;
+}
+
+.vscode-dark #logContainer > span.activeExec {
+  background-color: #303030;
+}
+
+.vscode-light #logContainer > span.activeExec {
+  background-color: #eaeaea;
+}

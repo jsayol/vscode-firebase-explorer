@@ -164,7 +164,7 @@ export class FunctionsProvider
 
 export class FunctionTriggerTypeItem extends vscode.TreeItem {
   constructor(
-    public account: AccountInfo,
+    public accountInfo: AccountInfo,
     public project: FirebaseProject,
     public type: CloudFunctionTriggerType,
     public functions: CloudFunction[]
@@ -207,7 +207,7 @@ export class CloudFunctionItem extends vscode.TreeItem {
   };
 
   constructor(
-    public account: AccountInfo,
+    public accountInfo: AccountInfo,
     public project: FirebaseProject,
     public type: CloudFunctionTriggerType,
     public cloudFunction: CloudFunction,

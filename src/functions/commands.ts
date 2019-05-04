@@ -7,13 +7,14 @@ import {
   readFile,
   unzipToTmpDir,
   contains,
-  postToPanel
+  postToPanel,
+  getContext,
+  replaceResources
 } from '../utils';
 import { FunctionsAPI } from './api';
 import { CloudFunctionItem, FunctionsProvider } from './FunctionsProvider';
 import { getDetailsFromName } from './utils';
 
-let context: vscode.ExtensionContext;
 const logViews: {
   [k: string]: {
     panel: vscode.WebviewPanel;
@@ -22,9 +23,7 @@ const logViews: {
   };
 } = {};
 
-export function registerFunctionsCommands(_context: vscode.ExtensionContext) {
-  context = _context;
-
+export function registerFunctionsCommands(context: vscode.ExtensionContext) {
   context.subscriptions.push(
     vscode.commands.registerCommand(
       'firebaseExplorer.functions.refresh',
@@ -90,7 +89,7 @@ async function triggerHTTPSFunction(element: CloudFunctionItem) {
   }
 
   const fn = element.cloudFunction;
-  const api = FunctionsAPI.for(element.account, element.project);
+  const api = FunctionsAPI.for(element.accountInfo, element.project);
 
   const methodOptions: vscode.QuickPickItem[] = [
     {
@@ -191,7 +190,7 @@ async function viewLogs(element: CloudFunctionItem): Promise<void> {
   }
 
   const panelId =
-    element.account.user.email + '--' + element.cloudFunction.name;
+    element.accountInfo.user.email + '--' + element.cloudFunction.name;
 
   try {
     if (contains(logViews, panelId)) {
@@ -212,7 +211,7 @@ async function viewLogs(element: CloudFunctionItem): Promise<void> {
           location: vscode.ProgressLocation.Notification
         },
         async () => {
-          const api = FunctionsAPI.for(element.account, element.project);
+          const api = FunctionsAPI.for(element.accountInfo, element.project);
           let logEntries = await api.getLog(element.cloudFunction);
 
           const panel = vscode.window.createWebviewPanel(
@@ -225,10 +224,12 @@ async function viewLogs(element: CloudFunctionItem): Promise<void> {
             }
           );
 
-          panel.webview.html = await readFile(
-            getFilePath('ui', 'functions', 'log.html'),
+          const content = await readFile(
+            getFilePath('ui', 'functions', 'functions-log.html'),
             'utf8'
           );
+
+          panel.webview.html = replaceResources(content);
 
           panel.webview.onDidReceiveMessage(async data => {
             switch (data.command) {
@@ -276,7 +277,7 @@ async function viewLogs(element: CloudFunctionItem): Promise<void> {
               delete logViews[panelId];
             },
             null,
-            context.subscriptions
+            getContext().subscriptions
           );
 
           logViews[panelId] = { panel, isLive: false, isReady: false };
@@ -302,7 +303,7 @@ async function viewSource(element: CloudFunctionItem): Promise<void> {
         location: vscode.ProgressLocation.Notification
       },
       async () => {
-        const api = FunctionsAPI.for(element.account, element.project);
+        const api = FunctionsAPI.for(element.accountInfo, element.project);
         const downloadUrl = await api.getDownloadUrl(element.cloudFunction);
         const tmpZipFile = await downloadToTmpFile(downloadUrl);
         try {

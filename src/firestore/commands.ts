@@ -187,7 +187,7 @@ async function copyDocumentContent(element: DocumentItem): Promise<void> {
         location: vscode.ProgressLocation.Notification
       },
       async () => {
-        const api = FirestoreAPI.for(element.account, element.project);
+        const api = FirestoreAPI.for(element.accountInfo, element.project);
         const docPath = getFullPath(element.parentPath, element.name);
         return api.getDocument(docPath);
       }
@@ -231,7 +231,7 @@ async function deleteDocument(element: DocumentItem): Promise<void> {
         location: vscode.ProgressLocation.Notification
       },
       async () => {
-        const api = FirestoreAPI.for(element.account, element.project);
+        const api = FirestoreAPI.for(element.accountInfo, element.project);
         const docPath = getFullPath(element.parentPath, element.name);
         await api.deleteDocument(docPath);
         const firestoreProvider = providerStore.get<FirestoreProvider>(

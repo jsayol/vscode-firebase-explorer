@@ -4,17 +4,13 @@ import { FirebaseProject } from '../projects/ProjectManager';
 import { ProjectsProvider, AccountItem } from '../projects/ProjectsProvider';
 import { FirestoreProvider } from '../firestore/FirestoreProvider';
 import { DatabaseProvider } from '../database/DatabaseProvider';
-import { setContext, ContextValue } from '../utils';
+import { setContext, ContextValue, getContext } from '../utils';
 import { AppsProvider } from '../apps/AppsProvider';
 import { AccountInfo } from '../accounts/AccountManager';
 import { FunctionsProvider } from '../functions/FunctionsProvider';
 import { HostingProvider } from '../hosting/HostingProvider';
 
-let context: vscode.ExtensionContext;
-
-export function registerProjectsCommands(_context: vscode.ExtensionContext) {
-  context = _context;
-
+export function registerProjectsCommands(context: vscode.ExtensionContext) {
   context.subscriptions.push(
     vscode.commands.registerCommand(
       'firebaseExplorer.projects.refresh',
@@ -31,9 +27,10 @@ export function registerProjectsCommands(_context: vscode.ExtensionContext) {
 }
 
 function projectSelection(
-  account: AccountInfo,
+  accountInfo: AccountInfo,
   project: FirebaseProject
 ): void {
+  const context = getContext();
   const currentAccount = context.globalState.get<AccountInfo>(
     'selectedAccount'
   );
@@ -41,7 +38,7 @@ function projectSelection(
     'selectedProject'
   );
 
-  if (account === currentAccount && project === currentProject) {
+  if (accountInfo === currentAccount && project === currentProject) {
     return;
   }
 
@@ -58,7 +55,7 @@ function projectSelection(
   setContext(ContextValue.FirestoreLoaded, false);
   setContext(ContextValue.DatabaseLoaded, false);
 
-  if (account && project) {
+  if (accountInfo && project) {
     // Empty selection and refresh to show "Loading..."
     context.globalState.update('selectedAccount', null);
     context.globalState.update('selectedProject', null);
@@ -70,10 +67,10 @@ function projectSelection(
   firestoreProvider.refresh();
   databaseProvider.refresh();
 
-  if (account && project) {
+  if (accountInfo && project) {
     setTimeout(() => {
       // Re-populate the treeviews for the selected project
-      context.globalState.update('selectedAccount', account);
+      context.globalState.update('selectedAccount', accountInfo);
       context.globalState.update('selectedProject', project);
 
       hostingProvider.refresh();
@@ -82,7 +79,7 @@ function projectSelection(
       firestoreProvider.refresh();
       databaseProvider.refresh();
 
-      setContext(ContextValue.ProjectSelected, !!(account && project));
+      setContext(ContextValue.ProjectSelected, !!(accountInfo && project));
     }, 250);
   }
 }

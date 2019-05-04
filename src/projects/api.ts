@@ -5,7 +5,12 @@ import {
   RequestOptions
 } from '../accounts/AccountManager';
 import { contains, caseInsensitiveCompare } from '../utils';
-import { FirebaseProject, ProjectConfig, ProjectInfo, WebAppConfig } from './ProjectManager';
+import {
+  FirebaseProject,
+  ProjectConfig,
+  ProjectInfo,
+  WebAppConfig
+} from './ProjectManager';
 import { API } from '../api';
 
 // https://mobilesdk-pa.googleapis.com/v1/projects
@@ -14,18 +19,18 @@ import { API } from '../api';
 const instances: { [k: string]: ProjectsAPI } = {};
 
 export class ProjectsAPI {
-  static for(account: AccountInfo): ProjectsAPI {
-    const id = account.user.email;
+  static for(accountInfo: AccountInfo): ProjectsAPI {
+    const id = accountInfo.user.email;
     if (!contains(instances, id)) {
-      instances[id] = new ProjectsAPI(account);
+      instances[id] = new ProjectsAPI(accountInfo);
     }
     return instances[id];
   }
 
   accountManager: AccountManager;
 
-  private constructor(account: AccountInfo) {
-    this.accountManager = AccountManager.for(account);
+  private constructor(accountInfo: AccountInfo) {
+    this.accountManager = AccountManager.for(accountInfo);
   }
 
   private request(

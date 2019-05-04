@@ -1,71 +1,118 @@
-import * as request from 'request-promise-native';
 import { Url } from 'url';
-import { contains, getContext } from '../utils';
+import * as request from 'request-promise-native';
 import { FirebaseProject } from '../projects/ProjectManager';
+import { contains, getContext } from '../utils';
 import { ProjectsAPI } from '../projects/api';
 import { AccountsAPI } from './api';
 
 const RETRY_DELAY = 1000; // ms
-const instances: { [k: string]: AccountManager } = {};
+
+const state: {
+  accounts?: StateAccounts;
+  instances: { [email: string]: AccountManager };
+} = {
+  instances: {}
+};
+
+function getStateAccounts(): StateAccounts {
+  if (!state.accounts) {
+    state.accounts =
+      getContext().globalState.get<StateAccounts>('accounts') || {};
+  }
+  return state.accounts;
+}
+
+function setStateAccounts(accounts: StateAccounts): Thenable<void> {
+  state.accounts = accounts;
+  return getContext().globalState.update('accounts', accounts);
+}
 
 export class AccountManager {
-  static for(account: AccountInfo): AccountManager {
-    const id = account.user.email;
-    if (!contains(instances, id)) {
-      instances[id] = new AccountManager(account);
+  static for(info: AccountInfo): AccountManager {
+    const email = info.user.email;
+
+    if (!contains(state.instances, email)) {
+      state.instances[email] = new AccountManager(info);
     }
-    return instances[id];
+
+    return state.instances[email];
   }
 
   static forSelectedAccount(): AccountManager {
-    const context = getContext();
-    const account = context.globalState.get<AccountInfo>('selectedAccount');
+    const info = AccountManager.getSelectedAccountInfo();
 
-    if (!account) {
+    if (!info) {
       throw new Error('No selected account');
     }
 
-    return AccountManager.for(account);
+    return AccountManager.for(info);
   }
 
-  static getAccounts(): AccountInfo[] {
-    const context = getContext();
-    let accounts = context.globalState.get<AccountInfo[]>('accounts');
-
-    if (!Array.isArray(accounts)) {
-      accounts = [];
-    }
-
-    return accounts;
+  static getInfoForEmail(email: string): AccountInfo | null {
+    const accounts = getStateAccounts();
+    return contains(accounts, email) ? accounts[email].info : null;
   }
 
-  static setAccounts(accounts: AccountInfo[]): Thenable<void> {
-    const context = getContext();
-    return context.globalState.update('accounts', accounts);
+  static getAccounts(): AccountData[] {
+    return Object.values(getStateAccounts());
+  }
+
+  static getSelectedAccountInfo(): AccountInfo | null {
+    return getContext().globalState.get('selectedAccount') || null;
   }
 
   /**
    * Adds a new account information to the config.
    * If an account already exists for that email, it gets replaced.
    */
-  static addAccount(account: AccountInfo) {
-    const accounts = AccountManager.getAccounts().filter(
-      acc => acc.user.email !== account.user.email
-    );
-    accounts.push(account);
-    return AccountManager.setAccounts(accounts);
+  static addAccount(accountInfo: AccountInfo): Thenable<void> {
+    const accounts = getStateAccounts();
+
+    accounts[accountInfo.user.email] = {
+      info: accountInfo,
+      projects: []
+    };
+
+    return setStateAccounts(accounts);
   }
 
-  static removeAccount(account: AccountInfo) {
-    const accounts = AccountManager.getAccounts().filter(
-      acc => acc.user.email !== account.user.email
-    );
-    return AccountManager.setAccounts(accounts);
+  /**
+   * Removes an account from the config.
+   */
+  static removeAccount(accountInfo: AccountInfo): Thenable<void> {
+    const email = accountInfo.user.email;
+    const accounts = getStateAccounts();
+    delete accounts[email];
+    delete state.instances[email];
+    return setStateAccounts(accounts);
   }
 
-  projectsList: FirebaseProject[] | null = null;
+  private accountData: AccountData;
 
-  private constructor(readonly account: AccountInfo) {}
+  private constructor(info: AccountInfo) {
+    const accounts = getStateAccounts();
+    this.accountData = accounts[info.user.email];
+  }
+
+  private saveAccountData(): Thenable<void> {
+    const accounts = getStateAccounts();
+    accounts[this.accountData.info.user.email] = this.accountData;
+    return setStateAccounts(accounts);
+  }
+
+  get info(): AccountInfo {
+    return this.accountData.info;
+  }
+
+  get email(): string {
+    return this.accountData.info.user.email;
+  }
+
+  remove(): Thenable<void> {
+    const accounts = getStateAccounts();
+    delete accounts[this.accountData.info.user.email];
+    return setStateAccounts(accounts);
+  }
 
   async request(
     method: string,
@@ -105,53 +152,58 @@ export class AccountManager {
   }
 
   getRefreshToken(): string {
-    return this.account.tokens.refresh_token;
+    return this.accountData.info.tokens.refresh_token;
   }
 
   async getAccessToken(): Promise<string> {
     if (this.isCachedTokenValid()) {
-      return this.account.tokens.access_token;
+      return this.accountData.info.tokens.access_token;
     }
 
-    const tokens = await AccountsAPI.for(this.account).getAccessToken();
+    const tokens = await AccountsAPI.for(
+      this.accountData.info
+    ).getAccessToken();
 
-    this.account.tokens = {
-      ...this.account.tokens,
+    this.accountData.info.tokens = {
+      ...this.accountData.info.tokens,
       ...tokens,
       expires_at: Date.now() + 1000 * tokens.expires_in
     };
+
+    this.saveAccountData();
 
     return tokens.access_token;
   }
 
   private isCachedTokenValid(): boolean {
-    if (!this.account.tokens.access_token) {
+    if (!this.accountData.info.tokens.access_token) {
       return false;
     }
 
-    return Date.now() < this.account.tokens.expires_at;
+    return Date.now() < this.accountData.info.tokens.expires_at;
   }
 
   getEmail(): string {
-    return this.account.user.email;
+    return this.accountData.info.user.email;
   }
 
-  async listProjects({ refresh = true } = {}): Promise<FirebaseProject[]> {
-    if (refresh || !this.projectsList) {
+  async listProjects({ refresh = false } = {}): Promise<FirebaseProject[]> {
+    if (refresh || !this.accountData.projects) {
       try {
-        const projectsAPI = ProjectsAPI.for(this.account);
-        this.projectsList = await projectsAPI.listProjects();
+        const projectsAPI = ProjectsAPI.for(this.accountData.info);
+        this.accountData.projects = await projectsAPI.listProjects();
+        this.saveAccountData();
       } catch (err) {
         console.error({ err });
-        return [];
+        return this.listProjectsSync() || [];
       }
     }
 
-    return this.projectsList;
+    return this.accountData.projects;
   }
 
   listProjectsSync(): FirebaseProject[] | null {
-    return this.projectsList;
+    return this.accountData.projects || null;
   }
 }
 
@@ -161,6 +213,15 @@ export interface GoogleOAuthAccessToken {
   scope: string;
   token_type: string;
   id_token: string;
+}
+
+export interface StateAccounts {
+  [email: string]: AccountData;
+}
+
+export interface AccountData {
+  info: AccountInfo;
+  projects: FirebaseProject[] | null | undefined;
 }
 
 export interface AccountInfo {

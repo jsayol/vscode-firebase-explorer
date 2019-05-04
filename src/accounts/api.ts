@@ -12,17 +12,17 @@ export const API_CONFIG = {
 const instances: { [k: string]: AccountsAPI } = {};
 
 export class AccountsAPI {
-  static for(account: AccountInfo): AccountsAPI {
-    const id = account.user.email;
+  static for(accountInfo: AccountInfo): AccountsAPI {
+    const id = accountInfo.user.email;
 
     if (!contains(instances, id)) {
-      instances[id] = new AccountsAPI(account);
+      instances[id] = new AccountsAPI(accountInfo);
     }
 
     return instances[id];
   }
 
-  private constructor(public account: AccountInfo) {}
+  private constructor(public accountInfo: AccountInfo) {}
 
   async getAccessToken(): Promise<GoogleOAuthAccessToken> {
     const reqOptions: request.OptionsWithUrl = {
@@ -32,13 +32,13 @@ export class AccountsAPI {
       }`,
       formData: {
         grant_type: 'refresh_token',
-        refresh_token: this.account.tokens.refresh_token,
+        refresh_token: this.accountInfo.tokens.refresh_token,
         client_id:
-          this.account.origin === 'cli'
+          this.accountInfo.origin === 'cli'
             ? CLI_API_CONFIG.clientId
             : /*API_CONFIG*/ CLI_API_CONFIG.clientId,
         client_secret:
-          this.account.origin === 'cli'
+          this.accountInfo.origin === 'cli'
             ? CLI_API_CONFIG.clientSecret
             : /*API_CONFIG*/ CLI_API_CONFIG.clientSecret
       },

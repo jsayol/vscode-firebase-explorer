@@ -2,7 +2,11 @@ import * as vscode from 'vscode';
 import * as request from 'request-promise-native';
 import { contains } from '../utils';
 import { FirebaseProject } from '../projects/ProjectManager';
-import { AccountManager, AccountInfo, RequestOptions } from '../accounts/AccountManager';
+import {
+  AccountManager,
+  AccountInfo,
+  RequestOptions
+} from '../accounts/AccountManager';
 import { waitUntilDone } from '../operations';
 import { IosAppProps, AndroidAppProps, ShaCertificate } from './apps';
 import { API } from '../api';
@@ -16,18 +20,21 @@ export function validateAppType(type: string): void | never {
 const instances: { [k: string]: AppsAPI } = {};
 
 export class AppsAPI {
-  static for(account: AccountInfo, project: FirebaseProject): AppsAPI {
-    const id = account.user.email + '--' + project.projectId;
+  static for(accountInfo: AccountInfo, project: FirebaseProject): AppsAPI {
+    const id = accountInfo.user.email + '--' + project.projectId;
     if (!contains(instances, id)) {
-      instances[id] = new AppsAPI(account, project);
+      instances[id] = new AppsAPI(accountInfo, project);
     }
     return instances[id];
   }
 
   accountManager: AccountManager;
 
-  private constructor(account: AccountInfo, public project: FirebaseProject) {
-    this.accountManager = AccountManager.for(account);
+  private constructor(
+    accountInfo: AccountInfo,
+    public project: FirebaseProject
+  ) {
+    this.accountManager = AccountManager.for(accountInfo);
   }
 
   private request(

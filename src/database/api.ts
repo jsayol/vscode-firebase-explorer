@@ -7,18 +7,21 @@ import { API } from '../api';
 const instances: { [k: string]: DatabaseAPI } = {};
 
 export class DatabaseAPI {
-  static for(account: AccountInfo, project: FirebaseProject): DatabaseAPI {
-    const id = account.user.email + '--' + project.projectId;
+  static for(accountInfo: AccountInfo, project: FirebaseProject): DatabaseAPI {
+    const id = accountInfo.user.email + '--' + project.projectId;
     if (!contains(instances, id)) {
-      instances[id] = new DatabaseAPI(account, project);
+      instances[id] = new DatabaseAPI(accountInfo, project);
     }
     return instances[id];
   }
 
   projectManager: ProjectManager;
 
-  private constructor(account: AccountInfo, public project: FirebaseProject) {
-    this.projectManager = ProjectManager.for(account, project);
+  private constructor(
+    accountInfo: AccountInfo,
+    public project: FirebaseProject
+  ) {
+    this.projectManager = ProjectManager.for(accountInfo, project);
   }
 
   private request(
