@@ -9,7 +9,9 @@ import {
   contains,
   postToPanel,
   getContext,
-  replaceResources
+  replaceResources,
+  createWebviewPanel,
+  deleteWebviewPanel
 } from '../utils';
 import { FunctionsAPI } from './api';
 import { CloudFunctionItem, FunctionsProvider } from './FunctionsProvider';
@@ -188,16 +190,16 @@ async function viewLogs(element: CloudFunctionItem): Promise<void> {
   if (!element) {
     return;
   }
-
-  const panelId =
-    element.accountInfo.user.email + '--' + element.cloudFunction.name;
+  const { email } = element.accountInfo.user;
+  const functionName = element.cloudFunction.name;
+  const panelId = `function-log--${email}--${functionName}`;
 
   try {
     if (contains(logViews, panelId)) {
       const { panel, isLive, isReady } = logViews[panelId];
       if (isReady && !isLive) {
         setImmediate(() => {
-          postToPanel(panel, {
+          postToPanel(panelId, {
             command: 'fetchNew'
           });
         });
@@ -214,7 +216,8 @@ async function viewLogs(element: CloudFunctionItem): Promise<void> {
           const api = FunctionsAPI.for(element.accountInfo, element.project);
           let logEntries = await api.getLog(element.cloudFunction);
 
-          const panel = vscode.window.createWebviewPanel(
+          const panel = createWebviewPanel(
+            panelId,
             'function.logTail',
             'Log: ' + fnName,
             vscode.ViewColumn.One,
@@ -238,7 +241,7 @@ async function viewLogs(element: CloudFunctionItem): Promise<void> {
                   ...logViews[panelId],
                   isReady: true
                 };
-                postToPanel(panel, {
+                postToPanel(panelId, {
                   command: 'initialize',
                   name: fnName,
                   isLive: false,
@@ -256,7 +259,7 @@ async function viewLogs(element: CloudFunctionItem): Promise<void> {
                 const entries = await api.getLog(element.cloudFunction, {
                   since: data.since
                 });
-                postToPanel(panel, {
+                postToPanel(panelId, {
                   command: 'addEntries',
                   entries
                 });
@@ -264,17 +267,10 @@ async function viewLogs(element: CloudFunctionItem): Promise<void> {
             }
           });
 
-          // panel.onDidChangeViewState(
-          //   _event => {
-          //     const panel = _event.webviewPanel;
-          //   },
-          //   null,
-          //   context.subscriptions
-          // );
-
           panel.onDidDispose(
             () => {
               delete logViews[panelId];
+              deleteWebviewPanel(panelId);
             },
             null,
             getContext().subscriptions

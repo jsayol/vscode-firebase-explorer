@@ -5,13 +5,7 @@ import { spawn, ChildProcess } from 'child_process';
 import { WebSocketServer, RecvType } from './server';
 import { ProjectManager, FirebaseProject } from '../projects/ProjectManager';
 import { AccountManager, AccountInfo } from '../accounts/AccountManager';
-import {
-  webviewPanels,
-  postToPanel,
-  ansiToHTML,
-  readFile,
-  contains
-} from '../utils';
+import { postToPanel, ansiToHTML, readFile, contains } from '../utils';
 import { findPidByPort } from './find-process';
 import { getCliConfig } from '../accounts/cli';
 
@@ -23,7 +17,9 @@ let cliProcess: ChildProcess | undefined;
 
 interface DebugFunctionData {
   port: number;
+  functionsDir: string;
   outDir: string;
+  cliDir: string;
 }
 
 export interface PsNodeResult {
@@ -148,48 +144,40 @@ export async function prepareServerStart(
   options: ServerStartOptions
 ): Promise<void> {
   server.on(RecvType.STDOUT, line => {
-    if (webviewPanels.emulators) {
-      postToPanel(webviewPanels.emulators, {
-        command: 'stdout',
-        message: linkify(ansiToHTML(line))
-      });
-    }
+    postToPanel('emulators', {
+      command: 'stdout',
+      message: linkify(ansiToHTML(line))
+    });
   });
 
   server.on(RecvType.STDERR, line => {
-    if (webviewPanels.emulators) {
-      postToPanel(webviewPanels.emulators, {
-        command: 'stderr',
-        message: linkify(ansiToHTML(line))
-      });
-    }
+    postToPanel('emulators', {
+      command: 'stderr',
+      message: linkify(ansiToHTML(line))
+    });
   });
 
   server.on(RecvType.LOG, logEntry => {
-    if (webviewPanels.emulators) {
-      if (logEntry.module === 'functions') {
-        const log = logEntry.log;
-        if (log.level === 'DEBUG' && log.type === 'node-debugger') {
-          log.text = '[Node Debugger] ' + log.text;
-        }
-        log.text = linkify(ansiToHTML(log.text));
-      } else if (['firestore', 'database'].includes(logEntry.module)) {
-        logEntry.line = linkify(ansiToHTML(logEntry.line));
+    if (logEntry.module === 'functions') {
+      const log = logEntry.log;
+      if (log.level === 'DEBUG' && log.type === 'node-debugger') {
+        log.text = '[Node Debugger] ' + log.text;
       }
-      postToPanel(webviewPanels.emulators, {
-        command: 'log',
-        message: logEntry
-      });
+      log.text = linkify(ansiToHTML(log.text));
+    } else if (['firestore', 'database'].includes(logEntry.module)) {
+      logEntry.line = linkify(ansiToHTML(logEntry.line));
     }
+    postToPanel('emulators', {
+      command: 'log',
+      message: logEntry
+    });
   });
 
   server.on(RecvType.FUNCTIONS, functions => {
-    if (webviewPanels.emulators) {
-      postToPanel(webviewPanels.emulators, {
-        command: 'functions',
-        functions
-      });
-    }
+    postToPanel('emulators', {
+      command: 'functions',
+      functions
+    });
   });
 
   server.on(RecvType.DEBUG_FUNCTION, (data: DebugFunctionData) => {
@@ -199,7 +187,12 @@ export async function prepareServerStart(
       name: 'Firebase Explorer emulated function',
       port: data.port,
       stopOnEntry: false,
-      outFiles: [`${data.outDir}/**/*.js`]
+      outFiles: [`${data.outDir}/**/*.js`],
+      skipFiles: [
+        `${data.functionsDir}/node_modules/**/*.js`,
+        `${data.cliDir}/**/*.js`,
+        '<node_internals>/**/*.js'
+      ]
     };
 
     vscode.debug.startDebugging(undefined, config);
@@ -211,7 +204,7 @@ export async function prepareServerStart(
 
   server.on(RecvType.EMULATOR_PORT_TAKEN, async emulator => {
     let processInfo = await findWhoHasPort(emulator.addr.port);
-    postToPanel(webviewPanels.emulators!, {
+    postToPanel('emulators', {
       command: 'emulator-port-taken',
       emulator,
       processInfo
@@ -222,10 +215,8 @@ export async function prepareServerStart(
   await startEmulators(server, options);
   // The CLI has exited
 
-  if (webviewPanels.emulators) {
-    postToPanel(webviewPanels.emulators, { command: 'stopped' });
-    server.removeAllListeners();
-  }
+  postToPanel('emulators', { command: 'stopped' });
+  server.removeAllListeners();
 }
 
 export async function findWhoHasPort(

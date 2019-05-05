@@ -4,7 +4,9 @@ import {
   getFilePath,
   replaceResources,
   postToPanel,
-  webviewPanels
+  createWebviewPanel,
+  getWebviewPanel,
+  deleteWebviewPanel
 } from '../utils';
 import { WebSocketServer } from './server';
 import {
@@ -45,17 +47,19 @@ async function openDashboard(): Promise<void> {
   // TODO: refuse to open if the logged in accounts have no projects.
 
   try {
-    if (webviewPanels.emulators) {
+    let panel = getWebviewPanel('emulators');
+    if (panel) {
       if (isDashboardReady) {
         setImmediate(() => {
-          postToPanel(webviewPanels.emulators!, {
+          postToPanel('emulators', {
             command: 'focus'
           });
         });
       }
-      webviewPanels.emulators.reveal();
+      panel.reveal();
     } else {
-      webviewPanels.emulators = vscode.window.createWebviewPanel(
+      panel = createWebviewPanel(
+        'emulators',
         'emulators.dashboard',
         'Firebase Emulators',
         vscode.ViewColumn.One,
@@ -66,7 +70,7 @@ async function openDashboard(): Promise<void> {
         }
       );
 
-      webviewPanels.emulators.iconPath = vscode.Uri.file(
+      panel.iconPath = vscode.Uri.file(
         getFilePath('assets/firebase-color-small.svg')
       );
 
@@ -74,16 +78,16 @@ async function openDashboard(): Promise<void> {
         getFilePath('ui', 'emulators', 'dashboard.html'),
         'utf8'
       );
-      webviewPanels.emulators.webview.html = replaceResources(content);
+      panel.webview.html = replaceResources(content);
 
-      webviewPanels.emulators.webview.onDidReceiveMessage(async (data: any) => {
+      panel.webview.onDidReceiveMessage(async (data: any) => {
         switch (data.command) {
           case 'ready':
             const folders = (vscode.workspace.workspaceFolders || []).map(
               folder => ({ name: folder.name, path: folder.uri.fsPath })
             );
             isDashboardReady = true;
-            postToPanel(webviewPanels.emulators!, {
+            postToPanel('emulators', {
               command: 'initialize',
               folders,
               accountsWithProjects: await listAllProjects()
@@ -97,14 +101,14 @@ async function openDashboard(): Promise<void> {
             break;
           case 'kill-process':
             const success = await killProcess(data.pid);
-            postToPanel(webviewPanels.emulators!, {
+            postToPanel('emulators', {
               command: 'kill-process-result',
               success
             });
             break;
           case 'folder-selected':
             const foundProject = await getProjectForFolder(data.path);
-            postToPanel(webviewPanels.emulators!, {
+            postToPanel('emulators', {
               command: 'select-project',
               email: foundProject && foundProject.account.user.email,
               projectId: foundProject && foundProject.project.projectId
@@ -121,9 +125,9 @@ async function openDashboard(): Promise<void> {
       // TODO: detect when a workspace folder is added or removed and
       // pass that information to the webview.
 
-      webviewPanels.emulators.onDidDispose(
+      panel.onDidDispose(
         async () => {
-          webviewPanels.emulators = undefined;
+          deleteWebviewPanel('emulators');
           isDashboardReady = false;
           if (server) {
             server.removeAllListeners();
@@ -141,7 +145,7 @@ async function openDashboard(): Promise<void> {
       server.removeAllListeners();
     }
   } catch (err) {
-    console.log(err);
+    console.error(err);
   }
 }
 

@@ -350,14 +350,88 @@ export function caseInsensitiveCompare(a: string, b: string): number {
   return a.localeCompare(b, 'en', { sensitivity: 'base' });
 }
 
+const webviewPanels: {
+  [id: string]: {
+    panel: vscode.WebviewPanel;
+    buffer: any[];
+    disposable: vscode.Disposable;
+  };
+} = {};
+
+export function createWebviewPanel(
+  id: string,
+  viewType: string,
+  title: string,
+  showOptions:
+    | vscode.ViewColumn
+    | { viewColumn: vscode.ViewColumn; preserveFocus?: boolean },
+  options?: vscode.WebviewPanelOptions & vscode.WebviewOptions
+): vscode.WebviewPanel {
+  const panel = vscode.window.createWebviewPanel(
+    viewType,
+    title,
+    showOptions,
+    options
+  );
+
+  const disposable = panel.onDidChangeViewState(event => {
+    if (event.webviewPanel.visible) {
+      flushPanelBuffer(id);
+    }
+  });
+
+  webviewPanels[id] = {
+    panel,
+    buffer: [],
+    disposable
+  };
+
+  return panel;
+}
+
+export function getWebviewPanel(id: string): vscode.WebviewPanel | null {
+  if (!contains(webviewPanels, id)) {
+    return null;
+  }
+  return webviewPanels[id].panel;
+}
+
+export function deleteWebviewPanel(id: string): void {
+  webviewPanels[id].disposable.dispose();
+  delete webviewPanels[id];
+}
+
 /**
- * Post a message toa  webview panel
+ * Post a message to a webview panel.
+ * If the panel is not visible, it buffers the message until it can be sent.
  */
-export function postToPanel(panel: vscode.WebviewPanel, msg: any) {
+export function postToPanel(id: string, msg: any) {
   try {
-    panel.webview.postMessage(msg);
+    if (!contains(webviewPanels, id)) {
+      console.error(`Cannot send message to inexistent WebView panel "${id}"`);
+      return;
+    }
+    const { panel, buffer } = webviewPanels[id];
+    if (panel.visible) {
+      panel.webview.postMessage(msg).then(sent => {
+        if (!sent) {
+          buffer.push(msg);
+        }
+      });
+    } else {
+      buffer.push(msg);
+    }
   } catch (err) {
-    console.log('Failed sending message to WebView panel', err);
+    console.error('Failed sending message to WebView panel', err);
+  }
+}
+
+function flushPanelBuffer(id: string) {
+  if (contains(webviewPanels, id)) {
+    webviewPanels[id].buffer.forEach(msg => {
+      webviewPanels[id].panel.webview.postMessage(msg);
+    });
+    webviewPanels[id].buffer = [];
   }
 }
 
@@ -377,10 +451,6 @@ export function replaceResources(content: string): string {
     return filePath.with({ scheme: 'vscode-resource' }).toString();
   });
 }
-
-export const webviewPanels: {
-  [k: string]: vscode.WebviewPanel | undefined;
-} = {};
 
 // https://developer.mozilla.org/en-US/docs/Web/JavaScript/Guide/Regular_Expressions#Escaping
 export function escapeRegExp(str: string): string {

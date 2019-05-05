@@ -105,7 +105,7 @@ input[type='checkbox'].is-checkradio + label,
 }
 
 .tabs li:not(.is-active) a {
-  color: var(--vscode-foreground);
+  color: var(--vscode-tab-inactiveForeground);
   background-color: var(--vscode-editorWidget-background);
   border-bottom-color: var(--vscode-editorGroupHeader-tabsBackground);
 }
