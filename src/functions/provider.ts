@@ -1,8 +1,8 @@
 import * as vscode from 'vscode';
 import * as directoryTree from 'directory-tree';
-import { FirebaseProject } from '../projects/ProjectManager';
+import { FirebaseProject } from '../projects/manager';
 import { messageTreeItem, caseInsensitiveCompare, getFilePath } from '../utils';
-import { AccountInfo } from '../accounts/AccountManager';
+import { AccountInfo } from '../accounts/manager';
 import { FunctionsAPI, CloudFunction, CloudFunctionTriggerType } from './api';
 
 export class FunctionsProvider

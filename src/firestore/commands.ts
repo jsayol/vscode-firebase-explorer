@@ -6,7 +6,7 @@ import {
   DocumentFieldItem,
   DocumentItem,
   CollectionItem
-} from './FirestoreProvider';
+} from './provider';
 import { getFieldValue, FirestoreAPI } from './api';
 import { getFullPath } from '../utils';
 

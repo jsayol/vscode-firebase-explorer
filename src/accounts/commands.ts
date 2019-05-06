@@ -1,7 +1,7 @@
 import * as vscode from 'vscode';
-import { AccountItem } from '../projects/ProjectsProvider';
+import { AccountItem } from '../projects/provider';
 import { generateNonce, getContext } from '../utils';
-import { AccountManager } from './AccountManager';
+import { AccountManager } from './manager';
 import { endLogin, initiateLogin } from './login';
 
 export function registerAccountsCommands(context: vscode.ExtensionContext) {

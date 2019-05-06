@@ -1,7 +1,7 @@
 import * as WebSocket from 'ws';
 import * as util from 'util';
 import * as portfinder from 'portfinder';
-import { ProjectManager } from '../projects/ProjectManager';
+import { ProjectManager } from '../projects/manager';
 import { EventEmitter } from 'events';
 
 const PORT_START = 35000;

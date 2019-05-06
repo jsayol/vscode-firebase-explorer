@@ -1,6 +1,6 @@
-import { FirebaseProject } from '../projects/ProjectManager';
+import { FirebaseProject } from '../projects/manager';
 import { AppsAPI } from './api';
-import { AccountInfo } from '../accounts/AccountManager';
+import { AccountInfo } from '../accounts/manager';
 
 export interface AndroidAppProps {
   name: string;

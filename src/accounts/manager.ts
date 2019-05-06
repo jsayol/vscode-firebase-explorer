@@ -1,6 +1,6 @@
 import { Url } from 'url';
 import * as request from 'request-promise-native';
-import { FirebaseProject } from '../projects/ProjectManager';
+import { FirebaseProject } from '../projects/manager';
 import { contains, getContext } from '../utils';
 import { ProjectsAPI } from '../projects/api';
 import { AccountsAPI } from './api';

@@ -1,5 +1,5 @@
 import * as vscode from 'vscode';
-import { FirebaseProject } from '../projects/ProjectManager';
+import { FirebaseProject } from '../projects/manager';
 import {
   FirestoreAPI,
   DocumentFieldValue,
@@ -19,7 +19,7 @@ import {
   caseInsensitiveCompare,
   getFilePath
 } from '../utils';
-import { AccountInfo as accountInfo } from '../accounts/AccountManager';
+import { AccountInfo as accountInfo } from '../accounts/manager';
 
 export class FirestoreProvider
   implements vscode.TreeDataProvider<FirestoreProviderItem> {

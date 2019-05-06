@@ -1,5 +1,5 @@
 import { contains, setContext, ContextValue } from '../utils';
-import { AccountManager, AccountInfo } from '../accounts/AccountManager';
+import { AccountManager, AccountInfo } from '../accounts/manager';
 import { IosApp, AndroidApp } from '../apps/apps';
 import { ProjectsAPI } from './api';
 import { AppsAPI } from '../apps/api';

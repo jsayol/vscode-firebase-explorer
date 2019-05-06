@@ -1,14 +1,14 @@
 import * as vscode from 'vscode';
 import { providerStore } from '../stores';
-import { FirebaseProject } from '../projects/ProjectManager';
-import { ProjectsProvider, AccountItem } from '../projects/ProjectsProvider';
-import { FirestoreProvider } from '../firestore/FirestoreProvider';
-import { DatabaseProvider } from '../database/DatabaseProvider';
+import { FirebaseProject } from '../projects/manager';
+import { ProjectsProvider, AccountItem } from './provider';
+import { FirestoreProvider } from '../firestore/provider';
+import { DatabaseProvider } from '../database/provider';
 import { setContext, ContextValue, getContext } from '../utils';
-import { AppsProvider } from '../apps/AppsProvider';
-import { AccountInfo } from '../accounts/AccountManager';
-import { FunctionsProvider } from '../functions/FunctionsProvider';
-import { HostingProvider } from '../hosting/HostingProvider';
+import { AppsProvider } from '../apps/provider';
+import { AccountInfo } from '../accounts/manager';
+import { FunctionsProvider } from '../functions/provider';
+import { HostingProvider } from '../hosting/provider';
 
 export function registerProjectsCommands(context: vscode.ExtensionContext) {
   context.subscriptions.push(

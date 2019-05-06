@@ -1,6 +1,6 @@
 import * as vscode from 'vscode';
-import { FirebaseProject } from './ProjectManager';
-import { AccountManager, AccountInfo } from '../accounts/AccountManager';
+import { FirebaseProject } from './manager';
+import { AccountManager, AccountInfo } from '../accounts/manager';
 import { messageTreeItem, getFilePath } from '../utils';
 
 export class ProjectsProvider

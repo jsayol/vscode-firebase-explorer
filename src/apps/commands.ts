@@ -4,7 +4,7 @@ import {
   AppsProvider,
   FingerprintFolderItem,
   FingerprintItem
-} from './AppsProvider';
+} from './provider';
 import { providerStore } from '../stores';
 import { IosApp, AndroidApp, ShaCertificate } from './apps';
 import {
@@ -12,9 +12,9 @@ import {
   writeToTmpFile,
   getContext
 } from '../utils';
-import { FirebaseProject } from '../projects/ProjectManager';
+import { FirebaseProject } from '../projects/manager';
 import { AppsAPI } from './api';
-import { AccountInfo } from '../accounts/AccountManager';
+import { AccountInfo } from '../accounts/manager';
 
 export function registerAppsCommands(context: vscode.ExtensionContext) {
   context.subscriptions.push(

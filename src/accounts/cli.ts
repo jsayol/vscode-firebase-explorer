@@ -1,6 +1,6 @@
 import { homedir } from 'os';
 import { resolve as resolvePath } from 'path';
-import { AccountInfo, AccountUser, AccountTokens } from './AccountManager';
+import { AccountInfo, AccountUser, AccountTokens } from './manager';
 import { readFile } from '../utils';
 
 export const CLI_API_CONFIG = {

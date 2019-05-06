@@ -47,12 +47,7 @@
     "push": "git push -u origin master && git push -u origin --tags"
   },
   "activationEvents": [
-    "onView:firebase-projects",
-    "onView:firebase-functions",
-    "onView:firebase-apps",
-    "onView:firebase-firestore",
-    "onView:firebase-database",
-    "onCommand:firebaseExplorer.emulators.openDashboard"
+    "*"
   ],
   "contributes": {
     "viewsContainers": {

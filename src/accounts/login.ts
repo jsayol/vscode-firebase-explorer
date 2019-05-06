@@ -5,7 +5,7 @@ import * as portfinder from 'portfinder';
 import { parse as parseUrl } from 'url';
 import * as vscode from 'vscode';
 import { contains, readFile, getFilePath } from '../utils';
-import { AccountInfo, AccountTokens, AccountUser } from './AccountManager';
+import { AccountInfo, AccountTokens, AccountUser } from './manager';
 import { API_CONFIG } from './api';
 import { CLI_API_CONFIG } from './cli';
 

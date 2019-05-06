@@ -1,5 +1,5 @@
 import * as vscode from 'vscode';
-import { HostingFileItem } from './HostingProvider';
+import { HostingFileItem } from './provider';
 
 export function registerHostingCommands(context: vscode.ExtensionContext) {
   context.subscriptions.push(

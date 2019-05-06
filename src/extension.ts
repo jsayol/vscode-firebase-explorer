@@ -7,24 +7,17 @@ import {
   AccountInfo,
   StateAccounts,
   AccountData
-} from './accounts/AccountManager';
+} from './accounts/manager';
 import { getCliAccount } from './accounts/cli';
-import { registerAccountsCommands } from './accounts/commands';
-import { AppsProvider } from './apps/AppsProvider';
-import { registerAppsCommands } from './apps/commands';
-import { registerDatabaseCommands } from './database/commands';
-import { DatabaseProvider } from './database/DatabaseProvider';
-import { registerFirestoreCommands } from './firestore/commands';
-import { FirestoreProvider } from './firestore/FirestoreProvider';
-import { registerFunctionsCommands } from './functions/commands';
-import { FunctionsProvider } from './functions/FunctionsProvider';
-import { registerHostingCommands } from './hosting/commands';
-import { HostingProvider } from './hosting/HostingProvider';
-import { registerProjectsCommands } from './projects/commands';
-import { ProjectsProvider } from './projects/ProjectsProvider';
-import { providerStore, treeViewStore } from './stores';
 import { setContextObj, readFile } from './utils';
-import { registerEmulatorsCommands } from './emulators/commands';
+import { initializeAccountsModule } from './accounts';
+import { initializeProjectsModule } from './projects';
+import { initializeDatabaseModule } from './database';
+import { initializeFirestoreModule } from './firestore';
+import { initializeFunctionsModule } from './functions';
+import { initializeHostingModule } from './hosting';
+import { initializeEmulatorsModule } from './emulators';
+import { initializeAppsModule } from './apps';
 
 export async function activate(context: vscode.ExtensionContext) {
   setContextObj(context);
@@ -33,24 +26,17 @@ export async function activate(context: vscode.ExtensionContext) {
   await initialize(context);
 
   // Clean-up any previous selections
-  context.globalState.update('selectedAccount', void 0);
-  context.globalState.update('selectedProject', void 0);
+  context.globalState.update('selectedAccount', undefined);
+  context.globalState.update('selectedProject', undefined);
 
-  registerProvider('hosting', new HostingProvider(context));
-  registerProvider('functions', new FunctionsProvider(context));
-  registerProvider('apps', new AppsProvider(context));
-  registerProvider('projects', new ProjectsProvider(/*context*/));
-  registerProvider('firestore', new FirestoreProvider(context));
-  registerProvider('database', new DatabaseProvider(context));
-
-  registerHostingCommands(context);
-  registerFunctionsCommands(context);
-  registerAppsCommands(context);
-  registerAccountsCommands(context);
-  registerProjectsCommands(context);
-  registerFirestoreCommands(context);
-  registerDatabaseCommands(context);
-  registerEmulatorsCommands(context);
+  initializeAccountsModule(context);
+  initializeProjectsModule(context);
+  initializeDatabaseModule(context);
+  initializeFirestoreModule(context);
+  initializeFunctionsModule(context);
+  initializeHostingModule(context);
+  initializeEmulatorsModule(context);
+  initializeAppsModule(context);
 
   // This adds a custom schema to open files as read-only
   vscode.workspace.registerTextDocumentContentProvider(
@@ -74,18 +60,6 @@ export async function activate(context: vscode.ExtensionContext) {
 
 export function deactivate() {
   // ...
-}
-
-function registerProvider<T>(
-  name: string,
-  provider: vscode.TreeDataProvider<T>
-) {
-  const treeView = vscode.window.createTreeView(`firebase-${name}`, {
-    treeDataProvider: provider
-  });
-  treeViewStore.add(name, treeView);
-  providerStore.add(name, provider);
-  // vscode.window.registerTreeDataProvider(`firebase-${name}`, provider);
 }
 
 async function initialize(context: vscode.ExtensionContext): Promise<void> {

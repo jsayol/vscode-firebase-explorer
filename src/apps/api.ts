@@ -1,12 +1,12 @@
 import * as vscode from 'vscode';
 import * as request from 'request-promise-native';
 import { contains } from '../utils';
-import { FirebaseProject } from '../projects/ProjectManager';
+import { FirebaseProject } from '../projects/manager';
 import {
   AccountManager,
   AccountInfo,
   RequestOptions
-} from '../accounts/AccountManager';
+} from '../accounts/manager';
 import { waitUntilDone } from '../operations';
 import { IosAppProps, AndroidAppProps, ShaCertificate } from './apps';
 import { API } from '../api';

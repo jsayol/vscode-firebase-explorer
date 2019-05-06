@@ -1,5 +1,5 @@
 import * as vscode from 'vscode';
-import { DatabaseElementItem, DatabaseProvider } from './DatabaseProvider';
+import { DatabaseElementItem, DatabaseProvider } from './provider';
 import { getFullPath } from '../utils';
 import { DatabaseAPI } from './api';
 import { providerStore } from '../stores';

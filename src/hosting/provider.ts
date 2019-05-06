@@ -1,6 +1,6 @@
 import * as vscode from 'vscode';
-import { AccountInfo } from '../accounts/AccountManager';
-import { FirebaseProject } from '../projects/ProjectManager';
+import { AccountInfo } from '../accounts/manager';
+import { FirebaseProject } from '../projects/manager';
 import { messageTreeItem, dateToString, contains, getFilePath } from '../utils';
 import {
   HostingAPI,

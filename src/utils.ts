@@ -11,11 +11,23 @@ import { Readable } from 'stream';
 import * as vscode from 'vscode';
 import * as AnsiUp from 'ansi_up';
 import { ShaCertificate } from './apps/apps';
+import { providerStore, treeViewStore } from './stores';
 
 const ansiUp: AnsiUp.AnsiUp = new (AnsiUp as any).default();
 ansiUp.use_classes = true;
 
 let _context: vscode.ExtensionContext;
+
+export function registerProvider<T>(
+  name: string,
+  provider: vscode.TreeDataProvider<T>
+) {
+  const treeView = vscode.window.createTreeView(`firebase-${name}`, {
+    treeDataProvider: provider
+  });
+  treeViewStore.add(name, treeView);
+  providerStore.add(name, provider);
+}
 
 // export function contains(obj: object, key: string): boolean {
 export function contains<T>(obj: T, key: PropertyKey): key is keyof T {

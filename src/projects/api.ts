@@ -3,14 +3,14 @@ import {
   AccountInfo,
   AccountManager,
   RequestOptions
-} from '../accounts/AccountManager';
+} from '../accounts/manager';
 import { contains, caseInsensitiveCompare } from '../utils';
 import {
   FirebaseProject,
   ProjectConfig,
   ProjectInfo,
   WebAppConfig
-} from './ProjectManager';
+} from './manager';
 import { API } from '../api';
 
 // https://mobilesdk-pa.googleapis.com/v1/projects

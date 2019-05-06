@@ -1,8 +1,8 @@
 import * as vscode from 'vscode';
-import { ProjectManager, FirebaseProject } from '../projects/ProjectManager';
+import { ProjectManager, FirebaseProject } from '../projects/manager';
 import { messageTreeItem, getFilePath } from '../utils';
 import { IosApp, AndroidApp, ShaCertificate } from './apps';
-import { AccountInfo } from '../accounts/AccountManager';
+import { AccountInfo } from '../accounts/manager';
 
 export class AppsProvider implements vscode.TreeDataProvider<AppsProviderItem> {
   private _onDidChangeTreeData = new vscode.EventEmitter<

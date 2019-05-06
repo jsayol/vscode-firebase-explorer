@@ -4,8 +4,8 @@ import {
   AccountInfo,
   AccountManager,
   RequestOptions
-} from '../accounts/AccountManager';
-import { FirebaseProject } from '../projects/ProjectManager';
+} from '../accounts/manager';
+import { FirebaseProject } from '../projects/manager';
 import { getDetailsFromName } from './utils';
 import { API } from '../api';
 

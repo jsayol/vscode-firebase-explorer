@@ -1,7 +1,7 @@
 import * as request from 'request-promise-native';
 import { contains } from '../utils';
 import { CLI_API_CONFIG } from './cli';
-import { AccountInfo, GoogleOAuthAccessToken } from './AccountManager';
+import { AccountInfo, GoogleOAuthAccessToken } from './manager';
 
 export const API_CONFIG = {
   authOrigin: 'https://accounts.google.com',

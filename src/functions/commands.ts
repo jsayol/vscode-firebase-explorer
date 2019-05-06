@@ -14,7 +14,7 @@ import {
   deleteWebviewPanel
 } from '../utils';
 import { FunctionsAPI } from './api';
-import { CloudFunctionItem, FunctionsProvider } from './FunctionsProvider';
+import { CloudFunctionItem, FunctionsProvider } from './provider';
 import { getDetailsFromName } from './utils';
 
 const logViews: {

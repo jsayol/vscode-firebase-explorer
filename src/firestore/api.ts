@@ -1,7 +1,7 @@
 import * as request from 'request-promise-native';
 import { contains } from '../utils';
-import { FirebaseProject, ProjectManager } from '../projects/ProjectManager';
-import { AccountInfo } from '../accounts/AccountManager';
+import { FirebaseProject, ProjectManager } from '../projects/manager';
+import { AccountInfo } from '../accounts/manager';
 
 const URL_BASE = 'https://firestore.googleapis.com/v1beta1';
 const instances: { [k: string]: FirestoreAPI } = {};

@@ -1,5 +1,5 @@
 import * as vscode from 'vscode';
-import { FirebaseProject } from '../projects/ProjectManager';
+import { FirebaseProject } from '../projects/manager';
 import { DatabaseAPI, DatabaseShallowValue } from './api';
 import {
   caseInsensitiveCompare,
@@ -7,7 +7,7 @@ import {
   getFullPath,
   getFilePath
 } from '../utils';
-import { AccountInfo } from '../accounts/AccountManager';
+import { AccountInfo } from '../accounts/manager';
 
 export class DatabaseProvider
   implements vscode.TreeDataProvider<DatabaseProviderItem> {
@@ -122,7 +122,7 @@ export class DatabaseProvider
       typeof value === 'number' ||
       typeof value === 'string' ||
       value === null ||
-      value === void 0 ||
+      value === undefined ||
       Array.isArray(value)
     ) {
       // It's a value
@@ -189,7 +189,7 @@ export class DatabaseElementItem extends vscode.TreeItem {
     const valuePath = getFullPath(this.parentPath, this.name);
     let tooltip: string;
 
-    if (this._value === void 0) {
+    if (this._value === undefined) {
       tooltip = valuePath;
     } else {
       tooltip = `• Path: ${valuePath}\n• Value: ${JSON.stringify(this._value)}`;
