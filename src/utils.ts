@@ -53,7 +53,8 @@ export enum ContextValue {
   AppsLoaded = 'apps:loaded',
   FirestoreLoaded = 'firestore:loaded',
   DatabaseLoaded = 'database:loaded',
-  ModsLoaded = 'mods:loaded'
+  ModsLoaded = 'mods:loaded',
+  StorageLoaded = 'storage:loaded'
 }
 
 export function setContextObj(context: vscode.ExtensionContext) {

@@ -9,6 +9,7 @@ import { AppsProvider } from '../apps/AppsProvider';
 import { AccountInfo } from '../accounts/AccountManager';
 import { FunctionsProvider } from '../functions/FunctionsProvider';
 import { HostingProvider } from '../hosting/HostingProvider';
+import { StorageProvider } from '../storage/StorageProvider';
 
 export function registerProjectsCommands(context: vscode.ExtensionContext) {
   context.subscriptions.push(
@@ -47,6 +48,7 @@ function projectSelection(
   const appsProvider = providerStore.get<AppsProvider>('apps');
   const firestoreProvider = providerStore.get<FirestoreProvider>('firestore');
   const databaseProvider = providerStore.get<DatabaseProvider>('database');
+  const storageProvider = providerStore.get<StorageProvider>('storage');
 
   setContext(ContextValue.ProjectSelected, false);
   setContext(ContextValue.HostingLoaded, false);
@@ -54,6 +56,7 @@ function projectSelection(
   setContext(ContextValue.AppsLoaded, false);
   setContext(ContextValue.FirestoreLoaded, false);
   setContext(ContextValue.DatabaseLoaded, false);
+  setContext(ContextValue.StorageLoaded, false);
 
   if (accountInfo && project) {
     // Empty selection and refresh to show "Loading..."
@@ -66,6 +69,7 @@ function projectSelection(
   appsProvider.refresh();
   firestoreProvider.refresh();
   databaseProvider.refresh();
+  storageProvider.refresh();
 
   if (accountInfo && project) {
     setTimeout(() => {
@@ -78,6 +82,7 @@ function projectSelection(
       appsProvider.refresh();
       firestoreProvider.refresh();
       databaseProvider.refresh();
+      storageProvider.refresh();
 
       setContext(ContextValue.ProjectSelected, !!(accountInfo && project));
     }, 250);

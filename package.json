@@ -88,6 +88,10 @@
         {
           "id": "firebase-apps",
           "name": "Mobile Apps"
+        },
+        {
+          "id": "firebase-storage",
+          "name": "Storage"
         }
       ]
     },
@@ -548,6 +552,7 @@
     "webpack-cli": "^3.1.2"
   },
   "dependencies": {
+    "@google-cloud/storage": "^3.0.4",
     "@mdi/font": "^3.6.95",
     "bulma": "^0.7.4",
     "bulma-badge": "^3.0.0",
