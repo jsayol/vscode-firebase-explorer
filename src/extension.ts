@@ -24,6 +24,7 @@ import { registerProjectsCommands } from './projects/commands';
 import { ProjectsProvider } from './projects/ProjectsProvider';
 import { providerStore, treeViewStore } from './stores';
 import { setContextObj, readFile } from './utils';
+import { StorageProvider } from './storage/StorageProvider';
 
 export async function activate(context: vscode.ExtensionContext) {
   setContextObj(context);
@@ -41,6 +42,7 @@ export async function activate(context: vscode.ExtensionContext) {
   registerProvider('projects', new ProjectsProvider(/*context*/));
   registerProvider('firestore', new FirestoreProvider(context));
   registerProvider('database', new DatabaseProvider(context));
+  registerProvider('storage', new StorageProvider(context));
 
   registerHostingCommands(context);
   registerFunctionsCommands(context);

@@ -88,6 +88,10 @@
         {
           "id": "firebase-apps",
           "name": "Mobile Apps"
+        },
+        {
+          "id": "firebase-storage",
+          "name": "Storage"
         }
       ]
     },
